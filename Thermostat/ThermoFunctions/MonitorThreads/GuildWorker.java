@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+import static Thermostat.thermostat.thermo;
+
 /**
  * <h1>Guild Worker</h1>
  * <p>
@@ -25,26 +27,30 @@ import java.util.concurrent.*;
  */
 public class GuildWorker
 {
-    private ScheduledExecutorService exec;
     private ScheduledFuture scheduledFuture;
     private String assignedGuild;
 
     /**
      * Creates an instance of the GuildWorker, representing
      * a thread that manages a Guild's channels.
-     * @param thermo The JDA instance of the thermostat bot.
-     *               Used to get a Guild variable to perform
-     *               operations with its' channels upon.
      */
-    public GuildWorker(JDA thermo)
+    public GuildWorker()
     {
         Runnable mon = () -> monitorChannels(thermo.getGuildById(assignedGuild));
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        executor.setRemoveOnCancelPolicy(true);
-        exec = executor;
-        // scheduledFuture = ChannelListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
-        // to be tested for implementation
-        scheduledFuture = exec.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+        scheduledFuture = ChannelListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Function for scheduling the worker. Checks if it
+     * may have somehow failed, and restarts it if so.
+     */
+    public void scheduleWorker(JDA thermo)
+    {
+        if (scheduledFuture.isDone() || scheduledFuture.isCancelled())
+        {
+            Runnable mon = () -> monitorChannels(thermo.getGuildById(assignedGuild));
+            scheduledFuture = ChannelListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+        }
     }
 
     /**
@@ -74,15 +80,6 @@ public class GuildWorker
     public void invalidate()
     {
         scheduledFuture.cancel(true);
-    }
-
-    /**
-     * Shuts down the local executor of this class.
-     * Will need to deprecate after passing that job
-     * to the executor in {@link ChannelListener}
-     */
-    public void shutdown() {
-        exec.shutdown();
     }
 
     /**
@@ -160,21 +157,21 @@ public class GuildWorker
             putSlowmode(channel, 10, false);
         }
         else if (averageDelay <= 1000 && firstMessageTime < 5000) {
-            putSlowmode(channel, 4, false);
+            putSlowmode(channel, 6, false);
         }
         else if (averageDelay <= 1500 && firstMessageTime < 5000) {
             putSlowmode(channel, 2, false);
         }
-        else if (averageDelay <= 2000 && firstMessageTime < 5000) {
+        else if (averageDelay <= 2000 && (firstMessageTime > 5000 && firstMessageTime < 20000)) {
             putSlowmode(channel, -1, false);
         }
-        else if ((averageDelay <= 3000 && averageDelay > 2000) && firstMessageTime < 5000) {
+        else if ((averageDelay <= 3000 && averageDelay > 2000) || firstMessageTime < 20000) {
             putSlowmode(channel, -2, false);
         }
-        else if ((averageDelay <= 4000 && averageDelay > 3000) || (firstMessageTime > 5000 && firstMessageTime <= 60000)) {
-            putSlowmode(channel, -8, false);
+        else if ((averageDelay <= 4000 && averageDelay > 3000) || (firstMessageTime > 20000 && firstMessageTime <= 40000)) {
+            putSlowmode(channel, -4, false);
         }
-        else if (averageDelay > 6000 || firstMessageTime > 60000) {
+        else if (averageDelay > 6000 || firstMessageTime > 40000) {
             putSlowmode(channel, 0, true);
         }
     }
@@ -184,30 +181,42 @@ public class GuildWorker
      * adjust the slowmode of each channel in the given guild.
      * @param guild The guild that will have the channels monitored.
      */
-    public static void monitorChannels(Guild guild)
-    {
+    public static void monitorChannels(Guild guild) {
         // get ID of guild channels to monitor
-        Connection conn = new Connection();
+        Connection conn;
+        try {
+            conn = new Connection();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            return;
+        }
 
         ResultSet rs = conn.query("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = " + guild.getId());
         // list that will hold all guilds from the database
         ArrayList<String> CHANNELS = new ArrayList<>();
         try {
-            while (rs.next())
-            {
-                CHANNELS.add(rs.getString(1));
+            while (rs.next()) {
+                ChronoUnit unit = ChronoUnit.MILLIS;
+                OffsetDateTime nowTime = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(unit);
+                OffsetDateTime firstMessageTime = guild.getTextChannelById(rs.getString(1)).getHistory().retrievePast(1).complete().get(0).getTimeCreated();
+
+                // if the time between the last message and now is more than
+                // 60 seconds, don't monitor the channel to save resources
+                if (!(unit.between(firstMessageTime, nowTime) > 60000))
+                    CHANNELS.add(rs.getString(1));
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
+            return;
         }
 
         conn.closeConnection();
 
-        for (String it : CHANNELS)
-        {
+        for (String it : CHANNELS) {
             // delete channel from db if channel was removed
-            if (guild.getTextChannelById(it) == null)
-            {
+            if (guild.getTextChannelById(it) == null) {
                 Delete.Channel(guild.getId(), it);
                 break;
             }
@@ -215,19 +224,17 @@ public class GuildWorker
             // monitor function, gets lastest message as reference point
             TextChannel Channel = guild.getTextChannelById(it);
 
-            List<Message> retrieved = Channel.getHistory().retrievePast(25).complete();
+            ChronoUnit unit = ChronoUnit.MILLIS;
+            OffsetDateTime nowTime = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(unit);
+
+            List<Message> retrieved = Channel.getHistory().retrievePast(10).complete();
             List<Long> delays = new ArrayList<>();
 
-            ChronoUnit unit = ChronoUnit.MILLIS;
-
-            OffsetDateTime nowTime = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(unit);
             OffsetDateTime firstMessageTime = retrieved.get(0).getTimeCreated();
 
             // if last message is at least 30 seconds old and nothing else has happened
-
             // gets delay between each message and adds it to an array
-            for (int index = 0; index < retrieved.size() - 1; ++index)
-            {
+            for (int index = 0; index < retrieved.size() - 1; ++index) {
                 delays.add(
                         unit.between(
                                 retrieved.get(index + 1).getTimeCreated(),
@@ -237,5 +244,7 @@ public class GuildWorker
             }
             slowmodeSwitch(Channel, calculateAverageTime(delays), unit.between(firstMessageTime, nowTime));
         }
+
+        // System.out.println(CHANNELS);
     }
 }

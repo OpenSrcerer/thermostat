@@ -29,7 +29,15 @@ public class Create {
             throw new NullPointerException();
         }
 
-        Connection conn = new Connection();
+        Connection conn;
+        try {
+            conn = new Connection();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            return;
+        }
 
         try {
             conn.update("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (" + GUILD_ID + ", 0);");
@@ -53,7 +61,15 @@ public class Create {
             throw new NullPointerException();
         }
 
-        Connection conn = new Connection();
+        Connection conn;
+        try {
+            conn = new Connection();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            return;
+        }
 
         try {
             conn.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (" + CHANNEL_ID + ", " + GUILD_ID + ");");

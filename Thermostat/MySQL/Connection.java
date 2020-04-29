@@ -24,20 +24,14 @@ public class Connection
      * Login information is kept hardcoded due to safety
      * reasons.
      */
-    public Connection()
+    public Connection() throws SQLException
     {
-        try
-        {
-            // UNCOMMENT THIS WHEN YOU HAVE INSERTED YOUR OWN DB
-            // FORMAT: DriverManager.getConnection(
-            //            "jdbc:mysql://servername:port/db_name"
-            //            "DB_USERNAME"
-            //            "DB_PASSWORD"
-        }
-        catch (SQLException ex)
-        {
-            ex.printStackTrace();
-        }
+        conn = 
+        //       DriverManager.getConnection(
+        //      "jdbc:mysql://servername:port/db_name"
+        //      "DB_USERNAME"
+        //      "DB_PASSWORD"
+        );
     }
 
     /**
@@ -129,7 +123,7 @@ public class Connection
         {
             conn.close();
         }
-        catch (SQLException ex)
+        catch (Exception ex)
         {
             System.out.println(ex + "(Could not close conn)");
         }

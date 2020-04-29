@@ -1,12 +1,16 @@
 package Thermostat.ThermoFunctions.Commands;
 
+import Thermostat.Embeds;
 import Thermostat.MySQL.Connection;
+import Thermostat.MySQL.Create;
 import Thermostat.MySQL.Delete;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +28,8 @@ import static Thermostat.ThermoFunctions.Functions.parseMention;
  */
 public class UnMonitor extends ListenerAdapter
 {
+    private static EmbedBuilder embed = new EmbedBuilder();
+
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev)
     {
         // gets given arguments and passes them to a list
@@ -35,7 +41,7 @@ public class UnMonitor extends ListenerAdapter
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "um")
         ) {
             if (args.size() == 1) {
-                ev.getChannel().sendMessage("<@" + ev.getAuthor().getId() + "> Please specify the channels to unmonitor.").queue();
+                ev.getChannel().sendMessage(Embeds.specifyChannels(ev.getAuthor().getId()).build()).queue();
                 return;
             }
 
@@ -44,11 +50,11 @@ public class UnMonitor extends ListenerAdapter
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                ev.getChannel().sendMessage("<@" + ev.getAuthor().getId() + "> \nYou must have the `MANAGE_CHANNEL` permission in order to use this command.").queue();
+                ev.getChannel().sendMessage(Embeds.userNoPermission(ev.getAuthor().getId()).build()).queue();
                 return;
             }
 
-            String finalMessage = "<@" + ev.getAuthor().getId() + ">\n";
+            embed.setTitle("ℹ Channels currently being monitored:");
 
             // parses arguments into usable IDs, checks if channels exist
             // realindex - > for msg
@@ -59,7 +65,7 @@ public class UnMonitor extends ListenerAdapter
 
                 // if string is empty add a 0 to it in order to represent
                 if (args.get(index).isBlank()) {
-                    finalMessage = finalMessage.concat("Channel #" + realIndex + " is not a valid channel.\n");
+                    embed.addField("", "Channel #" + realIndex + " is not a valid channel.", false);
                     args.remove(index);
                     --index;
                 }
@@ -71,7 +77,7 @@ public class UnMonitor extends ListenerAdapter
                     List<TextChannel> TextChannels = ev.getGuild().getCategoryById(args.get(index)).getTextChannels();
                     // if list is empty add that it is in msg
                     if (TextChannels.isEmpty()) {
-                        finalMessage = finalMessage.concat("Category <#" + args.get(index) + "> does not contain any text channels.");
+                        embed.addField("", "Category <#" + args.get(index) + "> does not contain any text channels.", false);
                     }
                     // removes category ID from argument ArrayList
                     args.remove(index);
@@ -84,7 +90,7 @@ public class UnMonitor extends ListenerAdapter
 
                 // removes element from arguments if it's not a valid channel ID
                 else if (ev.getGuild().getTextChannelById(args.get(index)) == null) {
-                    finalMessage = finalMessage.concat("Channel " + args.get(index) + " was not found in this guild.\n");
+                    embed.addField("", "Text Channel " + args.get(index) + " was not found in this guild.", false);
                     args.remove(index);
                     --index;
                 }
@@ -92,27 +98,43 @@ public class UnMonitor extends ListenerAdapter
             }
 
             // connects to database and removes channel
-            Connection conn = new Connection();
+            Connection conn;
+            try {
+                conn = new Connection();
+            }
+            catch (SQLException ex)
+            {
+                ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                ex.printStackTrace();
+                return;
+            }
 
             for (String it : args) {
                 try {
+                    // silent guild adder
+                    if (!conn.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
+                        Create.Guild(ev.getGuild().getId());
                     // checks db if channel exists
                     if (conn.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it))
                     {
                         Delete.Channel(ev.getGuild().getId(), it);
-                        finalMessage = finalMessage.concat("<#" + it + "> was successfully removed from the monitoring database.\n");
+                        embed.addField("", "<#" + it + "> was successfully removed from the monitoring database.", false);
                     }
                     // if not, do not do anything
                     else
-                        finalMessage = finalMessage.concat("Channel <#" + it + "> cannot be removed from monitoring if it is not being monitored.\n");
+                        embed.addField("", "Channel <#" + it + "> cannot be removed from monitoring if it is not being monitored.", false);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    finalMessage = finalMessage.concat("Channel " + it + " could not be removed.\n");
+                    ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
                 }
             }
 
             conn.closeConnection();
-            ev.getChannel().sendMessage(finalMessage).queue();
+
+            embed.setColor(0xeb9834);
+            embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
+            ev.getChannel().sendMessage(embed.build()).queue();
+            embed.clear();
         }
     }
 }

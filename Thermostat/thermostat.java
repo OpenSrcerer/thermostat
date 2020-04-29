@@ -1,11 +1,7 @@
 package Thermostat;
 
-import Thermostat.ThermoFunctions.Commands.Monitor;
-import Thermostat.ThermoFunctions.Commands.UnMonitor;
-import Thermostat.ThermoFunctions.MonitorThreads.ChannelListener;
-import Thermostat.ThermoFunctions.Listeners.GuildJoin;
+import Thermostat.ThermoFunctions.Listeners.Ready;
 
-import Thermostat.ThermoFunctions.Listeners.GuildLeave;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -40,9 +36,8 @@ public class thermostat {
     );
 
     /**
-     * Main run function for the bot, where all
-     * the Event Listeners are initiated and channels
-     * are monitored.
+     * Main run function for the bot. Event listeners
+     * are defined in {@link Ready}.
      * @param args default java main function
      * @throws LoginException
      */
@@ -50,7 +45,7 @@ public class thermostat {
 
         // adjust the cache flags here
         thermo = JDABuilder
-                .create("YOUR-TOKEN-HERE", intents)
+                .create("YOUR-BOT-TOKEN-HERE", intents)
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.EMOTE,
@@ -60,15 +55,6 @@ public class thermostat {
                 )
                 .build();
 
-        // Main Channel Monitoring Class Call
-        ChannelListener CL = new ChannelListener(thermo);
-
-        // Commands Listeners
-        thermo.addEventListener(new Monitor());
-        thermo.addEventListener(new UnMonitor());
-
-        // Other Event Listeners
-        thermo.addEventListener(new GuildJoin());
-        thermo.addEventListener(new GuildLeave());
+        thermo.addEventListener(new Ready());
     }
 }

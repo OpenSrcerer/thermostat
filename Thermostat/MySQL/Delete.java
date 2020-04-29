@@ -22,7 +22,15 @@ public class Delete
     public static void Guild (String GUILD_ID)
     {
         // initiates connection with database
-        Connection conn = new Connection();
+        Connection conn;
+        try {
+            conn = new Connection();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            return;
+        }
 
         // update queries to delete SQL rows related to guild
         // that just kicked bot
@@ -61,7 +69,15 @@ public class Delete
      */
     public static void Channel (String GUILD_ID, String CHANNEL_ID)
     {
-        Connection conn = new Connection();
+        Connection conn;
+        try {
+            conn = new Connection();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            return;
+        }
 
         try
         {
