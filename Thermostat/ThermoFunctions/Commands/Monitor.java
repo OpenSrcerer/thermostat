@@ -3,6 +3,7 @@ package Thermostat.ThermoFunctions.Commands;
 import Thermostat.Embeds;
 import Thermostat.MySQL.Connection;
 import Thermostat.MySQL.Create;
+import Thermostat.ThermoFunctions.Messages;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -33,11 +34,11 @@ public class Monitor extends ListenerAdapter {
 
         if (
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "monitor") ||
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "mon") ||
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "m")
+                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "mon") ||
+                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "m")
         ) {
             if (args.size() == 1) {
-                ev.getChannel().sendMessage(Embeds.specifyChannels(ev.getAuthor().getId()).build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));
                 return;
             }
 
@@ -46,7 +47,7 @@ public class Monitor extends ListenerAdapter {
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                ev.getChannel().sendMessage(Embeds.userNoPermission(ev.getAuthor().getId()).build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
                 return;
             }
 
@@ -79,8 +80,7 @@ public class Monitor extends ListenerAdapter {
                     // removes category ID from argument ArrayList
                     args.remove(index);
                     // iterates through every channel and adds its' id to the arg list
-                    for (TextChannel it : TextChannels)
-                    {
+                    for (TextChannel it : TextChannels) {
                         args.add(it.getId());
                     }
                     --index;
@@ -100,10 +100,8 @@ public class Monitor extends ListenerAdapter {
             Connection conn;
             try {
                 conn = new Connection();
-            }
-            catch (SQLException ex)
-            {
-                ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+            } catch (SQLException ex) {
+                Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
                 ex.printStackTrace();
                 return;
             }
@@ -114,17 +112,14 @@ public class Monitor extends ListenerAdapter {
                     if (!conn.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
                         Create.Guild(ev.getGuild().getId());
                     // check db if channel exists
-                    if (!conn.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it))
-                    {
+                    if (!conn.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it)) {
                         Create.Channel(ev.getGuild().getId(), it);
                         embed.addField("", "<#" + it + "> is now being monitored.\n", false);
-                    }
-                    else
-                    {
+                    } else {
                         embed.addField("", "Channel <#" + it + "> is already being monitored.", false);
                     }
                 } catch (Exception ex) {
-                ex.printStackTrace();
+                    ex.printStackTrace();
                     embed.addField("", "Channel " + it + " was not found in this guild.\n", false);
                 }
             }
@@ -133,7 +128,7 @@ public class Monitor extends ListenerAdapter {
 
             embed.setColor(0xeb9834);
             embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
-            ev.getChannel().sendMessage(embed.build()).queue();
+            Messages.sendMessage(ev.getChannel(), embed);
             embed.clear();
         }
     }

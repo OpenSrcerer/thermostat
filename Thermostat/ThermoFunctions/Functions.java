@@ -6,8 +6,9 @@ package Thermostat.ThermoFunctions;
 public class Functions {
     /**
      * A function that's used to grab IDs from Discord message mentions.
-     * @param mention The mention grabbed from a message in its'
-     *                plain form.
+     *
+     * @param mention       The mention grabbed from a message in its'
+     *                      plain form.
      * @param discriminator Used to tell what type of mention it is.
      *                      In this case, it's the symbol after the "<"
      *                      sign on Discord mentions. Refer to

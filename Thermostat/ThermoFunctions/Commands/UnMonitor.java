@@ -4,6 +4,7 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Connection;
 import Thermostat.MySQL.Create;
 import Thermostat.MySQL.Delete;
+import Thermostat.ThermoFunctions.Messages;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -41,7 +42,7 @@ public class UnMonitor extends ListenerAdapter
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "um")
         ) {
             if (args.size() == 1) {
-                ev.getChannel().sendMessage(Embeds.specifyChannels(ev.getAuthor().getId()).build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));
                 return;
             }
 
@@ -50,7 +51,7 @@ public class UnMonitor extends ListenerAdapter
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                ev.getChannel().sendMessage(Embeds.userNoPermission(ev.getAuthor().getId()).build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
                 return;
             }
 
@@ -104,7 +105,7 @@ public class UnMonitor extends ListenerAdapter
             }
             catch (SQLException ex)
             {
-                ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
                 ex.printStackTrace();
                 return;
             }
@@ -125,7 +126,7 @@ public class UnMonitor extends ListenerAdapter
                         embed.addField("", "Channel <#" + it + "> cannot be removed from monitoring if it is not being monitored.", false);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                    Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
                 }
             }
 
@@ -133,7 +134,7 @@ public class UnMonitor extends ListenerAdapter
 
             embed.setColor(0xeb9834);
             embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
-            ev.getChannel().sendMessage(embed.build()).queue();
+            Messages.sendMessage(ev.getChannel(), embed);
             embed.clear();
         }
     }

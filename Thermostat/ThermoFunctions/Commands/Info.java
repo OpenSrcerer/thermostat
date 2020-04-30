@@ -1,6 +1,7 @@
 package Thermostat.ThermoFunctions.Commands;
 
 import Thermostat.Embeds;
+import Thermostat.ThermoFunctions.Messages;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -22,7 +23,7 @@ public class Info extends ListenerAdapter
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "info") ||
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "i")
         ) {
-            ev.getChannel().sendMessage(Embeds.getInfo().build()).queue();
+            Messages.sendMessage(ev.getChannel(), Embeds.getInfo());
         }
     }
 }

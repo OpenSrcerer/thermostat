@@ -4,6 +4,7 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Connection;
 import Thermostat.MySQL.Create;
 import Thermostat.MySQL.Delete;
+import Thermostat.ThermoFunctions.Messages;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -35,7 +36,18 @@ public class UnMonitorAll extends ListenerAdapter
         ) {
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                ev.getChannel().sendMessage(Embeds.userNoPermission(ev.getAuthor().getId()).build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));
+                return;
+            }
+
+            if (!ev.getGuild().getSelfMember().hasPermission(ev.getChannel(), Permission.MESSAGE_HISTORY))
+            {
+                Messages.sendMessage(ev.getChannel(), Embeds.insufficientReact("Read Message History"));
+                return;
+            }
+            else if (!ev.getGuild().getSelfMember().hasPermission(ev.getChannel(), Permission.MESSAGE_ADD_REACTION))
+            {
+                Messages.sendMessage(ev.getChannel(), Embeds.insufficientReact());
                 return;
             }
 
@@ -43,6 +55,7 @@ public class UnMonitorAll extends ListenerAdapter
             Message confirmationMessage = ev.getChannel().sendMessage(
                     Embeds.promptEmbed(ev.getAuthor().getId()).build())
                     .complete();
+
             confirmationMessage.addReaction("✔").queue();
 
             Runnable runnable = () -> confirmReaction(confirmationMessage.getId(), ev);
@@ -96,20 +109,21 @@ public class UnMonitorAll extends ListenerAdapter
                             }
 
                             ev.getChannel().sendMessage(Embeds.allRemoved().build()).queue();
+                            Messages.sendMessage(ev.getChannel(), Embeds.allRemoved());
                             conn.closeConnection();
                             return;
                         }
                         // if not, do not do anything
                         else
                         {
-                            ev.getChannel().sendMessage(Embeds.noChannels(ev.getAuthor().getId()).build()).queue();
+                            Messages.sendMessage(ev.getChannel(), Embeds.noChannels(ev.getAuthor().getId()));
                             conn.closeConnection();
                             return;
                         }
 
                     } catch (Exception ex) {
                         ex.printStackTrace();
-                        ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                        Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
                         conn.closeConnection();
                         return;
                     }
@@ -122,10 +136,10 @@ public class UnMonitorAll extends ListenerAdapter
             {
                 ex.printStackTrace();
                 System.out.println("Main Thread Interrupted.");
-                ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
             }
 
         }
-        ev.getChannel().sendMessage(Embeds.missedPrompt().build()).queue();
+        Messages.sendMessage(ev.getChannel(), Embeds.missedPrompt());
     }
 }

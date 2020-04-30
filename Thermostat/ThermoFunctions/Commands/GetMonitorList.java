@@ -3,6 +3,7 @@ package Thermostat.ThermoFunctions.Commands;
 import Thermostat.Embeds;
 import Thermostat.MySQL.Connection;
 import Thermostat.MySQL.Create;
+import Thermostat.ThermoFunctions.Messages;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -42,7 +43,7 @@ public class GetMonitorList extends ListenerAdapter {
         ) {
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                ev.getChannel().sendMessage(Embeds.userNoPermission(ev.getAuthor().getId()).build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
                 return;
             }
 
@@ -55,7 +56,7 @@ public class GetMonitorList extends ListenerAdapter {
             }
             catch (SQLException ex)
             {
-                ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
                 ex.printStackTrace();
                 return;
             }
@@ -80,7 +81,7 @@ public class GetMonitorList extends ListenerAdapter {
                 rs.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                ev.getChannel().sendMessage(Embeds.fatalError().build()).queue();
+                Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
             }
 
             conn.closeConnection();
@@ -90,7 +91,7 @@ public class GetMonitorList extends ListenerAdapter {
 
             embed.setColor(0xeb9834);
             embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
-            ev.getChannel().sendMessage(embed.build()).queue();
+            Messages.sendMessage(ev.getChannel(), embed);
             embed.clear();
         }
     }

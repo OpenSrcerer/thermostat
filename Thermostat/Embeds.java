@@ -6,71 +6,94 @@ import net.dv8tion.jda.api.EmbedBuilder;
  * Class for all static embeds that do not need
  * runtime editing.
  */
-public class Embeds
-{
-    public static EmbedBuilder allRemoved()
-    {
+public class Embeds {
+    public static EmbedBuilder insufficientReact(String perm) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ Error executing command! Insufficient permissions: `" + perm + "`");
+        eb.setDescription("Thermostat needs the `" + perm + "` permission in this channel in order to execute this command.");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder insufficientReact() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ Error executing command! Insufficient permissions: `Add Reactions`");
+        eb.setDescription("Add the `Add Reactions` permission to Thermostat and try again.");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder insufficientPerm() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ Error managing channel! Insufficient permissions: `Manage Channels`");
+        eb.setDescription("Channel was removed from monitoring database. Add the `Manage Channels` permission to Thermostat and re-monitor the channel with th!monitor.");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder insufficientPerm(String perm) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ Error managing channel! Insufficient permissions: `" + perm + "`");
+        eb.setDescription("Channel was removed from monitoring database. Add the `" + perm + "` permission to Thermostat and re-monitor the channel with th!monitor.");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder allRemoved() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ All channels were successfully removed from the monitoring database.");
         eb.setColor(0xeb9834);
         return eb;
     }
 
-    public static EmbedBuilder missedPrompt()
-    {
+    public static EmbedBuilder missedPrompt() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ Did not react to prompt in time. Operation cancelled.");
         eb.setColor(0xeb9834);
         return eb;
     }
 
-    public static EmbedBuilder promptEmbed(String authorID)
-    {
+    public static EmbedBuilder promptEmbed(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❓ Are you sure you want to perform this action? Click the reaction below if you're sure you want to continue.");
-        eb.setDescription("<@" + authorID +">");
+        eb.setDescription("<@" + authorID + ">");
         eb.setColor(0xeb9834);
         return eb;
     }
 
-    public static EmbedBuilder fatalError()
-    {
+    public static EmbedBuilder fatalError() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❌ If you are seeing this message, a fatal error has occurred. Please contact the bot developer. (Bonkers#6969)");
         eb.setColor(0xeb9834);
         return eb;
     }
 
-    public static EmbedBuilder userNoPermission(String authorID)
-    {
+    public static EmbedBuilder userNoPermission(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❌ You must have the `MANAGE_CHANNELS` permission in order to execute this command.");
-        eb.setDescription("<@" + authorID +">");
+        eb.setDescription("<@" + authorID + ">");
         eb.setColor(0xeb9834);
         return eb;
     }
 
-    public static EmbedBuilder noChannels(String authorID)
-    {
+    public static EmbedBuilder noChannels(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("⚠ No channels are currently being monitored!");
-        eb.setDescription("<@" + authorID +">");
+        eb.setDescription("<@" + authorID + ">");
         eb.setColor(0xeb9834);
         return eb;
     }
 
-    public static EmbedBuilder specifyChannels(String authorID)
-    {
+    public static EmbedBuilder specifyChannels(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("⚠ Please specify the channels you want to configure.");
-        eb.setDescription("<@" + authorID +">");
+        eb.setDescription("<@" + authorID + ">");
         eb.setColor(0xeb9834);
         return eb;
     }
 
 
-    public static EmbedBuilder getInfo()
-    {
+    public static EmbedBuilder getInfo() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ Command list for Thermostat ℹ");
         // eb.setImage();

@@ -18,10 +18,9 @@ import java.util.Collection;
  * running the bot.
  * <p>
  *
- *
- * @author  Weed-Pot
+ * @author Weed-Pot
  * @version 0.0.1
- * @since   2020-04-17
+ * @since 2020-04-17
  */
 
 public class thermostat {
@@ -38,6 +37,7 @@ public class thermostat {
     /**
      * Main run function for the bot. Event listeners
      * are defined in {@link Ready}.
+     *
      * @param args default java main function
      * @throws LoginException
      */
@@ -45,7 +45,7 @@ public class thermostat {
 
         // adjust the cache flags here
         thermo = JDABuilder
-                .create("YOUR-BOT-TOKEN-HERE", intents)
+                .create("YOUR-TOKEN-HERE", intents)
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.EMOTE,
