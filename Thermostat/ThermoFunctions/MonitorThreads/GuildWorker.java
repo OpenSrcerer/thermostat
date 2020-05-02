@@ -151,28 +151,28 @@ public class GuildWorker {
         // accounting for each delay of the messages
         // this function picks an appropriate slowmode
         // adjustment number for each case.
-        if (averageDelay <= 500 && firstMessageTime < 10000) {
-            putSlowmode(channel, 10, false);
-            System.out.println("10");
-        } else if (averageDelay <= 1000 && firstMessageTime < 10000) {
-            putSlowmode(channel, 6, false);
-            System.out.println("6");
-        } else if (averageDelay <= 1500 && firstMessageTime < 10000) {
+        if ((averageDelay <= 1000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            putSlowmode(channel, 5, false);
+            System.out.println("5");
+        } else if ((averageDelay <= 1500) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 4, false);
             System.out.println("4");
-        } else if (averageDelay <= 2000 && firstMessageTime < 10000) {
+        } else if ((averageDelay <= 2000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            putSlowmode(channel, 3, false);
+            System.out.println("3");
+        } else if ((averageDelay <= 3000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 2, false);
             System.out.println("2");
-        } else if (averageDelay <= 3000 && (firstMessageTime > 10000 && firstMessageTime < 20000)) {
+        } else if ((averageDelay <= 4000) && (firstMessageTime > 0 && firstMessageTime <= 15000)) {
             putSlowmode(channel, 1, false);
-            System.out.println("-1");
-        } else if ((averageDelay <= 4000 && averageDelay > 3000) || firstMessageTime < 20000) {
+            System.out.println("1");
+        } else if ((averageDelay <= 5000) || (firstMessageTime > 15000 && firstMessageTime <= 30000)) {
             putSlowmode(channel, -1, false);
-            System.out.println("-2");
-        } else if ((averageDelay <= 5000 && averageDelay > 4000) || (firstMessageTime > 20000 && firstMessageTime <= 40000)) {
+            System.out.println("-1");
+        } else if ((averageDelay <= 6000) || (firstMessageTime > 30000 && firstMessageTime <= 60000)) {
             putSlowmode(channel, -2, false);
-            System.out.println("-4");
-        } else if (averageDelay > 6000 || firstMessageTime > 40000) {
+            System.out.println("-2");
+        } else {
             putSlowmode(channel, 0, true);
             System.out.println("none");
         }
