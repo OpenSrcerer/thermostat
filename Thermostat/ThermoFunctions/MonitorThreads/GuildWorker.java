@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import org.w3c.dom.Text;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -104,36 +105,33 @@ public class GuildWorker {
      *
      * @param channel TextChannel that will have the slowmode adjusted.
      * @param time    Int representing the adjustment time.
-     * @param set     Whether this value will be set, or be added/deducted
-     *                from the existing slowmode value.
      */
-    public static void putSlowmode(TextChannel channel, int time, boolean set) {
+    public static void putSlowmode(TextChannel channel, int time, int max, int min) {
         try {
             // gets the current slowmode
             int slow = channel.getSlowmode();
 
-            // if the slowmode is being set or not
-            if (!set) {
-                // if slowmode and the added time exceed the max slowmode
-                if (slow + time > TextChannel.MAX_SLOWMODE) {
-                    // sets to max slowmode value and exits
-                    channel.getManager().setSlowmode(TextChannel.MAX_SLOWMODE).queue();
-                    return;
-                } else if (slow + time < 0) {
-                    // if it's less than zero, due to time being negative
-                    // sets it to zero
-                    channel.getManager().setSlowmode(0).queue();
-                    return;
-                }
-                // otherwise just sets it
-                channel.getManager().setSlowmode(slow + time).queue();
+            // if slowmode and the added time exceed the max slowmode
+            if (slow + time > max && max > 0) {
+                // sets to max DATABASE slowmode value and exits
+                channel.getManager().setSlowmode(max).queue();
                 return;
             }
-
-            // if slowmode isn't zero, update it
-            if (slow != 0) {
-                channel.getManager().setSlowmode(time).queue();
+            if (slow + time > TextChannel.MAX_SLOWMODE) {
+                // sets to max DISCORD slowmode value and exits
+                channel.getManager().setSlowmode(TextChannel.MAX_SLOWMODE).queue();
+                return;
             }
+            if (slow + time < min)
+            {
+                // if it's less than minimum DB value
+                // sets it to that minimum value
+                channel.getManager().setSlowmode(min).queue();
+                return;
+            }
+            // otherwise just sets it
+            channel.getManager().setSlowmode(slow + time).queue();
+
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, Embeds.insufficientPerm());
             Delete.Channel(channel.getGuild().getId(), channel.getId());
@@ -148,32 +146,55 @@ public class GuildWorker {
      * @param firstMessageTime How long it has passed since the last message was sent.
      */
     public static void slowmodeSwitch(TextChannel channel, Long averageDelay, Long firstMessageTime) {
+        // variables that store the maximum
+        // and minimum  slow values for each channel
+        int max = 0, min = 0;
+
+        // gets the maximum and minimum slowmode values
+        // from the database.
+        Connection conn = null;
+        try {
+            conn = new Connection();
+
+            ResultSet minrs = conn.query("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId()),
+                    maxrs = conn.query("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
+
+            maxrs.next();
+            minrs.next();
+
+            min = minrs.getInt(1);
+            max = maxrs.getInt(1);
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
         // accounting for each delay of the messages
         // this function picks an appropriate slowmode
         // adjustment number for each case.
         if ((averageDelay <= 1000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 5, false);
+            putSlowmode(channel, 5, max, min);
             System.out.println("5");
         } else if ((averageDelay <= 1500) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 4, false);
+            putSlowmode(channel, 4, max, min);
             System.out.println("4");
         } else if ((averageDelay <= 2000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 3, false);
+            putSlowmode(channel, 3, max, min);
             System.out.println("3");
         } else if ((averageDelay <= 3000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 2, false);
+            putSlowmode(channel, 2, max, min);
             System.out.println("2");
         } else if ((averageDelay <= 4000) && (firstMessageTime > 0 && firstMessageTime <= 15000)) {
-            putSlowmode(channel, 1, false);
+            putSlowmode(channel, 1, max, min);
             System.out.println("1");
-        } else if ((averageDelay <= 5000) || (firstMessageTime > 15000 && firstMessageTime <= 30000)) {
-            putSlowmode(channel, -1, false);
+        } else if ((averageDelay <= 5000) || (firstMessageTime > 15000 && firstMessageTime <= 40000)) {
+            putSlowmode(channel, -1, max, min);
             System.out.println("-1");
-        } else if ((averageDelay <= 6000) || (firstMessageTime > 30000 && firstMessageTime <= 60000)) {
-            putSlowmode(channel, -2, false);
+        } else if ((averageDelay <= 6000) || (firstMessageTime > 40000 && firstMessageTime <= 60000)) {
+            putSlowmode(channel, -2, max, min);
             System.out.println("-2");
         } else {
-            putSlowmode(channel, 0, true);
+            putSlowmode(channel, -999999999, max, min);
             System.out.println("none");
         }
 
@@ -229,8 +250,15 @@ public class GuildWorker {
 
                 // if the time between the last message and now is more than
                 // 60 seconds, don't monitor the channel to save resources
-                if (!(unit.between(firstMessageTime, nowTime) > 60000))
+                // but update its' slowmode to the minimum
+                ResultSet rsx = conn.query("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + rs.getString(1));
+                rsx.next();
+                int min = rsx.getInt(1);
+                if (!(unit.between(firstMessageTime, nowTime) > 60000)) {
                     CHANNELS.add(rs.getString(1));
+                } else {
+                    putSlowmode(guild.getTextChannelById(rs.getString(1)), -99999999, TextChannel.MAX_SLOWMODE, min);
+                }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -258,8 +286,7 @@ public class GuildWorker {
 
             OffsetDateTime firstMessageTime = retrieved.get(0).getTimeCreated();
 
-            // if last message is at least 30 seconds old and nothing else has happened
-            // gets delay between each message and adds it to an array
+            // gets delay between each message
             for (int index = 0; index < retrieved.size() - 1; ++index) {
                 delays.add(
                         unit.between(

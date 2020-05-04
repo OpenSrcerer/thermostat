@@ -14,11 +14,6 @@ import java.sql.SQLException;
  */
 
 public class Create {
-    // DEFAULT CHANNEL SETTINGS VALUES
-    private static final int SAMPLE_RATE = 30;
-    private static final boolean CHANNEL_MONITOR = false;
-    // ------------------------------
-
     /**
      * Creates a new instance of a guild in the database.
      * <p>Affects tables: <b>GUILDS</b>
@@ -73,7 +68,8 @@ public class Create {
 
         try {
             conn.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (" + CHANNEL_ID + ", " + GUILD_ID + ");");
-            conn.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, CHANNEL_MONITOR, SAMPLE_RATE) VALUES (" + CHANNEL_ID + ", " + CHANNEL_MONITOR + ", " + SAMPLE_RATE + ");");
+            // add channelID, min, and max slowmode
+            conn.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW) VALUES (" + CHANNEL_ID + ", 0, 0);");
         } catch (SQLException ex) {
             ex.printStackTrace();
             System.out.println("Channels could not be added.");

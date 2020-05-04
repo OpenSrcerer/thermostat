@@ -26,8 +26,8 @@ public class Connection
      */
     public Connection() throws SQLException
     {
-        conn = 
-        //            DriverManager.getConnection(
+        conn =
+        // FORMAT: DriverManager.getConnection(
         //            "jdbc:mysql://servername:port/db_name"
         //            "DB_USERNAME"
         //            "DB_PASSWORD"

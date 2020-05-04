@@ -33,7 +33,6 @@ public class GetMonitorList extends ListenerAdapter {
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev) {
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
-        ArrayList<String> embedChannels = new ArrayList<>();
         String embedString = "";
 
         if (

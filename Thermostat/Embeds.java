@@ -7,6 +7,23 @@ import net.dv8tion.jda.api.EmbedBuilder;
  * runtime editing.
  */
 public class Embeds {
+    public static EmbedBuilder channelSettings(String channelName, int max, int min) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("ℹ Settings for #" + channelName + ":");
+        eb.addField("Min Slowmode:", "**"+ min + "**", true);
+        eb.addField("Max Slowmode:", "**"+ max + "**", true);
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder bothChannelAndSlow(String authorID) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("⚠ Please specify the channels and then the slowmode.");
+        eb.setDescription("<@" + authorID + ">");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
     public static EmbedBuilder insufficientReact(String perm) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❌ Error executing command! Insufficient permissions: `" + perm + "`");
@@ -84,6 +101,21 @@ public class Embeds {
         return eb;
     }
 
+    public static EmbedBuilder noChannels() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("⚠ That channel is not currently being monitored!");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder specifyChannel(String authorID) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("⚠ Please specify the channel to view its' settings.");
+        eb.setDescription("<@" + authorID + ">");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
     public static EmbedBuilder specifyChannels(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("⚠ Please specify the channels you want to configure.");
@@ -92,6 +124,13 @@ public class Embeds {
         return eb;
     }
 
+    public static EmbedBuilder channelNotFound(String authorID) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("⚠ That channel was not found in this guild.");
+        eb.setDescription("<@" + authorID + ">");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
 
     public static EmbedBuilder getInfo() {
         EmbedBuilder eb = new EmbedBuilder();
@@ -100,9 +139,12 @@ public class Embeds {
         eb.addField("-------------  Commands -------------", "You need to have the MANAGE_CHANNELS permission to run any of these commands.", false);
         eb.addField("th!monitor", "Syntax: `th!monitor/mon/m <channels>/<categories>`. Adds text channels to the slowmode monitoring database.", false);
         eb.addField("th!unmonitor", "Syntax: `th!unmonitor/unmon/um <channels>/<categories>`. Removes text channels from the slowmode monitoring database.", false);
+        eb.addField("th!setminimum", "Syntax: `th!setminimum/setmin/smn <channels>/<categories> <slowmode>`. Sets the lower bound for the slowmode of the channel.", false);
+        eb.addField("th!setmaximum", "Syntax: `th!setmaximum/setmax/smx <channels>/<categories> <slowmode>`. Sets the upper bound for the slowmode of the channel.", false);
         eb.addField("th!getmonitor", "Syntax: `th!getmonitor/getmon/gm`. Shows which channels are currently being monitored in your server.", false);
         eb.addField("th!unmonitorall", "Syntax: `th!unmonitorall/unmonall/uma`. Stops ALL your channels from being monitored.", false);
         eb.addField("th!info", "Syntax: `th!info/i`. Shows this message.", false);
+        eb.addField("th!settings", "Syntax: `th!settings/s <channel>`. Shows details about the configuration of the given channel.", false);
         eb.setColor(0xeb9834);
         eb.setFooter("Created by Bonkers#6969");
         return eb;
