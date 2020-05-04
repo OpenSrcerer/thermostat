@@ -19,7 +19,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.0.1
+ * @version 0.1.1
  * @since 2020-04-17
  */
 
