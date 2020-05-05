@@ -135,6 +135,9 @@ public class GuildWorker {
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, Embeds.insufficientPerm());
             Delete.Channel(channel.getGuild().getId(), channel.getId());
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
         }
     }
 
