@@ -3,6 +3,7 @@ package Thermostat.ThermoFunctions;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
 /**
  * Deals with InsufficientPermissionExceptions thrown
@@ -20,7 +21,11 @@ public class Messages
     {
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
         {
-            channel.sendMessage(eb.build()).queue();
+            try {
+                channel.sendMessage(eb.build()).queue();
+            } catch (InsufficientPermissionException ex) {
+                sendMessage(channel, "Please add the \"Embed Links\" permission to the bot in order to get command results!");
+            }
         }
     }
 
@@ -33,7 +38,11 @@ public class Messages
     {
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
         {
-            channel.sendMessage(msg).queue();
+            try {
+                channel.sendMessage(msg).queue();
+            } catch (InsufficientPermissionException ex) {
+                System.out.println(channel.getGuild().getName() + " - Permission error when trying to send message.");
+            }
         }
     }
 }
