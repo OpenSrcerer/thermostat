@@ -16,7 +16,7 @@ import java.sql.Statement;
 
 public class Connection
 {
-    private java.sql.Connection conn = null;
+    private java.sql.Connection conn;
 
     /**
      * Constructor for the connection. Simply
@@ -26,11 +26,11 @@ public class Connection
      */
     public Connection() throws SQLException
     {
-        conn =
-        // FORMAT: DriverManager.getConnection(
-        //            "jdbc:mysql://servername:port/db_name"
-        //            "DB_USERNAME"
-        //            "DB_PASSWORD"
+        conn = 
+        //      DriverManager.getConnection(
+        //      "jdbc:mysql://servername:port/db_name"
+        //      "DB_USERNAME"
+        //      "DB_PASSWORD"
         );
     }
 
@@ -79,7 +79,7 @@ public class Connection
      * Connection, like ALTER TABLE.
      * @param Query A string containing the query that will be
      *              executed.
-     * @throws SQLException
+     * @throws SQLException Error while executing query.
      */
     public void update (String Query) throws SQLException
     {
@@ -93,7 +93,6 @@ public class Connection
      * @param Query A string containing the query that will be
      *              executed.
      * @return True if ResultSet had data on it, false if it was empty.
-     * @throws SQLException
      */
     public boolean checkDatabaseForData (String Query)
     {

@@ -61,10 +61,13 @@ public class GetMonitorList extends ListenerAdapter {
             }
 
             try {
-                // silent guild adder
+                // Adds the guild to the database if it's not in it!
                 if (!conn.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
                     Create.Guild(ev.getGuild().getId());
-                ResultSet rs = conn.query("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = " + ev.getGuild().getId());
+                // ResultSet rs = conn.query("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = " + ev.getGuild().getId());
+                ResultSet rs = conn.query("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                        "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                        "WHERE CHANNELS.GUILD_ID = " + ev.getGuild().getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
 
                 if (!rs.next())
                 {

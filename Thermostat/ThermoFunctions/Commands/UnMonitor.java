@@ -118,12 +118,12 @@ public class UnMonitor extends ListenerAdapter
                     // checks db if channel exists
                     if (conn.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it))
                     {
-                        Delete.Channel(ev.getGuild().getId(), it);
-                        embed.addField("", "<#" + it + "> was successfully removed from the monitoring database.", false);
+                        Create.ChannelMonitor(ev.getGuild().getId(), it, 0);
+                        embed.addField("", "<#" + it + "> is no longer being monitored.", false);
                     }
                     // if not, do not do anything
                     else
-                        embed.addField("", "Channel <#" + it + "> cannot be removed from monitoring if it is not being monitored.", false);
+                        embed.addField("", "Channel <#" + it + "> isn't being monitored.", false);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Messages.sendMessage(ev.getChannel(), Embeds.fatalError());

@@ -45,7 +45,7 @@ public class Settings extends ListenerAdapter
             args.set(0, parseMention(args.get(0), "#"));
 
             // if channel doesn't exist, show error msg
-            if (ev.getGuild().getTextChannelById(args.get(0)) == null)
+            if (args.get(0).isBlank() || ev.getGuild().getTextChannelById(args.get(0)) == null)
             {
                 Messages.sendMessage(ev.getChannel(), Embeds.channelNotFound(ev.getAuthor().getId()));
                 return;
@@ -69,7 +69,8 @@ public class Settings extends ListenerAdapter
                     Create.Guild(ev.getGuild().getId());
 
                 ResultSet maxrs = conn.query("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0)),
-                        minrs = conn.query("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0));
+                        minrs = conn.query("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0)),
+                        mon = conn.query("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0));
 
                 if (!maxrs.next())
                 {
@@ -78,11 +79,13 @@ public class Settings extends ListenerAdapter
                 }
 
                 minrs.next();
+                mon.next();
 
                 Messages.sendMessage(ev.getChannel(),
                         Embeds.channelSettings(ev.getGuild().getTextChannelById(args.get(0)).getName(),
                                 maxrs.getInt(1),
-                                minrs.getInt(1)
+                                minrs.getInt(1),
+                                mon.getBoolean(1)
                         )
                 );
 

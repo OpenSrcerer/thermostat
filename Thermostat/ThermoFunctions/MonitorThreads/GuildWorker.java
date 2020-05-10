@@ -226,8 +226,10 @@ public class GuildWorker {
             return;
         }
 
-        ResultSet rs = conn.query("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = " + guild.getId());
-        // list that will hold all guilds from the database
+        ResultSet rs = conn.query("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                "WHERE CHANNELS.GUILD_ID = " + guild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
+        // list that will hold all currently monitored channels
         ArrayList<String> CHANNELS = new ArrayList<>();
 
         try {
@@ -265,7 +267,6 @@ public class GuildWorker {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("x");
             return;
         }
 

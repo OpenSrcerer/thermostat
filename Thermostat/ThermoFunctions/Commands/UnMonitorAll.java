@@ -105,7 +105,7 @@ public class UnMonitorAll extends ListenerAdapter
 
                             while (rs.next())
                             {
-                                Delete.Channel(ev.getGuild().getId(), rs.getString(1));
+                                Create.ChannelMonitor(ev.getGuild().getId(), rs.getString(1), 0);
                             }
                             Messages.sendMessage(ev.getChannel(), Embeds.allRemoved());
                             conn.closeConnection();

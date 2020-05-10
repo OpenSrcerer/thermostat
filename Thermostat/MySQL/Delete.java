@@ -17,7 +17,7 @@ public class Delete
      * including its' respective channels and
      * channel settings.
      * <p>Affects Tables: <b>GUILDS, CHANNELS, CHANNEL_SETTINGS</b>
-     * @param GUILD_ID
+     * @param GUILD_ID Guild to be deleted from DB.
      */
     public static void Guild (String GUILD_ID)
     {
@@ -65,7 +65,8 @@ public class Delete
      * Deletes a channel from the database,
      * including its' respective settings.
      * <p>Affects Tables: <b>CHANNELS, CHANNEL_SETTINGS</b>
-     * @param GUILD_ID
+     * @param GUILD_ID Guild where the channel resides in.
+     * @param CHANNEL_ID Channel that will be removed from DB.
      */
     public static void Channel (String GUILD_ID, String CHANNEL_ID)
     {

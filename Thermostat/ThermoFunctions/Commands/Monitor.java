@@ -4,12 +4,14 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Connection;
 import Thermostat.MySQL.Create;
 import Thermostat.ThermoFunctions.Messages;
+import com.mysql.cj.protocol.Resultset;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,10 +115,22 @@ public class Monitor extends ListenerAdapter {
                         Create.Guild(ev.getGuild().getId());
                     // check db if channel exists
                     if (!conn.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it)) {
-                        Create.Channel(ev.getGuild().getId(), it);
+                        Create.Channel(ev.getGuild().getId(), it, 1);
                         embed.addField("", "<#" + it + "> is now being monitored.\n", false);
                     } else {
-                        embed.addField("", "Channel <#" + it + "> is already being monitored.", false);
+                        ResultSet rs = conn.query("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + it);
+                        rs.next();
+
+                        // checks whether the channel has the monitor
+                        // value on the database set to 1
+                        // table CHANNEL_SETTINGS
+                        if (rs.getBoolean(1))
+                        {
+                            embed.addField("", "Channel <#" + it + "> is already being monitored.", false);
+                        } else {
+                            Create.ChannelMonitor(ev.getGuild().getId(), it, 1);
+                            embed.addField("", "<#" + it + "> is now being monitored.\n", false);
+                        }
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();

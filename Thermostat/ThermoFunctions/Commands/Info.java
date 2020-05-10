@@ -21,7 +21,9 @@ public class Info extends ListenerAdapter
 
         if (
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "info") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "i")
+                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "i") ||
+                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "help") ||
+                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "h")
         ) {
             Messages.sendMessage(ev.getChannel(), Embeds.getInfo());
         }

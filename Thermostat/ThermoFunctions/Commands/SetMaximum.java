@@ -110,7 +110,7 @@ public class SetMaximum extends ListenerAdapter {
                         Create.Guild(ev.getGuild().getId());
                     // check db if channel exists and create it if not
                     if (!conn.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index))) {
-                        Create.Channel(ev.getGuild().getId(), args.get(index));
+                        Create.Channel(ev.getGuild().getId(), args.get(index), 1);
                         embed.addField("", "<#" + args.get(index) + "> is now being monitored.\n", false);
                     }
 
@@ -126,6 +126,7 @@ public class SetMaximum extends ListenerAdapter {
                     if (Integer.parseUnsignedInt(args.get(args.size() - 1)) < minimumSlow)
                     {
                         embed.addField("", "Provided maximum slowmode for <#" + args.get(index) + "> is too low! It should be at least higher than " + minimumSlow + "!", false);
+                        break;
                     } else {
                         conn.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
                         embed.addField("", "<#" + args.get(index) + "> new maximum slowmode: " + args.get(args.size() - 1) + ".", false);
