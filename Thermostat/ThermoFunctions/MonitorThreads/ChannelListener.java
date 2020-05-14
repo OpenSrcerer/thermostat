@@ -1,6 +1,8 @@
 package Thermostat.ThermoFunctions.MonitorThreads;
 
 import Thermostat.MySQL.Connection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +23,7 @@ import static Thermostat.thermostat.thermo;
  */
 public class ChannelListener
 {
+    // protected static final Logger logger = LoggerFactory.getLogger(GuildWorker.class);
     protected static ScheduledExecutorService SES;
     // ActiveWorkers array used for maintaining threads working on monitoring
     private static ArrayList<GuildWorker> activeWorkers = new ArrayList<>();
@@ -31,7 +34,7 @@ public class ChannelListener
      */
     public ChannelListener()
     {
-        Runnable setup = () -> setupMonitoring();
+        Runnable setup = ChannelListener::setupMonitoring;
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
         executor.setRemoveOnCancelPolicy(true);
         SES = executor;

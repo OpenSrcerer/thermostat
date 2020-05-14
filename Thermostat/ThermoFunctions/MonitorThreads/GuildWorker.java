@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
-import org.w3c.dom.Text;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -95,7 +94,7 @@ public class GuildWorker {
             for (Long mark : delays) {
                 sum += mark;
             }
-            return sum.longValue() / delays.size();
+            return sum / delays.size();
         }
         return sum;
     }
@@ -155,7 +154,7 @@ public class GuildWorker {
 
         // gets the maximum and minimum slowmode values
         // from the database.
-        Connection conn = null;
+        Connection conn;
         try {
             conn = new Connection();
 
@@ -272,34 +271,41 @@ public class GuildWorker {
 
         conn.closeConnection();
 
-        for (String it : CHANNELS) {
-            // delete channel from db if channel was removed
-            if (guild.getTextChannelById(it) == null) {
-                Delete.Channel(guild.getId(), it);
-                break;
+        // temporary try catch to figure out long term problem
+        try {
+            for (String it : CHANNELS) {
+                // delete channel from db if channel was removed
+                if (guild.getTextChannelById(it) == null) {
+                    Delete.Channel(guild.getId(), it);
+                    break;
+                }
+
+                // monitor function, gets latest message as reference point
+                TextChannel Channel = guild.getTextChannelById(it);
+
+                ChronoUnit unit = ChronoUnit.MILLIS;
+                OffsetDateTime nowTime = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(unit);
+
+                assert Channel != null;
+                List<Message> retrieved = Channel.getHistory().retrievePast(10).complete();
+                List<Long> delays = new ArrayList<>();
+
+                OffsetDateTime firstMessageTime = retrieved.get(0).getTimeCreated();
+
+                // gets delay between each message
+                for (int index = 0; index < retrieved.size() - 1; ++index) {
+                    delays.add(
+                            unit.between(
+                                    retrieved.get(index + 1).getTimeCreated(),
+                                    retrieved.get(index).getTimeCreated()
+                            )
+                    );
+                }
+                slowmodeSwitch(Channel, calculateAverageTime(delays), unit.between(firstMessageTime, nowTime));
             }
-
-            // monitor function, gets latest message as reference point
-            TextChannel Channel = guild.getTextChannelById(it);
-
-            ChronoUnit unit = ChronoUnit.MILLIS;
-            OffsetDateTime nowTime = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(unit);
-
-            List<Message> retrieved = Channel.getHistory().retrievePast(10).complete();
-            List<Long> delays = new ArrayList<>();
-
-            OffsetDateTime firstMessageTime = retrieved.get(0).getTimeCreated();
-
-            // gets delay between each message
-            for (int index = 0; index < retrieved.size() - 1; ++index) {
-                delays.add(
-                        unit.between(
-                                retrieved.get(index + 1).getTimeCreated(),
-                                retrieved.get(index).getTimeCreated()
-                        )
-                );
-            }
-            slowmodeSwitch(Channel, calculateAverageTime(delays), unit.between(firstMessageTime, nowTime));
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
         }
     }
 }
