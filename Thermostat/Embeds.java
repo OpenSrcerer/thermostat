@@ -32,6 +32,23 @@ public class Embeds {
         return eb;
     }
 
+    public static EmbedBuilder inviteServer() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("ℹ Come and visit us here:");
+        eb.addField("Invite:", "https://discord.gg/FnPb4nM", true);
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
+    public static EmbedBuilder channelRemoved() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("ℹ This channel was removed from monitoring due to not " +
+                "finding any messages to monitor. If the messages are too old, '" +
+                "it will not be possible to monitor the channel.");
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
     public static EmbedBuilder bothChannelAndSlow(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("⚠ Please specify the channels and then the slowmode.");
@@ -160,6 +177,7 @@ public class Embeds {
         eb.addField("th!getmonitor", "Syntax: `th!getmonitor/getmon/gm`. Shows which channels are currently being monitored in your server.", false);
         eb.addField("th!unmonitorall", "Syntax: `th!unmonitorall/unmonall/uma`. Stops ALL your channels from being monitored.", false);
         eb.addField("th!info", "Syntax: `th!info/i/help/h`. Shows this message.", false);
+        eb.addField("th!invite", "Syntax: `th!invite/server`. Provides an invite link to Thermostat's support server.", false);
         eb.addField("th!settings", "Syntax: `th!settings/s <channel>`. Shows details about the configuration of the given channel.", false);
         eb.setColor(0xeb9834);
         eb.setFooter("Created by Bonkers#6969");

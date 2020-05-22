@@ -250,6 +250,12 @@ public class GuildWorker {
                         Delete.Channel(guild.getId(), tc.getId());
                     }
                     return;
+                } catch (IndexOutOfBoundsException ex)
+                {
+                    TextChannel tc = guild.getTextChannelById(rs.getString(1));
+                    Messages.sendMessage(tc, Embeds.channelRemoved());
+                    Delete.Channel(guild.getId(), tc.getId());
+                    return;
                 }
 
                 // if the time between the last message and now is more than
