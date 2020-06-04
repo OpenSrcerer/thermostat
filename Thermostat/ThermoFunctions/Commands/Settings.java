@@ -30,6 +30,11 @@ public class Settings extends ListenerAdapter
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "settings") ||
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "s")
         ) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
                 Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));

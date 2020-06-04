@@ -5,6 +5,7 @@ import Thermostat.ThermoFunctions.Listeners.Ready;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
@@ -30,7 +31,6 @@ public class thermostat {
 
     // Intents to using the Discord Gateway
     private static Collection<GatewayIntent> intents = Arrays.asList(
-            GatewayIntent.GUILD_MEMBERS,
             GatewayIntent.GUILD_MESSAGES
     );
 
@@ -53,6 +53,7 @@ public class thermostat {
                         CacheFlag.MEMBER_OVERRIDES,
                         CacheFlag.VOICE_STATE
                 )
+                .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .build();
 
         thermo.addEventListener(new Ready());

@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
+import java.net.SocketTimeoutException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
@@ -134,7 +135,12 @@ public class GuildWorker {
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, Embeds.insufficientPerm());
             Delete.Channel(channel.getGuild().getId(), channel.getId());
-        } catch (Exception ex)
+        } 
+        catch (IllegalStateException ex)
+        {
+            System.out.println("OKHTTP Exception: Already Executed.");
+        }
+        catch (Exception ex)
         {
             ex.printStackTrace();
         }
@@ -255,6 +261,11 @@ public class GuildWorker {
                     TextChannel tc = guild.getTextChannelById(rs.getString(1));
                     Messages.sendMessage(tc, Embeds.channelRemoved());
                     Delete.Channel(guild.getId(), tc.getId());
+                    return;
+                } catch (IllegalArgumentException ex)
+                {
+                    Thread.sleep(500);
+                    monitorChannels(guild);
                     return;
                 }
 

@@ -34,6 +34,11 @@ public class SetMinimum extends ListenerAdapter {
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "setmin") ||
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "smn")
         ) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+
             if (args.size() <= 2) {
                 Messages.sendMessage(ev.getChannel(), Embeds.bothChannelAndSlow(ev.getAuthor().getId()));
                 return;

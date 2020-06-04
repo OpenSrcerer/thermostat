@@ -32,10 +32,19 @@ public class Embeds {
         return eb;
     }
 
+    public static EmbedBuilder getVote() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("🎉 Vote for Thermostat on top.gg");
+        eb.addField("Link:", "https://top.gg/bot/700341788136833065", true);
+        eb.setColor(0xeb9834);
+        return eb;
+    }
+
     public static EmbedBuilder inviteServer() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ Come and visit us here:");
-        eb.addField("Invite:", "https://discord.gg/FnPb4nM", true);
+        eb.setTitle("ℹ Information about invites:");
+        eb.addField("Support Server:", "https://discord.gg/FnPb4nM", true);
+        eb.addField("Get Thermostat Here:", "https://discord.com/api/oauth2/authorize?client_id=700341788136833065&permissions=85072&scope=bot", true);
         eb.setColor(0xeb9834);
         return eb;
     }
@@ -43,7 +52,7 @@ public class Embeds {
     public static EmbedBuilder channelRemoved() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ This channel was removed from monitoring due to not " +
-                "finding any messages to monitor. If the messages are too old, '" +
+                "finding any messages to monitor. If the messages are too old, " +
                 "it will not be possible to monitor the channel.");
         eb.setColor(0xeb9834);
         return eb;
@@ -113,7 +122,7 @@ public class Embeds {
 
     public static EmbedBuilder fatalError() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ If you are seeing this message, a fatal error has occurred. Please contact the bot developer. (Bonkers#6969)");
+        eb.setTitle("❌ If you are seeing this message, a fatal error has occurred. Try unmonitoring your channels and monitoring them again. If that does not fix your issue, please join our support server: https://discord.gg/FnPb4nM");
         eb.setColor(0xeb9834);
         return eb;
     }
@@ -177,7 +186,8 @@ public class Embeds {
         eb.addField("th!getmonitor", "Syntax: `th!getmonitor/getmon/gm`. Shows which channels are currently being monitored in your server.", false);
         eb.addField("th!unmonitorall", "Syntax: `th!unmonitorall/unmonall/uma`. Stops ALL your channels from being monitored.", false);
         eb.addField("th!info", "Syntax: `th!info/i/help/h`. Shows this message.", false);
-        eb.addField("th!invite", "Syntax: `th!invite/server`. Provides an invite link to Thermostat's support server.", false);
+        eb.addField("th!vote", "Syntax: `th!vote/v`. Shows a link to vote for Thermostat on top.gg.", false);
+        eb.addField("th!invite", "Syntax: `th!invite/server`. Provides an invite link to Thermostat's support server. Also contains a link to directly invite the bot!", false);
         eb.addField("th!settings", "Syntax: `th!settings/s <channel>`. Shows details about the configuration of the given channel.", false);
         eb.setColor(0xeb9834);
         eb.setFooter("Created by Bonkers#6969");

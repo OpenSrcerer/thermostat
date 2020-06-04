@@ -34,6 +34,11 @@ public class UnMonitorAll extends ListenerAdapter
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "unmonall") ||
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "uma")
         ) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
                 Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));

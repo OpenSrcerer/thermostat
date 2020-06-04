@@ -42,6 +42,7 @@ public class Ready extends ListenerAdapter
         thermo.addEventListener(new SetMinimum());
         thermo.addEventListener(new Settings());
         thermo.addEventListener(new Invite());
+        thermo.addEventListener(new Vote());
 
         // Other Event Listeners
         thermo.addEventListener(new GuildJoin());

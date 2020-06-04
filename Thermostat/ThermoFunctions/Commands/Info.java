@@ -25,6 +25,11 @@ public class Info extends ListenerAdapter
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "help") ||
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "h")
         ) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+
             Messages.sendMessage(ev.getChannel(), Embeds.getInfo());
         }
     }

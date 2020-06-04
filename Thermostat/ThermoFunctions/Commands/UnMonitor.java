@@ -41,6 +41,11 @@ public class UnMonitor extends ListenerAdapter
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "unmon") ||
                 args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "um")
         ) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+
             if (args.size() == 1) {
                 Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));
                 return;

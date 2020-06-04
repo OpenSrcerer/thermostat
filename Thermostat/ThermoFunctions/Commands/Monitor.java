@@ -39,6 +39,11 @@ public class Monitor extends ListenerAdapter {
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "mon") ||
                         args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "m")
         ) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+
             if (args.size() == 1) {
                 Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));
                 return;
