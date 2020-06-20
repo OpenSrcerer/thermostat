@@ -1,8 +1,6 @@
 package Thermostat.ThermoFunctions.MonitorThreads;
 
 import Thermostat.MySQL.Connection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,27 +12,25 @@ import static Thermostat.thermostat.thermo;
 /**
  * <h1>Channel Listener</h1>
  * <p>
- * Class that manages the threads for every Guild.
- * Currently running under the 1 Guild = 1 Thread system.
- * Adds / Removes threads as per database, which is checked
+ * Class that manages every Guild's monitoring threads.
+ * Adds / Removes instances as per database, which is checked
  * every 5 seconds for changes.
- * Each thread is managed by a worker class.
- * @see GuildWorker
+ * Each instance is managed by a ChannelWorker class.
+ * @see ChannelWorker
  */
-public class ChannelListener
+public class GuildListener
 {
-    // protected static final Logger logger = LoggerFactory.getLogger(GuildWorker.class);
     protected static ScheduledExecutorService SES;
     // ActiveWorkers array used for maintaining threads working on monitoring
-    private static ArrayList<GuildWorker> activeWorkers = new ArrayList<>();
+    private static ArrayList<ChannelWorker> activeWorkers = new ArrayList<>();
 
     /**
      * Constructor, called once in the main function
      * of the {@link Thermostat.thermostat class}.
      */
-    public ChannelListener()
+    public GuildListener()
     {
-        Runnable setup = ChannelListener::setupMonitoring;
+        Runnable setup = GuildListener::setupMonitoring;
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
         executor.setRemoveOnCancelPolicy(true);
         SES = executor;
@@ -84,14 +80,14 @@ public class ChannelListener
             if (GUILDS.size() > activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
-                ArrayList<GuildWorker> guildWorkerArrayList = new ArrayList<>();
+                ArrayList<ChannelWorker> channelWorkerArrayList = new ArrayList<>();
 
                 // iterates through guilds and activeworkers
                 // checking for lone guilds with no active worker
                 for (String it1 : GUILDS) {
                     boolean found = false;
 
-                    for (GuildWorker it2 : activeWorkers) {
+                    for (ChannelWorker it2 : activeWorkers) {
                         if (it2.getAssignedGuild().equals(it1)) {
                             // if a match is found, leave it alone
                             // but check if it's running
@@ -104,24 +100,24 @@ public class ChannelListener
                     // if a match is not found, create new worker thread for guild
                     if (!found) {
                         // adds worker to active worker array with assigned guild
-                        GuildWorker GW = new GuildWorker();
+                        ChannelWorker GW = new ChannelWorker();
                         GW.setAssignedGuild(it1);
-                        guildWorkerArrayList.add(GW);
+                        channelWorkerArrayList.add(GW);
                     }
                 }
                 // passes values through the collection GWArrayList for concurrency
-                activeWorkers.addAll(guildWorkerArrayList);
+                activeWorkers.addAll(channelWorkerArrayList);
             }
-            // case 1: when the guilds array is smaller than the current active workers,
+            // case 2: when the guilds array is smaller than the current active workers,
             // it means that there were guilds recently expunged from the database
             else if (GUILDS.size() < activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
-                ArrayList<GuildWorker> guildWorkerArrayList = new ArrayList<>();
+                ArrayList<ChannelWorker> channelWorkerArrayList = new ArrayList<>();
 
-                // iterates through activeworkers and guilds
-                // checking for lone active workers with no matching guilds
-                for (GuildWorker it1 : activeWorkers) {
+                // iterates through channel workers and guilds
+                // checking for lone channel workers with no matching guilds
+                for (ChannelWorker it1 : activeWorkers) {
                     boolean found = false;
 
                     for (String it2 : GUILDS) {
@@ -136,15 +132,11 @@ public class ChannelListener
                     // of the runnable and kill the thread
                     if (!found) {
                         it1.invalidate();
-                        guildWorkerArrayList.add(it1);
+                        channelWorkerArrayList.add(it1);
                     }
                 }
-                activeWorkers.removeAll(guildWorkerArrayList);
+                activeWorkers.removeAll(channelWorkerArrayList);
             }
-
-           // activeWorkers.stream().forEach(s -> {
-            //    System.out.println(thermo.getGuildById(s.getAssignedGuild()) + ", ");
-           // });
 
         } catch (Exception ex)
         {

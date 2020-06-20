@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import java.net.SocketTimeoutException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
@@ -23,23 +22,23 @@ import java.util.concurrent.*;
 import static Thermostat.thermostat.thermo;
 
 /**
- * <h1>Guild Worker</h1>
+ * <h1>ChannelWorker</h1>
  * <p>
  * Manager class for each thread of a Guild.
- * Runs its' own scheduling system, independently
- * of the thread management one.
+ * Performs managing actions upon the Guild's
+ * channels.
  */
-public class GuildWorker {
+public class ChannelWorker {
     private ScheduledFuture scheduledFuture;
     private String assignedGuild;
 
     /**
-     * Creates an instance of the GuildWorker, representing
+     * Creates an instance of the ChannelWorker, representing
      * a thread that manages a Guild's channels.
      */
-    public GuildWorker() {
+    public ChannelWorker() {
         Runnable mon = () -> monitorChannels(thermo.getGuildById(assignedGuild));
-        scheduledFuture = ChannelListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+        scheduledFuture = GuildListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
     }
 
     /**
@@ -49,7 +48,7 @@ public class GuildWorker {
     public void scheduleWorker(JDA thermo) {
         if (scheduledFuture.isDone() || scheduledFuture.isCancelled()) {
             Runnable mon = () -> monitorChannels(thermo.getGuildById(assignedGuild));
-            scheduledFuture = ChannelListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+            scheduledFuture = GuildListener.SES.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
         }
     }
 
@@ -182,36 +181,20 @@ public class GuildWorker {
         // adjustment number for each case.
         if ((averageDelay <= 1000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 5, max, min);
-            System.out.println("5");
         } else if ((averageDelay <= 1500) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 4, max, min);
-            System.out.println("4");
         } else if ((averageDelay <= 2000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 3, max, min);
-            System.out.println("3");
         } else if ((averageDelay <= 3000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 2, max, min);
-            System.out.println("2");
         } else if ((averageDelay <= 4000) && (firstMessageTime > 0 && firstMessageTime <= 15000)) {
             putSlowmode(channel, 1, max, min);
-            System.out.println("1");
         } else if ((averageDelay <= 5000) || (firstMessageTime > 15000 && firstMessageTime <= 40000)) {
             putSlowmode(channel, -1, max, min);
-            System.out.println("-1");
         } else if ((averageDelay <= 6000) || (firstMessageTime > 40000 && firstMessageTime <= 60000)) {
             putSlowmode(channel, -2, max, min);
-            System.out.println("-2");
         } else {
             putSlowmode(channel, -999999999, max, min);
-            System.out.println("none");
-        }
-
-        if (channel.getGuild().getId().equals("645188230756696085")) {
-            System.out.println(channel.getGuild().getName() + " - AVG: " + averageDelay + "/firstMessageTime: " + firstMessageTime);
-        }
-
-        if (channel.getGuild().getId().equals("289746418816516098")) {
-            System.out.println(channel.getGuild().getName() + " - AVG: " + averageDelay + "/firstMessageTime: " + firstMessageTime);
         }
     }
 

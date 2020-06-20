@@ -4,6 +4,8 @@ import Thermostat.ThermoFunctions.Listeners.Ready;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -20,7 +22,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.0.1
+ * @version 0.1.0
  * @since 2020-04-17
  */
 
@@ -56,6 +58,8 @@ public class thermostat {
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .build();
 
+
+        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading music..."));
         thermo.addEventListener(new Ready());
     }
 }

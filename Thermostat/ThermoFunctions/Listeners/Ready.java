@@ -2,11 +2,14 @@ package Thermostat.ThermoFunctions.Listeners;
 
 import Thermostat.MySQL.Connection;
 import Thermostat.ThermoFunctions.Commands.*;
-import Thermostat.ThermoFunctions.MonitorThreads.ChannelListener;
+import Thermostat.ThermoFunctions.MonitorThreads.GuildListener;
+import Thermostat.ThermoFunctions.MonitorThreads.StatusMonitor;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static Thermostat.thermostat.thermo;
 
@@ -27,7 +30,12 @@ public class Ready extends ListenerAdapter
             return;
         }
 
-        ChannelListener CL = new ChannelListener();
+        // creates instance of GuildListener for guild
+        // updating
+        GuildListener CL = new GuildListener();
+
+        // thread to manage bot status monitoring
+        StatusMonitor statusMonitor = new StatusMonitor();
 
         // Connection Listeners
         // thermo.addEventListener(new Reconnect());
@@ -47,6 +55,8 @@ public class Ready extends ListenerAdapter
         // Other Event Listeners
         thermo.addEventListener(new GuildJoin());
         thermo.addEventListener(new GuildLeave());
+
+        getConnectedGuilds();
     }
 
     /**
@@ -64,5 +74,18 @@ public class Ready extends ListenerAdapter
             return false;
         }
         return true;
+    }
+
+    // Prints out list of currently connected guilds
+    // with names, owner ids, and guild ids.
+    public void getConnectedGuilds()
+    {
+        List<Guild> guildList = thermo.getGuilds();
+
+        for (Guild it : guildList)
+        {
+                System.out.print(it.getName() + " - ");
+                System.out.println(it.getId());
+        }
     }
 }
