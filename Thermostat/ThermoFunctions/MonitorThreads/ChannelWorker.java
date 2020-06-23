@@ -199,21 +199,33 @@ public class ChannelWorker {
     }
 
     /**
+     * Creates a connection with the database.
+     * @return Instance of connection.
+     */
+    public static Connection createConnection()
+    {
+        Connection conn = null;
+        try {
+            conn = new Connection();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            // try to initiate connection again if cannot connect now
+            try { Thread.sleep(500); } catch (InterruptedException iex) { conn = createConnection(); }
+            conn = createConnection();
+        }
+        return conn;
+    }
+
+    /**
      * Function that gets called periodically to
      * adjust the slowmode of each channel in the given guild.
      *
      * @param guild The guild that will have the channels monitored.
      */
     public static void monitorChannels(Guild guild) {
-        // get ID of guild channels to monitor
-        Connection conn;
-        try {
-            conn = new Connection();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return;
-        }
+        Connection conn = createConnection();
 
+        // get ID of guild channels to monitor
         ResultSet rs = conn.query("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                 "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNELS.GUILD_ID = " + guild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
