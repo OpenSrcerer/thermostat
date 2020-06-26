@@ -1,4 +1,8 @@
-# thermostat
+<a href="https://top.gg/bot/700341788136833065" >
+  <img src="https://top.gg/api/widget/700341788136833065.svg" alt="Thermostat"/>
+</a>
+
+# Thermostat
 Have a trouble with your server going too fast? Try this new auto-slowmode manager!
 # Current Dependencies
 JDA (API for the bot) - https://github.com/DV8FromTheWorld/JDA  
