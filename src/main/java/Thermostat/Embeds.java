@@ -2,14 +2,16 @@ package Thermostat;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 
+import java.time.Instant;
+
 /**
  * Class for all static embeds that do not need
  * runtime editing.
  */
 public class Embeds {
-    public static EmbedBuilder channelSettings(String channelName, int max, int min, boolean monitor) {
+    public static EmbedBuilder channelSettings(String channelName, String authorID, int max, int min, boolean monitor) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ Settings for #" + channelName + ":");
+        eb.setTitle("Settings for #" + channelName + ":");
         if (min == 0) {
             eb.addField("Min Slowmode:", "**-**", true);
         } else {
@@ -28,169 +30,219 @@ public class Embeds {
         } else {
             eb.addField("Currently Monitored:", "**No**", false);
         }
-        eb.setColor(0xeb9834);
+
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00aeff);
         return eb;
     }
 
-    public static EmbedBuilder getVote() {
+    public static EmbedBuilder getVote(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("🎉 Vote for Thermostat on top.gg");
-        eb.addField("Link:", "https://top.gg/bot/700341788136833065", true);
-        eb.setColor(0xeb9834);
+        eb.setTitle("Vote for Thermostat on top.gg");
+        eb.addField("Link:", "https://top.gg/bot/700341788136833065/vote", true);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00aeff);
         return eb;
     }
 
-    public static EmbedBuilder inviteServer() {
+    public static EmbedBuilder inviteServer(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ Information about invites:");
-        eb.addField("Support Server:", "https://discord.gg/FnPb4nM", true);
-        eb.addField("Get Thermostat Here:", "https://discord.com/api/oauth2/authorize?client_id=700341788136833065&permissions=85072&scope=bot", true);
-        eb.setColor(0xeb9834);
+        eb.setTitle("Information about invites:");
+        eb.addField("Support Server:", "https://discord.gg/FnPb4nM", false);
+        eb.addField("Get Thermostat:", "https://top.gg/bot/700341788136833065", false);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00aeff);
         return eb;
     }
 
     public static EmbedBuilder channelRemoved() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ This channel was removed from monitoring due to not " +
+        eb.setTitle("This channel was removed from monitoring due to not " +
                 "finding any messages to monitor. If the messages are too old, " +
                 "it will not be possible to monitor the channel.");
-        eb.setColor(0xeb9834);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00aeff);
         return eb;
     }
 
-    public static EmbedBuilder bothChannelAndSlow(String authorID) {
+    public static EmbedBuilder bothChannelAndSlow() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("⚠ Please specify the channels and then the slowmode.");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
+        eb.setTitle("Please specify the channels and then the slowmode.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
         return eb;
     }
 
     public static EmbedBuilder insufficientReact(String perm) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ Error executing command! Insufficient permissions: `" + perm + "`");
+        eb.setTitle("Error executing command! Insufficient permissions: `" + perm + "`");
         eb.setDescription("Thermostat needs the `" + perm + "` permission in this channel in order to execute this command.");
-        eb.setColor(0xeb9834);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
         return eb;
     }
 
     public static EmbedBuilder insufficientReact() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ Error executing command! Insufficient permissions: `Add Reactions`");
+        eb.setTitle("Error executing command! Insufficient permissions: `Add Reactions`");
         eb.setDescription("Add the `Add Reactions` permission to Thermostat and try again.");
-        eb.setColor(0xeb9834);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
         return eb;
     }
 
     public static EmbedBuilder insufficientPerm() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ Error managing channel! Insufficient permissions: `Manage Channels`");
+        eb.setTitle("Error managing channel! Insufficient permissions: `Manage Channels`");
         eb.setDescription("Channel was removed from monitoring database. Add the `Manage Channels` permission to Thermostat and re-monitor the channel with th!monitor.");
-        eb.setColor(0xeb9834);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
         return eb;
     }
 
     public static EmbedBuilder insufficientPerm(String perm) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ Error managing channel! Insufficient permissions: `" + perm + "`");
+        eb.setTitle("Error managing channel! Insufficient permissions: `" + perm + "`");
         eb.setDescription("Channel was removed from monitoring database. Add the `" + perm + "` permission to Thermostat and re-monitor the channel with th!monitor.");
-        eb.setColor(0xeb9834);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
         return eb;
     }
 
-    public static EmbedBuilder allRemoved() {
+    public static EmbedBuilder allRemoved(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ All channels are no longer being monitored.");
-        eb.setColor(0xeb9834);
+        eb.setTitle("All channels are no longer being monitored.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00ff00);
         return eb;
     }
 
     public static EmbedBuilder missedPrompt() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ Did not react to prompt in time. Operation cancelled.");
-        eb.setColor(0xeb9834);
+        eb.setTitle("Did not react to prompt in time. Operation cancelled.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00aeff);
         return eb;
     }
 
     public static EmbedBuilder promptEmbed(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❓ Are you sure you want to perform this action? Click the reaction below if you're sure you want to continue.");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
+        eb.setTitle("Are you sure you want to perform this action? Click the reaction below if you're sure you want to continue.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x00aeff);
         return eb;
     }
 
     public static EmbedBuilder fatalError() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ If you are seeing this message, a fatal error has occurred. Try unmonitoring your channels and monitoring them again. If that does not fix your issue, please join our support server: https://discord.gg/FnPb4nM");
-        eb.setColor(0xeb9834);
+        eb.setTitle("If you are seeing this message, a fatal error has occurred. Try unmonitoring your channels and monitoring them again. If that does not fix your issue, please join our support server: https://discord.gg/FnPb4nM");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x36393f);
         return eb;
     }
 
-    public static EmbedBuilder userNoPermission(String authorID) {
+    public static EmbedBuilder userNoPermission() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ You must have the `MANAGE_CHANNELS` permission in order to execute this command.");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
-        return eb;
-    }
-
-    public static EmbedBuilder noChannels(String authorID) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("⚠ No channels are currently being monitored!");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
+        eb.setTitle("You must have the `MANAGE_CHANNELS` permission in order to execute this command.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
         return eb;
     }
 
     public static EmbedBuilder noChannels() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("⚠ That channel has never been monitored before!");
-        eb.setColor(0xeb9834);
+        eb.setTitle("No channels are currently being monitored!");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
         return eb;
     }
 
-    public static EmbedBuilder specifyChannel(String authorID) {
+    public static EmbedBuilder channelNeverMonitored() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("⚠ Please specify the channel to view its' settings.");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
+        eb.setTitle("That channel has never been monitored before!");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
         return eb;
     }
 
-    public static EmbedBuilder specifyChannels(String authorID) {
+    public static EmbedBuilder specifyChannel() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("⚠ Please specify the channels you want to configure.");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
+        eb.setTitle("Please specify the channel to view its' settings.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
         return eb;
     }
 
-    public static EmbedBuilder channelNotFound(String authorID) {
+    public static EmbedBuilder specifyChannels() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("⚠ That channel was not found in this guild.");
-        eb.setDescription("<@" + authorID + ">");
-        eb.setColor(0xeb9834);
+        eb.setTitle("Please specify the channels you want to configure.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
         return eb;
     }
 
-    public static EmbedBuilder getInfo() {
+    public static EmbedBuilder channelNotFound() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ Command list for Thermostat ℹ");
-        // eb.setImage();
-        eb.addField("-------------  Commands -------------", "You need to have the MANAGE_CHANNELS permission to run any of these commands.", false);
-        eb.addField("th!monitor", "Syntax: `th!monitor/mon/m <channels>/<categories>`. Adds text channels to the slowmode monitoring database.", false);
-        eb.addField("th!unmonitor", "Syntax: `th!unmonitor/unmon/um <channels>/<categories>`. Removes text channels from the slowmode monitoring database.", false);
-        eb.addField("th!setminimum", "Syntax: `th!setminimum/setmin/smn <channels>/<categories> <slowmode>`. Sets the lower bound for the slowmode of the channel.", false);
-        eb.addField("th!setmaximum", "Syntax: `th!setmaximum/setmax/smx <channels>/<categories> <slowmode>`. Sets the upper bound for the slowmode of the channel.", false);
-        eb.addField("th!getmonitor", "Syntax: `th!getmonitor/getmon/gm`. Shows which channels are currently being monitored in your server.", false);
-        eb.addField("th!unmonitorall", "Syntax: `th!unmonitorall/unmonall/uma`. Stops ALL your channels from being monitored.", false);
-        eb.addField("th!info", "Syntax: `th!info/i/help/h`. Shows this message.", false);
-        eb.addField("th!vote", "Syntax: `th!vote/v`. Shows a link to vote for Thermostat on top.gg.", false);
-        eb.addField("th!invite", "Syntax: `th!invite/server`. Provides an invite link to Thermostat's support server. Also contains a link to directly invite the bot!", false);
-        eb.addField("th!settings", "Syntax: `th!settings/s <channel>`. Shows details about the configuration of the given channel.", false);
-        eb.setColor(0xeb9834);
-        eb.setFooter("Created by Bonkers#6969");
+        eb.setTitle("That channel was not found in this guild.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
+        return eb;
+    }
+
+    public static EmbedBuilder getMonitorInfo() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("🌡┇Monitoring Commands - Permissions required: `MANAGE_CHANNEL`");
+        eb.addField("⬆ Menu", "Go back to the Main Menu", false);
+        eb.addField("th!monitor┇Adds text channels to the slowmode monitoring database.", "`Syntax: th!monitor/mon/m <channels>/<categories>.`", false);
+        eb.addField("th!unmonitor┇Removes text channels from the slowmode monitoring database.", "`Syntax: th!unmonitor/unmon/um <channels>/<categories>.`", false);
+        eb.addField("th!getmonitor┇Shows which channels are currently being monitored in your server.", "`Syntax: th!getmonitor/getmon/gm.`", false);
+        eb.addField("th!unmonitorall┇Stops ALL your channels from being monitored.", "`Syntax: th!unmonitorall/unmonall/uma.`", false);
+        eb.addField("th!setminimum┇Sets the lower bound for the slowmode of the channel.", "`Syntax: th!setminimum/setmin/smn <channels>/<categories> <slowmode>.`", false);
+        eb.addField("th!setmaximum┇Sets the upper bound for the slowmode of the channel.", "`Syntax: th!setmaximum/setmax/smx <channels>/<categories> <slowmode>.`", false);
+        eb.addField("th!settings┇Shows details about the configuration of the given channel.", "`Syntax: th!settings/s <channel>.`", false);
+        eb.addField("❌ Exit", "Exit the info menu.", false);
+        eb.setColor(0x00aeff);
+        return eb;
+    }
+
+    public static EmbedBuilder getOtherInfo() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("ℹ┇Other Commands");
+        eb.addField("⬆ Menu", "Go back to the Main Menu", false);
+        eb.addField("th!info┇Brings up the main help menu.", "`Syntax: th!info/i/help/h.`", false);
+        eb.addField("th!vote┇Shows a link to vote for Thermostat on top.gg.", "`Syntax: th!vote/v.`", false);
+        eb.addField("th!invite┇Provides an invite link to Thermostat's support server, and the top.gg website.", "`Syntax: th!invite/server.`", false);
+        eb.addField("❌ Exit", "Exit the info menu.", false);
+        eb.setColor(0x00aeff);
+        return eb;
+    }
+
+    public static EmbedBuilder getInfoSelection() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Menu");
+        eb.addField("🌡 Monitoring", "Commands to help you manage slowmode in channels.", false);
+        eb.addField("ℹ Other", "Informational commands that provide other functionalities.", false);
+        eb.addField("❌ Exit", "Exit the info menu.", false);
+        eb.setColor(0x00aeff);
         return eb;
     }
 }

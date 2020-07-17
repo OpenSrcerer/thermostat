@@ -23,7 +23,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.0.1
+ * @version 0.5.0
  * @since 2020-04-17
  */
 
@@ -48,7 +48,7 @@ public class thermostat {
 
         // adjust the cache flags here
         thermo = JDABuilder
-                .create("YOUR-BOT-TOKEN-HERE", intents)
+                .create("YOUR-TOKEN-HERE", intents)
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.EMOTE,

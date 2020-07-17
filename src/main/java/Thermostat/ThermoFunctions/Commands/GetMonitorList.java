@@ -4,6 +4,7 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Create;
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Messages;
+import Thermostat.thermostat;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,11 +50,9 @@ public class GetMonitorList extends ListenerAdapter {
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission());
                 return;
             }
-
-            embed.setTitle("ℹ Channels currently being monitored:");
 
             try {
                 // Adds the guild to the database if it's not in it!
@@ -65,7 +65,7 @@ public class GetMonitorList extends ListenerAdapter {
 
                 if (guildList.isEmpty())
                 {
-                    embed.addField("", "None.", false);
+                    embed.addField("Channels currently being monitored:", "None.", false);
                 }
                 else
                 {
@@ -84,11 +84,13 @@ public class GetMonitorList extends ListenerAdapter {
             }
 
             if (!embedString.isEmpty())
-                embed.addField("", embedString, true);
+                embed.addField("Channels currently being monitored:", embedString, true);
 
-            embed.setColor(0xeb9834);
-            embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
+            embed.setColor(0x00aeff);
+            embed.setTimestamp(Instant.now());
+            embed.setFooter("Requested by " + ev.getAuthor().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
             Messages.sendMessage(ev.getChannel(), embed);
+
             embed.clear();
         }
     }

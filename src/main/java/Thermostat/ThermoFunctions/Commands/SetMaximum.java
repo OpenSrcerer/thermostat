@@ -4,12 +4,14 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Create;
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Messages;
+import Thermostat.thermostat;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +40,7 @@ public class SetMaximum extends ListenerAdapter {
             }
 
             if (args.size() <= 2) {
-                Messages.sendMessage(ev.getChannel(), Embeds.bothChannelAndSlow(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.bothChannelAndSlow());
                 return;
             }
 
@@ -47,23 +49,29 @@ public class SetMaximum extends ListenerAdapter {
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission());
                 return;
             }
 
-            embed.setTitle("ℹ Command Results:");
+            String nonValid = "",
+                    noText = "",
+                    complete = "",
+                    badSlowmode = "";
 
             // parses arguments into usable IDs, checks if channels exist
-            // realIndex is just for the message.
-            int realIndex = 1;
             for (int index = 0; index < args.size() - 1; ++index) {
-                // first check, if it's a channel mention then passes id instead
+
+                // The argument gets parsed. If it's a mention, it gets formatted
+                // into an ID through the parseMention() function.
+                // All letters are removed, thus the usage of the
+                // originalArgument string.
+                String originalArgument = args.get(index);
                 args.set(index, parseMention(args.get(index), "#"));
 
                 // if string is empty add a 0 to it in order to represent
                 // empty channel
                 if (args.get(index).isBlank()) {
-                    embed.addField("", "Channel #" + realIndex + " is not a valid channel.", false);
+                    nonValid = nonValid.concat("\"" + originalArgument + "\" ");
                     args.remove(index);
                     --index;
                 }
@@ -75,7 +83,7 @@ public class SetMaximum extends ListenerAdapter {
                     List<TextChannel> TextChannels = ev.getGuild().getCategoryById(args.get(index)).getTextChannels();
                     // if list is empty add that it is in msg
                     if (TextChannels.isEmpty()) {
-                        embed.addField("", "Category <#" + args.get(index) + "> does not contain any text channels.", false);
+                        noText = noText.concat("<#" + args.get(index) + "> ");
                     }
                     // removes category ID from argument ArrayList
                     args.remove(index);
@@ -88,12 +96,10 @@ public class SetMaximum extends ListenerAdapter {
 
                 // removes element from arguments if it's not a valid channel ID
                 else if (ev.getGuild().getTextChannelById(args.get(index)) == null) {
-                    embed.addField("", "Text Channel " + args.get(index) + " was not found in this guild.", false);
+                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
                     args.remove(index);
                     --index;
                 }
-
-                ++realIndex;
             }
 
             // connects to database and creates channel
@@ -105,36 +111,57 @@ public class SetMaximum extends ListenerAdapter {
                         Create.Guild(ev.getGuild().getId());
                     // check db if channel exists and create it if not
                     if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index))) {
-                        Create.Channel(ev.getGuild().getId(), args.get(index), 1);
-                        embed.addField("", "<#" + args.get(index) + "> is now being monitored.\n", false);
+                        Create.Channel(ev.getGuild().getId(), args.get(index), 0);
                     }
 
                     int minimumSlow;
-
                     {
                         minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(index));
                     }
 
                     if (Integer.parseUnsignedInt(args.get(args.size() - 1)) < minimumSlow)
                     {
-                        embed.addField("", "Provided maximum slowmode for <#" + args.get(index) + "> is too low! It should be at least higher than " + minimumSlow + "!", false);
-                        break;
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
+                        complete = complete.concat("<#" + args.get(index) + "> ");
                     } else {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
-                        embed.addField("", "<#" + args.get(index) + "> new maximum slowmode: " + args.get(args.size() - 1) + ".", false);
+                        complete = complete.concat("<#" + args.get(index) + "> ");
                     }
                 } catch (NumberFormatException ex) {
-                    embed.addField("Please insert a valid slowmode value!", "Your inserted value was not appropriate.", false);
-                    break;
+                    badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
                 }
                 catch (Exception ex) {
-                    embed.addField("", "Channel " + args.get(index) + " was not found in this guild.\n", false);
+                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
                 }
             }
 
-            embed.setColor(0xeb9834);
-            embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
+            embed.setColor(0xffff00);
+            if (!complete.isEmpty())
+            {
+                embed.addField("Channels given a maximum slowmode of " + args.get(args.size() - 1) + ":", complete, false);
+                embed.setColor(0x00ff00);
+            }
+
+            if (!badSlowmode.isEmpty())
+            {
+                embed.addField("Channels for which the given slowmode value was not appropriate:", badSlowmode, false);
+            }
+
+            if (!nonValid.isEmpty())
+            {
+                embed.addField("Channels that were not valid or found:", nonValid, false);
+            }
+
+            if (!noText.isEmpty())
+            {
+                embed.addField("Categories with no Text Channels:", noText, false);
+            }
+
+            embed.setTimestamp(Instant.now());
+            embed.setFooter("Requested by " + ev.getAuthor().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
             Messages.sendMessage(ev.getChannel(), embed);
+
             embed.clear();
         }
     }

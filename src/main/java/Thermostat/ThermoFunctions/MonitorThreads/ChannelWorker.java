@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -136,14 +134,9 @@ public class ChannelWorker {
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, Embeds.insufficientPerm());
             Delete.Channel(channel.getGuild().getId(), channel.getId());
-        } 
-        catch (IllegalStateException ex)
-        {
-            System.out.println("OKHTTP Exception: Already Executed.");
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
+        } catch (Exception ex) {
+            Logger lgr = LoggerFactory.getLogger(ChannelWorker.class);
+            lgr.error(ex.getMessage(), ex);
         }
     }
 

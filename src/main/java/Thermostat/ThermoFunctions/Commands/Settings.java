@@ -38,12 +38,12 @@ public class Settings extends ListenerAdapter
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission());
                 return;
             }
 
             if (args.size() == 1) {
-                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannel(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannel());
                 return;
             }
 
@@ -53,7 +53,7 @@ public class Settings extends ListenerAdapter
             // if channel doesn't exist, show error msg
             if (args.get(0).isBlank() || ev.getGuild().getTextChannelById(args.get(0)) == null)
             {
-                Messages.sendMessage(ev.getChannel(), Embeds.channelNotFound(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.channelNotFound());
                 return;
             }
 
@@ -67,12 +67,13 @@ public class Settings extends ListenerAdapter
                     int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0));
 
                     if (max == -1) {
-                        Messages.sendMessage(ev.getChannel(), Embeds.noChannels());
+                        Messages.sendMessage(ev.getChannel(), Embeds.channelNeverMonitored());
                         return;
                     }
 
                     Messages.sendMessage(ev.getChannel(),
                             Embeds.channelSettings(ev.getGuild().getTextChannelById(args.get(0)).getName(),
+                                    ev.getAuthor().getAsTag(),
                                     max,
                                     DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0)),
                                     DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0))

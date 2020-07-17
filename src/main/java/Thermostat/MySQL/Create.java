@@ -64,7 +64,8 @@ public class Create {
      * Changes a channel's monitor value on the database.
      * @param GUILD_ID The ID of the Guild that the channel resides in.
      * @param CHANNEL_ID The Channel's id.
-     * @param monitor monitor value. Can be 1 or 0 to indicate truth or falsity
+     * @param monitor Whether the channel should be initialized as
+     *                monitored (inits with 1 or 0).
      */
     public static void ChannelMonitor (String GUILD_ID, String CHANNEL_ID, int monitor) {
         try

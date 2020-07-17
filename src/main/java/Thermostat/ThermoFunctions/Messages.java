@@ -2,13 +2,18 @@ package Thermostat.ThermoFunctions;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * Deals with InsufficientPermissionExceptions thrown
  * by a lack of MESSAGE_WRITE permission, when sending
- * messages.
+ * messages. Also controls timed message deletion to
+ * prevent spam.
  */
 public class Messages
 {
@@ -21,10 +26,12 @@ public class Messages
     {
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
         {
+            // send message and delete after 100 seconds
             try {
-                channel.sendMessage(eb.build()).queue();
+                Consumer<Message> consumer = message -> message.delete().queueAfter(100, TimeUnit.SECONDS);
+                channel.sendMessage(eb.build()).queue(consumer);
             } catch (InsufficientPermissionException ex) {
-                sendMessage(channel, "Please add the \"Embed Links\" permission to the bot in order to get command results!");
+                sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot in order to get command results!");
             }
         }
     }
@@ -39,7 +46,7 @@ public class Messages
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
         {
             try {
-                channel.sendMessage(msg).queue();
+                channel.sendMessage(msg).queueAfter(100, TimeUnit.SECONDS);
             } catch (InsufficientPermissionException ex) {
                 System.out.println(channel.getGuild().getName() + " - Permission error when trying to send message.");
             }

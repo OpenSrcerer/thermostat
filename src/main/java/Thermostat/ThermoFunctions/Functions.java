@@ -1,5 +1,7 @@
 package Thermostat.ThermoFunctions;
 
+import java.math.BigInteger;
+
 /**
  *
  */
@@ -31,6 +33,16 @@ public class Functions {
             retString = retString.substring(1);
 
         retString = retString.replaceAll("[^\\d]", "");
+
+        // if the sent value is a number larger than 64 bits
+        // the given ID is not a valid snowflake, therefore
+        // not used.
+
+        try {
+            Long.parseUnsignedLong(retString);
+        } catch (NumberFormatException ex) {
+            retString = "";
+        }
 
         return retString;
     }

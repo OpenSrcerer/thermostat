@@ -28,7 +28,7 @@ public class Vote extends ListenerAdapter
                 return;
             }
 
-            Messages.sendMessage(ev.getChannel(), Embeds.getVote());
+            Messages.sendMessage(ev.getChannel(), Embeds.getVote(ev.getAuthor().getAsTag()));
         }
     }
 }

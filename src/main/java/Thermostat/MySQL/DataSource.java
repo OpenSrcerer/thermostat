@@ -15,22 +15,19 @@ import java.util.ArrayList;
  * Class that creates a single Hikari
  * data source for our Thermostat application.
  */
-
 public class DataSource {
 
-    private static String configFile;
-    private static HikariConfig config;
     private static HikariDataSource ds;
 
     static {
-        configFile = "/db.properties";
-        config = new HikariConfig(configFile);
+        String configFile = "/db.properties";
+        HikariConfig config = new HikariConfig(configFile);
         ds = new HikariDataSource(config);
     }
 
     public DataSource() {}
 
-    public static java.sql.Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         return ds.getConnection();
     }
 

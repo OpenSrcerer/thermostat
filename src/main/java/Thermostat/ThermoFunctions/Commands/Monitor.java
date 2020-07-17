@@ -4,13 +4,14 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Create;
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Messages;
+import Thermostat.thermostat;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-import java.sql.ResultSet;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +44,7 @@ public class Monitor extends ListenerAdapter {
             }
 
             if (args.size() == 1) {
-                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels());
                 return;
             }
 
@@ -52,23 +53,30 @@ public class Monitor extends ListenerAdapter {
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission(ev.getAuthor().getId()));
+                Messages.sendMessage(ev.getChannel(), Embeds.userNoPermission());
                 return;
             }
 
-            embed.setTitle("ℹ Command Results:");
+            // Strings to store information for the embed.
+            // (Just got monitored, already monitored, not valid
+            // to be monitored, category has no text channels
+            String nonValid = "",
+                    noText = "",
+                    complete = "",
+                    monitored = "";
 
             // parses arguments into usable IDs, checks if channels exist
-            // realIndex is just for the message.
-            int realIndex = 1;
             for (int index = 0; index < args.size(); ++index) {
-                // first check, if it's a channel mention then passes id instead
+
+                // The argument gets parsed. If it's a mention, it gets formatted
+                // into an ID through the parseMention() function.
+                // All letters are removed, thus the usage of the
+                // originalArgument string.
+                String originalArgument = args.get(index);
                 args.set(index, parseMention(args.get(index), "#"));
 
-                // if string is empty add a 0 to it in order to represent
-                // empty channel
                 if (args.get(index).isBlank()) {
-                    embed.addField("", "Channel #" + realIndex + " is not a valid channel.", false);
+                    nonValid = nonValid.concat("\"" + originalArgument + "\" ");
                     args.remove(index);
                     --index;
                 }
@@ -80,7 +88,7 @@ public class Monitor extends ListenerAdapter {
                     List<TextChannel> TextChannels = ev.getGuild().getCategoryById(args.get(index)).getTextChannels();
                     // if list is empty add that it is in msg
                     if (TextChannels.isEmpty()) {
-                        embed.addField("", "Category <#" + args.get(index) + "> does not contain any text channels.", false);
+                        noText = noText.concat("<#" + args.get(index) + "> ");
                     }
                     // removes category ID from argument ArrayList
                     args.remove(index);
@@ -93,16 +101,13 @@ public class Monitor extends ListenerAdapter {
 
                 // removes element from arguments if it's not a valid channel ID
                 else if (ev.getGuild().getTextChannelById(args.get(index)) == null) {
-                    embed.addField("", "Text Channel " + args.get(index) + " was not found in this guild.", false);
+                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
                     args.remove(index);
                     --index;
                 }
-
-                ++realIndex;
             }
 
             // connects to database and creates channel
-
             for (String it : args) {
                 try {
                     // silent guild adder
@@ -111,7 +116,7 @@ public class Monitor extends ListenerAdapter {
                     // check db if channel exists
                     if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it)) {
                         Create.Channel(ev.getGuild().getId(), it, 1);
-                        embed.addField("", "<#" + it + "> is now being monitored.\n", false);
+                        complete = complete.concat("<#" + it + "> ");
                     } else {
                         // checks if the channel is actively being
                         // monitored
@@ -122,20 +127,44 @@ public class Monitor extends ListenerAdapter {
                         // table CHANNEL_SETTINGS
                         if (isMonitor)
                         {
-                            embed.addField("", "Channel <#" + it + "> is already being monitored.", false);
+                            monitored = monitored.concat("<#" + it + "> ");
                         } else {
                             Create.ChannelMonitor(ev.getGuild().getId(), it, 1);
-                            embed.addField("", "<#" + it + "> is now being monitored.\n", false);
+                            complete = complete.concat("<#" + it + "> ");
                         }
                     }
                 } catch (Exception ex) {
-                    embed.addField("", "Channel " + it + " was not found in this guild.\n", false);
+                    nonValid = nonValid.concat("\"" + it + "\" ");
                 }
             }
 
-            embed.setColor(0xeb9834);
-            embed.addField("", "<@" + ev.getAuthor().getId() + ">", false);
+            embed.setColor(0xffff00);
+            if (!complete.isEmpty())
+            {
+                embed.addField("Successfully monitored:", complete, false);
+                embed.setColor(0x00ff00);
+            }
+
+            if (!monitored.isEmpty())
+            {
+                embed.addField("Already being monitored:", monitored, false);
+                embed.setColor(0x00ff00);
+            }
+
+            if (!nonValid.isEmpty())
+            {
+                embed.addField("Channels that were not valid or found:", nonValid, false);
+            }
+
+            if (!noText.isEmpty())
+            {
+                embed.addField("Categories with no Text Channels:", noText, false);
+            }
+
+            embed.setTimestamp(Instant.now());
+            embed.setFooter("Requested by " + ev.getAuthor().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
             Messages.sendMessage(ev.getChannel(), embed);
+
             embed.clear();
         }
     }

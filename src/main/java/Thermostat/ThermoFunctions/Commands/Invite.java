@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * <h1>Monitor Command</h1>
+ * <h1>Invite Command</h1>
  * <p>
- * Class that manages the th!info command. Sends
- * an Info embed when th!info is called.
+ * Class that manages the th!invite command. Sends
+ * an Invite embed when command is called.
  */
 public class Invite extends ListenerAdapter
 {
@@ -28,7 +28,7 @@ public class Invite extends ListenerAdapter
                 return;
             }
 
-            Messages.sendMessage(ev.getChannel(), Embeds.inviteServer());
+            Messages.sendMessage(ev.getChannel(), Embeds.inviteServer(ev.getAuthor().getAsTag()));
         }
     }
 }
