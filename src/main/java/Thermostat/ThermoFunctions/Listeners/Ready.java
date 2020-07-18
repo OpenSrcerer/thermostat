@@ -40,9 +40,6 @@ public class Ready extends ListenerAdapter
         // thread to manage bot status monitoring
         StatusMonitor statusMonitor = new StatusMonitor();
 
-        // Connection Listeners
-        // thermo.addEventListener(new Reconnect());
-
         // Commands Listeners
         thermo.addEventListener(new Monitor());
         thermo.addEventListener(new UnMonitor());

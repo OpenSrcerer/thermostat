@@ -14,7 +14,6 @@ import static Thermostat.thermostat.thermo;
  * Keeps the status of the bot updated
  * with the proper number of servers.
  */
-
 public class StatusMonitor
 {
     private ScheduledExecutorService statusScheduler = new ScheduledThreadPoolExecutor(1);

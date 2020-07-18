@@ -1,6 +1,5 @@
 package Thermostat;
 
-import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Listeners.Ready;
 
 import net.dv8tion.jda.api.JDA;
@@ -23,7 +22,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.5.0
+ * @version 0.6.1
  * @since 2020-04-17
  */
 

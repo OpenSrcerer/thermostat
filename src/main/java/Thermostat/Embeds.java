@@ -81,7 +81,7 @@ public class Embeds {
     public static EmbedBuilder insufficientReact(String perm) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Error executing command! Insufficient permissions: `" + perm + "`");
-        eb.setDescription("Thermostat needs the `" + perm + "` permission in this channel in order to execute this command.");
+        eb.setDescription("Thermostat needs the `" + perm + "` permission in this channel in order to perform this action.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);
@@ -92,6 +92,15 @@ public class Embeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Error executing command! Insufficient permissions: `Add Reactions`");
         eb.setDescription("Add the `Add Reactions` permission to Thermostat and try again.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
+    public static EmbedBuilder simpleInsufficientPerm(String perm) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Unable to perform action! Insufficient permissions: `" + perm + "`");
         eb.setTimestamp(Instant.now());
         eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);

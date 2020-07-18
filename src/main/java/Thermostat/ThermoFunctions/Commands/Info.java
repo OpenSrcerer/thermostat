@@ -1,20 +1,20 @@
 package Thermostat.ThermoFunctions.Commands;
 
 import Thermostat.Embeds;
+import Thermostat.ThermoFunctions.Messages;
 import Thermostat.thermostat;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 /**
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  */
 public class Info extends ListenerAdapter
 {
-    public static ScheduledFuture<?> msgFuture;
+    private static ScheduledFuture<?> msgFuture;
 
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev) {
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
@@ -42,17 +42,21 @@ public class Info extends ListenerAdapter
             }
 
             Consumer<Message> consumer = message -> {
-                message.addReaction("🌡").queue();
-                message.addReaction("ℹ").queueAfter(100, TimeUnit.MILLISECONDS);
-                message.addReaction("❌").queueAfter(200, TimeUnit.MILLISECONDS);
+                try {
+                    Messages.addReaction(message, "🌡");
+                    Messages.addReaction(message, "ℹ", 100, TimeUnit.MILLISECONDS);
+                    Messages.addReaction(message, "❌", 200, TimeUnit.MILLISECONDS);
+                } catch (PermissionException ex) {
+                    return;
+                }
 
                 Runnable runnable = () -> messageThread(message.getId(), ev);
 
                 Thread msgThread = new Thread(runnable);
                 msgThread.start();
-                msgFuture = message.delete().queueAfter(100, TimeUnit.SECONDS);
+                msgFuture = Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
             };
-            ev.getChannel().sendMessage(Embeds.getInfoSelection().build()).queue(consumer);
+            Messages.sendMessage(ev.getChannel(), Embeds.getInfoSelection(), consumer);
         }
     }
 
@@ -63,42 +67,59 @@ public class Info extends ListenerAdapter
      * @param msgId The message ID of the info msg.
      * @param ev The event that represents the guild.
      */
-    public static void messageThread(String msgId, GuildMessageReceivedEvent ev) {
+    public static void messageThread(String msgId, GuildMessageReceivedEvent ev)
+    {
         Consumer<Message>
                 mainMenuConsumer = message -> {
-            message.clearReactions().queue();
-            message.editMessage(Embeds.getInfoSelection().build()).queue();
-            message.addReaction("🌡").queue();
-            message.addReaction("ℹ").queueAfter(100, TimeUnit.MILLISECONDS);
-            message.addReaction("❌").queueAfter(200, TimeUnit.MILLISECONDS);
+            Messages.clearReactions(message);
+            Messages.editMessage(message, Embeds.getInfoSelection().build());
+            try {
+                Messages.addReaction(message, "🌡");
+                Messages.addReaction(message, "ℹ", 100, TimeUnit.MILLISECONDS);
+                Messages.addReaction(message, "❌", 200, TimeUnit.MILLISECONDS);
+            } catch (PermissionException ex) {
+                return;
+            }
             msgFuture.cancel(true);
-            msgFuture = message.delete().queueAfter(100, TimeUnit.SECONDS);
+            msgFuture = Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
         },
                 monitorInformationConsumer = message -> {
-            message.clearReactions().queue();
-            message.editMessage(Embeds.getMonitorInfo().build()).queue();
-            message.addReaction("⬆").queue();
-            message.addReaction("❌").queueAfter(100, TimeUnit.MILLISECONDS);
+            try {
+            Messages.clearReactions(message);
+            Messages.editMessage(message, Embeds.getMonitorInfo().build());
+            Messages.addReaction(message, "⬆");
+            Messages.addReaction(message, "❌", 100, TimeUnit.MILLISECONDS);
+            } catch (PermissionException ex) {
+                return;
+            }
             msgFuture.cancel(true);
-            msgFuture = message.delete().queueAfter(100, TimeUnit.SECONDS);
+            msgFuture = Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
         },
                 otherInformationConsumer = message -> {
-            message.clearReactions().queue();
-            message.editMessage(Embeds.getOtherInfo().build()).queue();
-            message.addReaction("⬆").queue();
-            message.addReaction("❌").queueAfter(100, TimeUnit.MILLISECONDS);
+            Messages.clearReactions(message);
+            Messages.editMessage(message, Embeds.getOtherInfo().build());
+            try {
+            Messages.addReaction(message, "⬆");
+            Messages.addReaction(message, "❌", 100, TimeUnit.MILLISECONDS);
+            } catch (PermissionException ex) {
+                return;
+            }
             msgFuture.cancel(true);
-            msgFuture = message.delete().queueAfter(100, TimeUnit.SECONDS);
+            msgFuture = Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
         },
                 deleteMenuConsumer = message -> {
             msgFuture.cancel(true);
-            message.delete().queue();
+            Messages.deleteMessage(message);
         };
 
+        // Loop that keeps going until the message gets deleted.
+        // (Or until an error is thrown.)
         try {
-            while (true) {
+            while (Messages.checkRetrieveMessageById(ev.getChannel(), msgId)) {
+
                 // create list of reactions on the message
                 List<MessageReaction> reactions = ev.getChannel().retrieveMessageById(msgId).complete().getReactions();
+
                 // iterates through every reaction
                 for (MessageReaction it : reactions) {
                     // gets users in that reaction
@@ -110,22 +131,22 @@ public class Info extends ListenerAdapter
                             it.getReactionEmote().getEmoji().equals("🌡") &&
                                     users.contains(ev.getAuthor())
                     ) {
-                        ev.getChannel().retrieveMessageById(msgId).queue(monitorInformationConsumer);
+                        Messages.retrieveMessageById(ev.getChannel(), msgId, monitorInformationConsumer);
                     } else if (
                             it.getReactionEmote().getEmoji().equals("ℹ") &&
                                     users.contains(ev.getAuthor())
                     ) {
-                        ev.getChannel().retrieveMessageById(msgId).queue(otherInformationConsumer);
+                        Messages.retrieveMessageById(ev.getChannel(), msgId, otherInformationConsumer);
                     } else if (
                             it.getReactionEmote().getEmoji().equals("⬆") &&
                                     users.contains(ev.getAuthor())
                     ) {
-                        ev.getChannel().retrieveMessageById(msgId).queue(mainMenuConsumer);
+                        Messages.retrieveMessageById(ev.getChannel(), msgId, mainMenuConsumer);
                     } else if (
                             it.getReactionEmote().getEmoji().equals("❌") &&
                                     users.contains(ev.getAuthor())
                     ) {
-                        ev.getChannel().retrieveMessageById(msgId).queue(deleteMenuConsumer);
+                        Messages.retrieveMessageById(ev.getChannel(), msgId, deleteMenuConsumer);
                     } else {
                         // If the reaction doesn't contain the owner's reaction
                         // In all of the users that have reacted to the prompt message
@@ -139,7 +160,8 @@ public class Info extends ListenerAdapter
                 }
                 Thread.sleep(500);
             }
-        } catch (ErrorResponseException | InterruptedException ignored) {
+            // if message is deleted, permission errors, etc.
+        } catch (Exception ignored) {
         }
     }
 }

@@ -29,7 +29,7 @@ import static Thermostat.thermostat.thermo;
  * channels.
  */
 public class ChannelWorker {
-    private ScheduledFuture scheduledFuture;
+    private ScheduledFuture<?> scheduledFuture;
     private String assignedGuild;
 
     /**
