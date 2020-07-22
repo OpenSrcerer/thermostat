@@ -14,7 +14,7 @@
   </root>
 
   <!-- this config is for logback framework -->
-  <logger name="com.zaxxer.hikari" level="info" additivity="false">
+  <logger name="com.zaxxer.hikari" level="debug" additivity="false">
     <appender-ref ref="STDOUT"/>
   </logger>
 

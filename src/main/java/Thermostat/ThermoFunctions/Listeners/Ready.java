@@ -55,6 +55,8 @@ public class Ready extends ListenerAdapter
         // Other Event Listeners
         thermo.addEventListener(new GuildJoin());
         thermo.addEventListener(new GuildLeave());
+        thermo.addEventListener(new MessageDeleteEvent());
+        thermo.addEventListener(new ReactionAddEvent());
 
         getConnectedGuilds();
     }
@@ -87,10 +89,11 @@ public class Ready extends ListenerAdapter
     {
         List<Guild> guildList = thermo.getGuilds();
 
-        for (Guild it : guildList)
-        {
-                System.out.print(it.getName() + " - ");
-                System.out.println(it.getId());
-        }
+        guildList.forEach(
+                element -> {
+                    System.out.print(element.getName() + " - ");
+                    System.out.println(element.getId());
+                }
+        );
     }
 }

@@ -177,7 +177,7 @@ public class Embeds {
         eb.setTitle("No channels are currently being monitored!");
         eb.setTimestamp(Instant.now());
         eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
+        eb.setColor(0x00aeff);
         return eb;
     }
 

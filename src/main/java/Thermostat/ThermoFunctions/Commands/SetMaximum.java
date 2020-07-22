@@ -119,14 +119,16 @@ public class SetMaximum extends ListenerAdapter {
                         minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(index));
                     }
 
-                    if (Integer.parseUnsignedInt(args.get(args.size() - 1)) < minimumSlow)
+                    if (Integer.parseUnsignedInt(args.get(args.size() - 1)) < minimumSlow && Integer.parseUnsignedInt(args.get(args.size() - 1)) <= 21600)
                     {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
                         complete = complete.concat("<#" + args.get(index) + "> ");
-                    } else {
+                    } else if (Integer.parseUnsignedInt(args.get(args.size() - 1)) > minimumSlow && Integer.parseUnsignedInt(args.get(args.size() - 1)) <= 21600) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
                         complete = complete.concat("<#" + args.get(index) + "> ");
+                    } else {
+                        badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
                     }
                 } catch (NumberFormatException ex) {
                     badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");

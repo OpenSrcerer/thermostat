@@ -22,7 +22,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.6.1
+ * @version 0.6.2
  * @since 2020-04-17
  */
 
@@ -33,7 +33,8 @@ public class thermostat {
 
     // Intents to using the Discord Gateway
     private static Collection<GatewayIntent> intents = Arrays.asList(
-            GatewayIntent.GUILD_MESSAGES
+            GatewayIntent.GUILD_MESSAGES,
+            GatewayIntent.GUILD_MESSAGE_REACTIONS
     );
 
     /**
@@ -41,7 +42,7 @@ public class thermostat {
      * are defined in {@link Ready}.
      *
      * @param args default java main function
-     * @throws LoginException
+     * @throws LoginException Issue occurred when logging in
      */
     public static void main(String[] args) throws LoginException {
 

@@ -42,7 +42,7 @@ public class GuildListener
     }
 
     /**
-     * Tells the scheduledexecutor to shut down.
+     * Tells the scheduler to shut down.
      * Kills the thread pool.
      */
     public void shutdown()
