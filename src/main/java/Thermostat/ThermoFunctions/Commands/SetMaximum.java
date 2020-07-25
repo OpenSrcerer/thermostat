@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static Thermostat.ThermoFunctions.Functions.parseMention;
+import static Thermostat.ThermoFunctions.Functions.parseSlowmode;
 
 /**
  * Specific command that sets the maximum slowmode
@@ -39,7 +40,7 @@ public class SetMaximum extends ListenerAdapter {
                 return;
             }
 
-            if (args.size() <= 2) {
+            if (args.size() < 2) {
                 Messages.sendMessage(ev.getChannel(), Embeds.bothChannelAndSlow());
                 return;
             }
@@ -57,8 +58,12 @@ public class SetMaximum extends ListenerAdapter {
                     noText = "",
                     complete = "",
                     badSlowmode = "";
+            // shows us if there were arguments before
+            // but were removed due to channel not being found
+            boolean removed = false;
 
             // parses arguments into usable IDs, checks if channels exist
+            // up to args.size() - 1 because the last argument is the slowmode
             for (int index = 0; index < args.size() - 1; ++index) {
 
                 // The argument gets parsed. If it's a mention, it gets formatted
@@ -68,11 +73,10 @@ public class SetMaximum extends ListenerAdapter {
                 String originalArgument = args.get(index);
                 args.set(index, parseMention(args.get(index), "#"));
 
-                // if string is empty add a 0 to it in order to represent
-                // empty channel
                 if (args.get(index).isBlank()) {
                     nonValid = nonValid.concat("\"" + originalArgument + "\" ");
                     args.remove(index);
+                    removed = true;
                     --index;
                 }
 
@@ -83,7 +87,7 @@ public class SetMaximum extends ListenerAdapter {
                     List<TextChannel> TextChannels = ev.getGuild().getCategoryById(args.get(index)).getTextChannels();
                     // if list is empty add that it is in msg
                     if (TextChannels.isEmpty()) {
-                        noText = noText.concat("<#" + args.get(index) + "> ");
+                        noText = noText.concat("<#" + originalArgument + "> ");
                     }
                     // removes category ID from argument ArrayList
                     args.remove(index);
@@ -96,52 +100,86 @@ public class SetMaximum extends ListenerAdapter {
 
                 // removes element from arguments if it's not a valid channel ID
                 else if (ev.getGuild().getTextChannelById(args.get(index)) == null) {
-                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                    nonValid = nonValid.concat("\"" + originalArgument + "\" ");
                     args.remove(index);
+                    removed = true;
                     --index;
                 }
             }
 
-            // connects to database and creates channel
+            // Parsing the slowmode argument
+            int argumentSlow = 0;
+            try {
+                argumentSlow = parseSlowmode(args.get(args.size() - 1));
+            } catch (NumberFormatException ex) {
+                Messages.sendMessage(ev.getChannel(), Embeds.invalidSlowmode());
+                return;
+            }
 
-            for (int index = 0; index < args.size() - 1; ++index) {
+            if (args.size() >= 2)
+            {
+                for (int index = 0; index < args.size() - 1; ++index) {
+                    try {
+                        // silent guild adder
+                        if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
+                            Create.Guild(ev.getGuild().getId());
+
+                        // check db if channel exists and create it if not
+                        if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index)))
+                            Create.Channel(ev.getGuild().getId(), args.get(index), 0);
+
+                        int minimumSlow;
+                        minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(index));
+
+                        if (argumentSlow <= minimumSlow && argumentSlow <= 21600)
+                        {
+                            DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + args.get(index));
+                            DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + args.get(index));
+                            complete = complete.concat("<#" + args.get(index) + "> ");
+                        } else if (argumentSlow > minimumSlow && argumentSlow <= 21600) {
+                            DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + args.get(index));
+                            complete = complete.concat("<#" + args.get(index) + "> ");
+                        } else {
+                            badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
+                        }
+
+                    } catch (Exception ex) {
+                        nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                    }
+                }
+            } else if (!removed) {
                 try {
                     // silent guild adder
                     if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
                         Create.Guild(ev.getGuild().getId());
+
                     // check db if channel exists and create it if not
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index))) {
-                        Create.Channel(ev.getGuild().getId(), args.get(index), 0);
-                    }
+                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + ev.getChannel().getId()))
+                        Create.Channel(ev.getGuild().getId(), ev.getChannel().getId(), 0);
 
                     int minimumSlow;
-                    {
-                        minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(index));
-                    }
+                    minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + ev.getChannel().getId());
 
-                    if (Integer.parseUnsignedInt(args.get(args.size() - 1)) < minimumSlow && Integer.parseUnsignedInt(args.get(args.size() - 1)) <= 21600)
-                    {
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
-                        complete = complete.concat("<#" + args.get(index) + "> ");
-                    } else if (Integer.parseUnsignedInt(args.get(args.size() - 1)) > minimumSlow && Integer.parseUnsignedInt(args.get(args.size() - 1)) <= 21600) {
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + Integer.parseUnsignedInt(args.get(args.size() - 1)) + " WHERE CHANNEL_ID = " + args.get(index));
-                        complete = complete.concat("<#" + args.get(index) + "> ");
+                    if (argumentSlow <= minimumSlow && argumentSlow <= 21600) {
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + ev.getChannel().getId());
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + ev.getChannel().getId());
+                        complete = complete.concat("<#" + ev.getChannel().getId() + "> ");
+                    } else if (argumentSlow > minimumSlow && argumentSlow <= 21600) {
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + ev.getChannel().getId());
+                        complete = complete.concat("<#" + ev.getChannel().getId() + "> ");
                     } else {
-                        badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
+                        badSlowmode = badSlowmode.concat("<#" + ev.getChannel().getId() + "> ");
                     }
-                } catch (NumberFormatException ex) {
-                    badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
-                }
-                catch (Exception ex) {
-                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                } catch (Exception ex) {
+                    Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
+                    return;
                 }
             }
 
             embed.setColor(0xffff00);
             if (!complete.isEmpty())
             {
-                embed.addField("Channels given a maximum slowmode of " + args.get(args.size() - 1) + ":", complete, false);
+                embed.addField("Channels given a maximum slowmode of " + argumentSlow + ":", complete, false);
                 embed.setColor(0x00ff00);
             }
 
