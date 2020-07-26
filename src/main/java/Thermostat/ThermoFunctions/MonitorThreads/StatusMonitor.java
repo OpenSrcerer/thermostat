@@ -3,8 +3,8 @@ package Thermostat.ThermoFunctions.MonitorThreads;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static Thermostat.thermostat.thermo;
@@ -16,7 +16,7 @@ import static Thermostat.thermostat.thermo;
  */
 public class StatusMonitor
 {
-    private ScheduledExecutorService statusScheduler = new ScheduledThreadPoolExecutor(1);
+    private ScheduledExecutorService statusScheduler = Executors.newSingleThreadScheduledExecutor();
 
     public StatusMonitor() {
         Runnable status = this::setStatusWithGuildNumber;

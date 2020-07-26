@@ -1,5 +1,7 @@
 package Thermostat.ThermoFunctions;
 
+import jdk.jfr.Unsigned;
+
 import java.math.BigInteger;
 
 /**
@@ -45,5 +47,28 @@ public class Functions {
         }
 
         return retString;
+    }
+
+    /**
+     * Function that converts a string slowmode argument
+     * to a usable Integer one.
+     * @param slowmode Slowmode argument, in a string.
+     * @return Parsed slowmode value.
+     */
+    public static Integer parseSlowmode(String slowmode) throws NumberFormatException {
+        Integer retInteger = null;
+        // second = 1; minute = 60; hour = 3600
+        int multiplyValue = 1;
+
+        if (slowmode.contains("m")) {
+            multiplyValue = 60;
+        } else if (slowmode.contains("h")) {
+            multiplyValue = 3600;
+        }
+
+        slowmode = slowmode.replaceAll("[^\\d]", "");
+        retInteger = Integer.parseUnsignedInt(slowmode) * multiplyValue;
+
+        return retInteger;
     }
 }

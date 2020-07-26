@@ -1,26 +1,17 @@
 package Thermostat.ThermoFunctions.Commands;
 
 import Thermostat.Embeds;
-import Thermostat.MySQL.Create;
-import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Commands.Objects.MenuType;
 import Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage;
 import Thermostat.ThermoFunctions.Messages;
-import Thermostat.thermostat;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage.monitoredMessages;

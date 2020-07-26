@@ -22,13 +22,14 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.6.2
+ * @version 0.6.4
  * @since 2020-04-17
  */
 
 public class thermostat {
     // Bot Initialization Variables
     public static JDA thermo;
+    // default prefix
     public static String prefix = "th!";
 
     // Intents to using the Discord Gateway

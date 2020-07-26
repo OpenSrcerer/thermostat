@@ -7,47 +7,47 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 
-import static Thermostat.thermostat.thermo;
-
 /**
- * <h1>Channel Listener</h1>
+ * <h1>WorkerManager</h1>
  * <p>
- * Class that manages every Guild's monitoring threads.
+ * Class that manages every Guild's monitoring.
  * Adds / Removes instances as per database, which is checked
  * every 5 seconds for changes.
- * Each instance is managed by a ChannelWorker class.
- * @see ChannelWorker
+ * Each instance is managed by the Worker class.
+ * @see Worker
  */
-public class GuildListener
+public class WorkerManager
 {
-    protected static ScheduledExecutorService SES;
+    protected static ScheduledExecutorService scheduledExecutorService;
     // ActiveWorkers array used for maintaining threads working on monitoring
-    private static ArrayList<ChannelWorker> activeWorkers = new ArrayList<>();
+    private static ArrayList<Worker> activeWorkers = new ArrayList<>();
+
+    /**
+     * Gives back an array of currently active
+     * guild workers.
+     * @return The array of guild workers.
+     */
+    public static ArrayList<Worker> getActiveWorkers() {
+        return activeWorkers;
+    }
+
+    public static void setActiveWorkers(ArrayList<Worker> workers) {
+        activeWorkers = workers;
+    }
 
     /**
      * Constructor, called once in the main function
      * of the {@link Thermostat.thermostat class}.
      */
-    public GuildListener()
+    public WorkerManager()
     {
-        Runnable setup = GuildListener::setupMonitoring;
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        executor.setRemoveOnCancelPolicy(true);
-        SES = executor;
+        Runnable setup = WorkerManager::setupMonitoring;
+        scheduledExecutorService = new ScheduledThreadPoolExecutor(4);
 
         // returning ScheduledFuture is ignored because
         // there's no need to modify the main scheduler
         // it only turns off once the whole program shuts down
-        SES.scheduleAtFixedRate(setup, 2, 5, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Tells the scheduler to shut down.
-     * Kills the thread pool.
-     */
-    public void shutdown()
-    {
-        SES.shutdown();
+        scheduledExecutorService.scheduleAtFixedRate(setup, 2, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -57,7 +57,7 @@ public class GuildListener
      * accordingly depending on whether Guilds were recently
      * added or removed from the database.
      */
-    public static void setupMonitoring () {
+    public static void setupMonitoring() {
         try {
 
             // list that will hold all guilds taken from the DB
@@ -68,18 +68,18 @@ public class GuildListener
             if (GUILDS.size() > activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
-                ArrayList<ChannelWorker> channelWorkerArrayList = new ArrayList<>();
+                ArrayList<Worker> workerArrayList = new ArrayList<>();
 
                 // iterates through guilds and activeworkers
                 // checking for lone guilds with no active worker
                 for (String it1 : GUILDS) {
                     boolean found = false;
 
-                    for (ChannelWorker it2 : activeWorkers) {
+                    for (Worker it2 : activeWorkers) {
                         if (it2.getAssignedGuild().equals(it1)) {
                             // if a match is found, leave it alone
                             // but check if it's running
-                            it2.scheduleWorker(thermo);
+                            it2.scheduleWorker();
                             found = true;
                             break;
                         }
@@ -88,24 +88,26 @@ public class GuildListener
                     // if a match is not found, create new worker thread for guild
                     if (!found) {
                         // adds worker to active worker array with assigned guild
-                        ChannelWorker GW = new ChannelWorker();
-                        GW.setAssignedGuild(it1);
-                        channelWorkerArrayList.add(GW);
+                        Worker worker = new Worker();
+                        worker.setAssignedGuild(it1);
+                        workerArrayList.add(worker);
                     }
                 }
                 // passes values through the collection GWArrayList for concurrency
-                activeWorkers.addAll(channelWorkerArrayList);
+                activeWorkers.addAll(workerArrayList);
             }
             // case 2: when the guilds array is smaller than the current active workers,
             // it means that there were guilds recently expunged from the database
             else if (GUILDS.size() < activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
-                ArrayList<ChannelWorker> channelWorkerArrayList = new ArrayList<>();
+
+                // list used to remove
+                ArrayList<Worker> workersToRemove = new ArrayList<>();
 
                 // iterates through channel workers and guilds
                 // checking for lone channel workers with no matching guilds
-                for (ChannelWorker it1 : activeWorkers) {
+                for (Worker it1 : activeWorkers) {
                     boolean found = false;
 
                     for (String it2 : GUILDS) {
@@ -117,13 +119,12 @@ public class GuildListener
                     }
 
                     // if a match isn't found, invalidate the ScheduledFuture
-                    // of the runnable and kill the thread
                     if (!found) {
                         it1.invalidate();
-                        channelWorkerArrayList.add(it1);
+                        workersToRemove.add(it1);
                     }
                 }
-                activeWorkers.removeAll(channelWorkerArrayList);
+                activeWorkers.removeAll(workersToRemove);
             }
 
         } catch (Exception ex)

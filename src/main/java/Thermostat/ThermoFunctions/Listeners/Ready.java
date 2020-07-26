@@ -2,11 +2,15 @@ package Thermostat.ThermoFunctions.Listeners;
 
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Commands.*;
-import Thermostat.ThermoFunctions.MonitorThreads.GuildListener;
-import Thermostat.ThermoFunctions.MonitorThreads.StatusMonitor;
+import Thermostat.ThermoFunctions.MonitorThreads.MessageReceived;
+import Thermostat.ThermoFunctions.MonitorThreads.WorkerManager;
+
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +37,12 @@ public class Ready extends ListenerAdapter
             return;
         }
 
-        // creates instance of GuildListener for guild
+        // creates instance of WorkerManager for guild
         // updating
-        GuildListener CL = new GuildListener();
+        WorkerManager workerManager = new WorkerManager();
 
-        // thread to manage bot status monitoring
-        StatusMonitor statusMonitor = new StatusMonitor();
+        // thread to manage bot status monitoring (disabled)
+        // StatusMonitor statusMonitor = new StatusMonitor();
 
         // Commands Listeners
         thermo.addEventListener(new Monitor());
@@ -51,14 +55,19 @@ public class Ready extends ListenerAdapter
         thermo.addEventListener(new Settings());
         thermo.addEventListener(new Invite());
         thermo.addEventListener(new Vote());
+        //thermo.addEventListener(new SetPrefix());
+        //thermo.addEventListener(new GetPrefix());
 
         // Other Event Listeners
         thermo.addEventListener(new GuildJoin());
         thermo.addEventListener(new GuildLeave());
         thermo.addEventListener(new MessageDeleteEvent());
         thermo.addEventListener(new ReactionAddEvent());
+        thermo.addEventListener(new MessageReceived());
 
         getConnectedGuilds();
+
+        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.watching("🔥 burning channels! th!getprefix"));
     }
 
     /**
@@ -90,10 +99,10 @@ public class Ready extends ListenerAdapter
         List<Guild> guildList = thermo.getGuilds();
 
         guildList.forEach(
-                element -> {
-                    System.out.print(element.getName() + " - ");
-                    System.out.println(element.getId());
-                }
+            element -> {
+                System.out.print(element.getName() + " - ");
+                System.out.println(element.getId());
+            }
         );
     }
 }

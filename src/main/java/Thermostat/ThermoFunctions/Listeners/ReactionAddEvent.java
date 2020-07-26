@@ -110,8 +110,7 @@ public class ReactionAddEvent extends ListenerAdapter
                             ev.getGuild().getId() + " AND CHANNEL_SETTINGS.MONITORED = 1")) {
                         List<String> channelsToUnMonitor = DataSource.query("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = " + ev.getGuild().getId());
 
-                        for (String jt : channelsToUnMonitor)
-                        {
+                        for (String jt : channelsToUnMonitor) {
                             Create.ChannelMonitor(ev.getGuild().getId(), jt, 0);
                         }
                         Messages.sendMessage(ev.getChannel(), Embeds.allRemoved(ev.getUser().getAsTag()));

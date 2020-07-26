@@ -69,6 +69,15 @@ public class Embeds {
         return eb;
     }
 
+    public static EmbedBuilder invalidSlowmode() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Please enter a valid slowmode value.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
+        return eb;
+    }
+
     public static EmbedBuilder bothChannelAndSlow() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Please specify the channels and then the slowmode.");
@@ -90,8 +99,8 @@ public class Embeds {
 
     public static EmbedBuilder insufficientReact() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Error executing command! Insufficient permissions: `Add Reactions`");
-        eb.setDescription("Add the `Add Reactions` permission to Thermostat and try again.");
+        eb.setTitle("Error executing command! Insufficient permissions: `ADD_REACTIONS`");
+        eb.setDescription("Add the `ADD_REACTIONS` permission to Thermostat and try again.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);
@@ -109,8 +118,8 @@ public class Embeds {
 
     public static EmbedBuilder insufficientPerm() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Error managing channel! Insufficient permissions: `Manage Channels`");
-        eb.setDescription("Channel was removed from monitoring database. Add the `Manage Channels` permission to Thermostat and re-monitor the channel with th!monitor.");
+        eb.setTitle("Error managing channel! Insufficient permissions: `MANAGE_CHANNELS`");
+        eb.setDescription("Channel was removed from monitoring database. Add the `MANAGE_CHANNELS` permission to Thermostat and re-monitor the channel with th!monitor.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);
@@ -211,6 +220,17 @@ public class Embeds {
     public static EmbedBuilder channelNotFound() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("That channel was not found in this guild.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
+        return eb;
+    }
+
+    public static EmbedBuilder getMonitor() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("`th!monitor`");
+        eb.addField("This command is used to add a channel to the monitoring database. " +
+         "You can also input an ID of a category instead, and the text channels in that category will be removed.", "`Syntax: th!monitor/mon/m <channels>/<categories>.`", false);
         eb.setTimestamp(Instant.now());
         eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);
