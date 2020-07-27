@@ -38,7 +38,7 @@ public class Worker {
      */
     public Worker() {
         Runnable mon = () -> monitorChannels(thermo.getGuildById(assignedGuild));
-        scheduledFuture = WorkerManager.scheduledExecutorService.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+        scheduledFuture = WorkerManager.scheduledExecutorService.scheduleAtFixedRate(mon, 0, 8, TimeUnit.SECONDS);
     }
 
     /**
@@ -48,7 +48,7 @@ public class Worker {
     public void scheduleWorker() {
         if (scheduledFuture.isDone() || scheduledFuture.isCancelled()) {
             Runnable mon = () -> monitorChannels(thermo.getGuildById(assignedGuild));
-            scheduledFuture = WorkerManager.scheduledExecutorService.scheduleAtFixedRate(mon, 0, 10, TimeUnit.SECONDS);
+            scheduledFuture = WorkerManager.scheduledExecutorService.scheduleAtFixedRate(mon, 0, 8, TimeUnit.SECONDS);
         }
     }
 
@@ -91,8 +91,8 @@ public class Worker {
     public long calculateAverageTime(List<Long> delays) {
         Long sum = 0L;
         if (!delays.isEmpty()) {
-            for (Long mark : delays) {
-                sum += mark;
+            for (Long it : delays) {
+                sum += it;
             }
             return sum / delays.size();
         }
@@ -153,8 +153,9 @@ public class Worker {
      * @param firstMessageTime How long it has passed since the last message was sent.
      */
     public void slowmodeSwitch(TextChannel channel, Long averageDelay, Long firstMessageTime) {
-        if (channel == null) { return; }
-
+        if (channel == null) {
+            return;
+        }
         // variables that store the maximum
         // and minimum  slow values for each channel
         int max, min;
@@ -164,9 +165,30 @@ public class Worker {
         max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
         min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
 
-        // calculate the slowmode required
-        int slowmode = (int) (-(Math.sqrt((3 * firstMessageTime) * (averageDelay / 10.0)) / 600.0) + 5);
-        putSlowmode(channel, slowmode, max, min);
+        // accounting for each delay of the messages
+        // this function picks an appropriate slowmode
+        // adjustment number for each case.
+        if ((averageDelay <= 100) && (firstMessageTime > 0 && firstMessageTime <= 1000)) {
+            putSlowmode(channel, 20, max, min);
+        } else if ((averageDelay <= 250) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
+            putSlowmode(channel, 10, max, min);
+        } else if ((averageDelay <= 350) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
+            putSlowmode(channel, 6, max, min);
+        } else if ((averageDelay <= 500) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
+            putSlowmode(channel, 4, max, min);
+        } else if ((averageDelay <= 750) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            putSlowmode(channel, 2, max, min);
+        } else if ((averageDelay <= 1250) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            putSlowmode(channel, 1, max, min);
+        } else if ((averageDelay <= 1500) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            putSlowmode(channel, 0, max, min);
+        } else if ((averageDelay <= 2000) || (firstMessageTime > 10000 && firstMessageTime <= 20000)) {
+            putSlowmode(channel, -1, max, min);
+        } else if ((averageDelay <= 2500) || (firstMessageTime > 20000 && firstMessageTime <= 40000)) {
+            putSlowmode(channel, -2, max, min);
+        } else if ((averageDelay <= 3000) || (firstMessageTime > 40000 && firstMessageTime <= 60000)) {
+            putSlowmode(channel, -4, max, min);
+        }
     }
 
     /**
@@ -181,7 +203,7 @@ public class Worker {
         List<Long> longList = new ArrayList<>();
 
         if (offsetDateTimes.size() < 5) {
-            longList.add(30000L);
+            longList.add(5000L);
             return longList;
         }
 
@@ -213,6 +235,7 @@ public class Worker {
                 "WHERE CHANNELS.GUILD_ID = " + guild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
 
         // keeps monitored channels list up to date
+        // by adding newly monitored channels
         for (String it : databaseMonitoredChannels) {
             boolean channelMatch = false;
             for (WorkerChannel jt : channelsToMonitor) {
@@ -238,14 +261,18 @@ public class Worker {
 
                     int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + currentWorker.channelId);
 
-                    if ((unit.between(currentWorker.messageList.get(0), nowTime) > 60000)) {
+                    if ((
+                            unit.between(currentWorker.messageList.get(0), nowTime) > 64000) ||
+                            DataSource.checkDatabaseForData("SELECT * FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " +
+                                    currentWorker.channelId + " AND MONITORED = 0")
+                            ) {
                         // removes object, emptying list
                         channelsToMonitor.remove(currentWorker);
                         putSlowmode(guild.getTextChannelById(currentWorker.channelId), -99999999, TextChannel.MAX_SLOWMODE, min);
                     } else {
                         OffsetDateTime firstMessageTime = currentWorker.messageList.get(0);
-
                         List<Long> delays = getListOfDelays(currentWorker.messageList, unit);
+
                         slowmodeSwitch(
                                 guild.getTextChannelById(currentWorker.channelId),
                                 calculateAverageTime(delays),

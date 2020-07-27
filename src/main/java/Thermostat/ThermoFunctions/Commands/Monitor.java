@@ -118,14 +118,10 @@ public class Monitor extends ListenerAdapter {
                         Create.Channel(ev.getGuild().getId(), it, 1);
                         complete = complete.concat("<#" + it + "> ");
                     } else {
-                        // checks if the channel is actively being
-                        // monitored
-                        boolean isMonitor = DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + it);
-
                         // checks whether the channel has the monitor
                         // value on the database set to 1
                         // table CHANNEL_SETTINGS
-                        if (isMonitor)
+                        if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + it))
                         {
                             monitored = monitored.concat("<#" + it + "> ");
                         } else {

@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -27,7 +28,7 @@ import static Thermostat.thermostat.thermo;
  */
 public class Ready extends ListenerAdapter
 {
-    public void onReady(ReadyEvent event)
+    public void onReady(@Nonnull ReadyEvent event)
     {
         if (!testDatabase())
         {
@@ -67,7 +68,7 @@ public class Ready extends ListenerAdapter
 
         getConnectedGuilds();
 
-        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.watching("🔥 burning channels! th!getprefix"));
+        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.watching("🔥 burning channels!"));
     }
 
     /**
@@ -78,7 +79,7 @@ public class Ready extends ListenerAdapter
     {
 
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = DataSource.getConnection()
         ) {}
         catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);

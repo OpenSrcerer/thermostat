@@ -22,7 +22,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.6.4
+ * @version 0.6.5
  * @since 2020-04-17
  */
 

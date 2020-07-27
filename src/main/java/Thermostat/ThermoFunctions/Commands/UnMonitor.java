@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -113,7 +115,9 @@ public class UnMonitor extends ListenerAdapter
                     if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
                         Create.Guild(ev.getGuild().getId());
                     // checks db if channel exists
-                    if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + it))
+                    if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS " +
+                            "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.CHANNEL_ID = " +
+                            it + " AND CHANNEL_SETTINGS.MONITORED = 1"))
                     {
                         Create.ChannelMonitor(ev.getGuild().getId(), it, 0);
                         complete = complete.concat("<#" + it + "> ");
@@ -122,7 +126,8 @@ public class UnMonitor extends ListenerAdapter
                     else
                         unmonitored = unmonitored.concat("<#" + it + "> ");
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger lgr = LoggerFactory.getLogger(DataSource.class);
+                    lgr.error(ex.getMessage(), ex);
                     Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
                 }
             }
