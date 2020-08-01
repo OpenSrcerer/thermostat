@@ -19,7 +19,7 @@ public class Prefix extends ListenerAdapter {
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         // checks if member sending request is a bot
-        if (ev.getMember().getUser().isBot() || args.size() == 1) {
+        if (ev.getMember().getUser().isBot()) {
             return;
         }
 
@@ -38,9 +38,12 @@ public class Prefix extends ListenerAdapter {
             } catch (SQLException ex) {
                 Messages.sendMessage(ev.getChannel(), Embeds.fatalError("Try setting the prefix again."));
             }
+            return;
         }
 
-        else if (
+        if (args.size() == 1) { return; }
+
+        if (
                 (args.get(0).equalsIgnoreCase("<@!" + thermostat.thermo.getSelfUser().getId() + ">") && args.get(1).equalsIgnoreCase("prefix")) ||
                 (args.get(0).equalsIgnoreCase("<@!" + thermostat.thermo.getSelfUser().getId() + ">") && args.get(1).equalsIgnoreCase("p"))
         ) {
