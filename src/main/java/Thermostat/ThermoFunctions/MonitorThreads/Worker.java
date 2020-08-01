@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 import static Thermostat.thermostat.thermo;
 
@@ -106,6 +107,10 @@ public class Worker {
      * @param time    Int representing the adjustment time.
      */
     public void putSlowmode(TextChannel channel, int time, int max, int min) {
+        Consumer<Throwable> slowmodeFailureConsumer = throwable -> {
+            removeChannel(channel);
+        };
+
         try {
             // gets the current slowmode
             int slow = channel.getSlowmode();
@@ -113,36 +118,45 @@ public class Worker {
             // if slowmode and the added time exceed the max slowmode
             if (slow + time > max && max > 0) {
                 // sets to max DATABASE slowmode value and exits
-                channel.getManager().setSlowmode(max).queue();
+                channel.getManager().setSlowmode(max).queue(null, slowmodeFailureConsumer);
                 return;
             }
             if (slow + time > TextChannel.MAX_SLOWMODE) {
                 // sets to max DISCORD slowmode value and exits
-                channel.getManager().setSlowmode(TextChannel.MAX_SLOWMODE).queue();
+                channel.getManager().setSlowmode(TextChannel.MAX_SLOWMODE).queue(null, slowmodeFailureConsumer);
                 return;
             }
             if (slow + time < min)
             {
                 // if it's less than minimum DB value
                 // sets it to that minimum value
-                channel.getManager().setSlowmode(min).queue();
+                channel.getManager().setSlowmode(min).queue(null, slowmodeFailureConsumer);
                 return;
             }
             // otherwise just sets it
-            channel.getManager().setSlowmode(slow + time).queue();
+            channel.getManager().setSlowmode(slow + time).queue(null, slowmodeFailureConsumer);
 
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(channel, Embeds.insufficientPerm());
-            channelsToMonitor.forEach(monitored -> {
-                if (monitored.channelId.equals(channel.getId())) {
-                    channelsToMonitor.remove(monitored);
-                }
-            });
-            Delete.Channel(channel.getGuild().getId(), channel.getId());
+            removeChannel(channel);
         } catch (Exception ex) {
             Logger lgr = LoggerFactory.getLogger(Worker.class);
             lgr.error(ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Removes channels from monitoring, sending an error msg.
+     * @param channel The channel to be removed.
+     */
+    private void removeChannel (TextChannel channel) {
+        Messages.sendMessage(channel, Embeds.insufficientPerm());
+        for (int index = 0; index < channelsToMonitor.size(); ++index)
+        {
+            if (channelsToMonitor.get(index).channelId.equals(channel.getId())) {
+                channelsToMonitor.remove(channelsToMonitor.get(index));
+            }
+        }
+        Delete.Channel(channel.getGuild().getId(), channel.getId());
     }
 
     /**
@@ -172,21 +186,21 @@ public class Worker {
             putSlowmode(channel, 20, max, min);
         } else if ((averageDelay <= 250) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
             putSlowmode(channel, 10, max, min);
-        } else if ((averageDelay <= 350) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
+        } else if ((averageDelay <= 500) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
             putSlowmode(channel, 6, max, min);
-        } else if ((averageDelay <= 500) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
+        } else if ((averageDelay <= 750) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
             putSlowmode(channel, 4, max, min);
-        } else if ((averageDelay <= 750) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+        } else if ((averageDelay <= 1000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 2, max, min);
         } else if ((averageDelay <= 1250) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 1, max, min);
         } else if ((averageDelay <= 1500) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 0, max, min);
-        } else if ((averageDelay <= 2000) || (firstMessageTime > 10000 && firstMessageTime <= 20000)) {
+        } else if ((firstMessageTime > 0 && firstMessageTime <= 10000) || (averageDelay < 2000 && averageDelay >= 1500)) {
             putSlowmode(channel, -1, max, min);
-        } else if ((averageDelay <= 2500) || (firstMessageTime > 20000 && firstMessageTime <= 40000)) {
+        } else if ((firstMessageTime > 10000 && firstMessageTime <= 30000) || (averageDelay < 2500 && averageDelay >= 2000)) {
             putSlowmode(channel, -2, max, min);
-        } else if ((averageDelay <= 3000) || (firstMessageTime > 40000 && firstMessageTime <= 60000)) {
+        } else if ((firstMessageTime > 30000 && firstMessageTime <= 60000) || averageDelay >= 2500) {
             putSlowmode(channel, -4, max, min);
         }
     }

@@ -27,13 +27,17 @@ public class SetMinimum extends ListenerAdapter {
     public static EmbedBuilder embed = new EmbedBuilder();
 
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev) {
-// gets given arguments and passes them to a list
+        // gets guild prefix from database. if it doesn't have one, use default
+        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+        if (prefix == null) { prefix = thermostat.prefix; }
+
+        // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         if (
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "setminimum") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "setmin") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "smn")
+                args.get(0).equalsIgnoreCase( prefix + "setminimum") ||
+                args.get(0).equalsIgnoreCase(prefix + "setmin") ||
+                args.get(0).equalsIgnoreCase( prefix + "smn")
         ) {
             // checks if member sending request is a bot
             if (ev.getMember().getUser().isBot()) {

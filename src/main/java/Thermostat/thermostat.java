@@ -7,12 +7,14 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 
 /**
  * <h1>Thermostat Bot</h1>*
@@ -22,7 +24,7 @@ import java.util.Collection;
  * <p>
  *
  * @author Weed-Pot
- * @version 0.6.5
+ * @version 0.6.6
  * @since 2020-04-17
  */
 
@@ -33,7 +35,7 @@ public class thermostat {
     public static String prefix = "th!";
 
     // Intents to using the Discord Gateway
-    private static Collection<GatewayIntent> intents = Arrays.asList(
+    private static EnumSet<GatewayIntent> intents = EnumSet.of(
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MESSAGE_REACTIONS
     );
@@ -43,7 +45,7 @@ public class thermostat {
      * are defined in {@link Ready}.
      *
      * @param args default java main function
-     * @throws LoginException Issue occurred when logging in
+     * @throws LoginException Issue occurred when logging in.
      */
     public static void main(String[] args) throws LoginException {
 
@@ -58,6 +60,8 @@ public class thermostat {
                         CacheFlag.VOICE_STATE
                 )
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
+                .setChunkingFilter(ChunkingFilter.NONE)
+                .setEnableShutdownHook(true)
                 .build();
 
 

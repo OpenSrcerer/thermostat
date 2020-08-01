@@ -122,6 +122,35 @@ public class DataSource {
     }
 
     /**
+     * Same as above, returns single String value.
+     */
+    public static String queryString (String Query)
+    {
+        String retString = null;
+
+        try (
+                Connection conn = DataSource.getConnection();
+                PreparedStatement pst = conn.prepareStatement(
+                        Query,
+                        ResultSet.TYPE_SCROLL_SENSITIVE,
+                        ResultSet.CONCUR_UPDATABLE
+                );
+                ResultSet rs = pst.executeQuery();
+        ) {
+            if (rs.next())
+            {
+                retString = rs.getString(1);
+            } else {
+                return null;
+            }
+        } catch (SQLException ex) {
+            Logger lgr = LoggerFactory.getLogger(ds.getClass());
+            lgr.error(ex.getMessage(), ex);
+        }
+        return retString;
+    }
+
+    /**
      * Function that performs a data-changing query
      * upon the database.
      * @param Query A string containing the update that will be

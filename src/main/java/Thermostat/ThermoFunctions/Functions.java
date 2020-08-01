@@ -3,6 +3,7 @@ package Thermostat.ThermoFunctions;
 import jdk.jfr.Unsigned;
 
 import java.math.BigInteger;
+import java.util.regex.Pattern;
 
 /**
  *

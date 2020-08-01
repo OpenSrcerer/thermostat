@@ -27,13 +27,17 @@ public class SetMaximum extends ListenerAdapter {
     private static EmbedBuilder embed = new EmbedBuilder();
 
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev) {
+        // gets guild prefix from database. if it doesn't have one, use default
+        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+        if (prefix == null) { prefix = thermostat.prefix; }
+
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         if (
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "setmaximum") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "setmax") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "smx")
+                args.get(0).equalsIgnoreCase(prefix + "setmaximum") ||
+                args.get(0).equalsIgnoreCase(prefix + "setmax") ||
+                args.get(0).equalsIgnoreCase(prefix + "smx")
         ) {
             // checks if member sending request is a bot
             if (ev.getMember().getUser().isBot()) {

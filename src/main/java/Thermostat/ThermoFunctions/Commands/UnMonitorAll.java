@@ -1,9 +1,11 @@
 package Thermostat.ThermoFunctions.Commands;
 
 import Thermostat.Embeds;
+import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Commands.Objects.MenuType;
 import Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage;
 import Thermostat.ThermoFunctions.Messages;
+import Thermostat.thermostat;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -25,13 +27,17 @@ public class UnMonitorAll extends ListenerAdapter
 {
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev)
     {
+        // gets guild prefix from database. if it doesn't have one, use default
+        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+        if (prefix == null) { prefix = thermostat.prefix; }
+
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         if (
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "unmonitorall") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "unmonall") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "uma")
+                args.get(0).equalsIgnoreCase(prefix + "unmonitorall") ||
+                args.get(0).equalsIgnoreCase(prefix + "unmonall") ||
+                args.get(0).equalsIgnoreCase(prefix + "uma")
         ) {
             // checks if member sending request is a bot
             if (ev.getMember().getUser().isBot()) {

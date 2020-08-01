@@ -4,6 +4,7 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.Create;
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Messages;
+import Thermostat.thermostat;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -23,13 +24,17 @@ import static Thermostat.ThermoFunctions.Functions.parseMention;
 public class Settings extends ListenerAdapter
 {
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev) {
+        // gets guild prefix from database. if it doesn't have one, use default
+        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+        if (prefix == null) { prefix = thermostat.prefix; }
+
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
         String embedString = "";
 
         if (
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "settings") ||
-                        args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "s")
+                args.get(0).equalsIgnoreCase(prefix + "settings") ||
+                args.get(0).equalsIgnoreCase(prefix + "s")
         ) {
             // checks if member sending request is a bot
             if (ev.getMember().getUser().isBot()) {

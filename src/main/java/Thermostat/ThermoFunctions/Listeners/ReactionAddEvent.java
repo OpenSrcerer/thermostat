@@ -6,6 +6,7 @@ import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Commands.Objects.MenuType;
 import Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage;
 import Thermostat.ThermoFunctions.Messages;
+import Thermostat.thermostat;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,13 +45,17 @@ public class ReactionAddEvent extends ListenerAdapter
                 ev.getMessageId().equals(monitoredMessage.getMessageId()) &&
                 ev.getUserId().equals(monitoredMessage.getMessageOwner())
         ) {
+            // gets guild prefix from database. if it doesn't have one, use default
+            String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+            if (prefix == null) { prefix = thermostat.prefix; }
+
             try {
                 switch (ev.getReactionEmote().getEmoji()) {
                     case "🌡":
                         // Monitored Functions Menu
                         if (monitoredMessage.getMenuType() == MenuType.SELECTION) {
                             monitoredMessage.resetDestructionTimer(ev.getChannel());
-                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getMonitorInfo().build());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getMonitorInfo(prefix).build());
                             monitoredMessage.setMenuType(MenuType.MONITOR);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
@@ -61,7 +67,7 @@ public class ReactionAddEvent extends ListenerAdapter
                         // Informational Menu
                         if (monitoredMessage.getMenuType() == MenuType.SELECTION) {
                             monitoredMessage.resetDestructionTimer(ev.getChannel());
-                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getOtherInfo().build());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getOtherInfo(prefix).build());
                             monitoredMessage.setMenuType(MenuType.OTHER);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());

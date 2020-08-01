@@ -35,13 +35,17 @@ public class UnMonitor extends ListenerAdapter
 
     public void onGuildMessageReceived(GuildMessageReceivedEvent ev)
     {
+        // gets guild prefix from database. if it doesn't have one, use default
+        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+        if (prefix == null) { prefix = thermostat.prefix; }
+
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         if (
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "unmonitor") ||
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "unmon") ||
-                args.get(0).equalsIgnoreCase(Thermostat.thermostat.prefix + "um")
+                args.get(0).equalsIgnoreCase(prefix + "unmonitor") ||
+                args.get(0).equalsIgnoreCase(prefix + "unmon") ||
+                args.get(0).equalsIgnoreCase(prefix + "um")
         ) {
             // checks if member sending request is a bot
             if (ev.getMember().getUser().isBot()) {

@@ -45,30 +45,28 @@ public class Ready extends ListenerAdapter
         // thread to manage bot status monitoring (disabled)
         // StatusMonitor statusMonitor = new StatusMonitor();
 
-        // Commands Listeners
-        thermo.addEventListener(new Monitor());
-        thermo.addEventListener(new UnMonitor());
-        thermo.addEventListener(new GetMonitorList());
-        thermo.addEventListener(new UnMonitorAll());
-        thermo.addEventListener(new Info());
-        thermo.addEventListener(new SetMaximum());
-        thermo.addEventListener(new SetMinimum());
-        thermo.addEventListener(new Settings());
-        thermo.addEventListener(new Invite());
-        thermo.addEventListener(new Vote());
-        //thermo.addEventListener(new SetPrefix());
-        //thermo.addEventListener(new GetPrefix());
-
-        // Other Event Listeners
-        thermo.addEventListener(new GuildJoin());
-        thermo.addEventListener(new GuildLeave());
-        thermo.addEventListener(new MessageDeleteEvent());
-        thermo.addEventListener(new ReactionAddEvent());
-        thermo.addEventListener(new MessageReceived());
-
+        thermo.addEventListener(
+                // Command Event Listeners
+                new Monitor(),
+                new UnMonitor(),
+                new GetMonitorList(),
+                new UnMonitorAll(),
+                new Info(),
+                new SetMaximum(),
+                new SetMinimum(),
+                new Settings(),
+                new Invite(),
+                new Vote(),
+                new Prefix(),
+                // Other Event Listeners
+                new GuildJoin(),
+                new GuildLeave(),
+                new MessageDeleteEvent(),
+                new ReactionAddEvent(),
+                new MessageReceived()
+        );
         getConnectedGuilds();
-
-        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.watching("🔥 burning channels!"));
+        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.twitch.tv/starttree"));
     }
 
     /**

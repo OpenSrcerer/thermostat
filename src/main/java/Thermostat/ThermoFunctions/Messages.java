@@ -97,23 +97,6 @@ public class Messages {
     /**
      * Edits this Message's content to the provided MessageEmbed.
      *
-     * @param msg        Message to edit.
-     * @param newContent New embed to place in the message.
-     */
-    public static void editMessage(Message msg, MessageEmbed newContent) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("UNKNOWN_MESSAGE")) {
-                // ignore
-            }
-        };
-
-        msg.editMessage(newContent).queue(null, throwableConsumer);
-    }
-
-
-    /**
-     * Edits this Message's content to the provided MessageEmbed.
-     *
      * @param channel    TextChannel the message resides on.
      * @param msgId      Message to edit.
      * @param newContent New embed to place in the message.
@@ -133,9 +116,7 @@ public class Messages {
             }
         };
 
-        Consumer<Message> onSuccessfulRetrieval = message -> {
-            message.editMessage(newContent).queue(null, editMessageConsumer);
-        };
+        Consumer<Message> onSuccessfulRetrieval = message -> message.editMessage(newContent).queue(null, editMessageConsumer);
 
         try {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, retrieveMessageConsumer);
@@ -168,7 +149,7 @@ public class Messages {
 
         Consumer<Message> onSuccessfulRetrieval = message -> {
             try {
-                message.delete().queue(null, throwableDeleteConsumer);
+                message.delete().queueAfter(500, TimeUnit.MILLISECONDS, null, throwableDeleteConsumer);
             } catch (InsufficientPermissionException ex) {
                 Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
             }
@@ -252,11 +233,11 @@ public class Messages {
 
         Consumer<Message> onSuccessfulRetrieval = message -> {
             try {
-                long reactionsDuration = 0;
+                long reactionsDuration = 750;
                 for (String it : unicode)
                 {
                     message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS, null, throwableReactionConsumer);
-                    reactionsDuration += 100;
+                    reactionsDuration += 500;
                 }
             } catch (InsufficientPermissionException ex) {
                 if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
@@ -274,6 +255,38 @@ public class Messages {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
+        }
+    }
+
+    /**
+     * Adds a list of reactions to a given message.
+     *
+     * @param message The message which will have reactions added to it.
+     * @param unicode The unicode emoji to add as a reaction.
+     */
+    public static void addReactions(Message message, List<String> unicode) {
+        Consumer<Throwable> throwableReactionConsumer = throwable -> {
+            if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
+                Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+            }
+        };
+
+        try {
+            long reactionsDuration = 750;
+            for (String it : unicode)
+            {
+                message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS, null, throwableReactionConsumer);
+                reactionsDuration += 500;
+            }
+        } catch (InsufficientPermissionException ex) {
+            if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
+                Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+            } else if (ex.toString().contains("MESSAGE_HISTORY")) {
+                Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+            }
+            Messages.deleteMessage(message);
+            throw new PermissionException("Missing Permissions to add Reaction.");
+        } catch (ErrorResponseException ignored) {
         }
     }
 
