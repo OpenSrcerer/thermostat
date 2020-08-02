@@ -18,8 +18,12 @@ public class Prefix extends ListenerAdapter {
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent ev) {
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
-        // checks if member sending request is a bot
-        if (ev.getMember().getUser().isBot()) {
+        if (ev.getMember() != null) {
+            // checks if member sending request is a bot
+            if (ev.getMember().getUser().isBot()) {
+                return;
+            }
+        } else {
             return;
         }
 
