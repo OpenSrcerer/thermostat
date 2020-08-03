@@ -32,7 +32,7 @@ All you have to do is get started with Thermostat is:
   <li>Set up the maximum slowmode upper bound for your channels using <code>@`prefix`setmaximum `channels/categories`</code>.</li>
 </ul>
 
-**Note:** <code>`prefix`</code>, and <code>`channels/categories`</code> are variables that should be replaced as per your need. For example, if your prefix is <code>th!</code> and you're trying to monitor a channel called "#general", you would type <code>th!monitor #general</code>.
+**Note:** <code>\`prefix\`</code>, and <code>\`channels/categories\`</code> are variables that should be replaced as per your need. For example, if your prefix is <code>th!</code> and you're trying to monitor a channel called "#general", you would type <code>th!monitor #general</code>.
 
 # Troubleshooting
 The most common issue with all bots on Discord is permission errors. If a bot is not working properly, the most likely cause is a permission issue. If you need a guide to take you through that, <a href="https://support.discord.com/hc/en-us/articles/206029707-How-do-I-set-up-Permissions-">Discord has a great article all about it</a>.
@@ -58,6 +58,7 @@ If you still have problems, <a href="https://discord.gg/FnPb4nM">join our suppor
   <li><a href="https://dev.mysql.com/downloads/connector/j/3.1.html">MySQL JDBC Connector</a></li>
   <li><a href="http://logback.qos.ch/">Logback</a></li>
   <li><a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a></li>
+  <li><a href="https://github.com/DiscordBotList/DBL-Java-Library">Discord Bot List Java Library</a></li>
 </ul>
 
 # License
