@@ -49,7 +49,7 @@ The most common issue with all bots on Discord is permission errors. If a bot is
 </ol>
 
 The bot is going to react accordingly to the permissions it is missing. Please make sure that before you submit an issue, you have validated that Thermostat has all needed permissions in the specific channel you're trying to use it in.
-If you still have problems, <a href="discord.gg/FnPb4nM">join our support server</a>.
+If you still have problems, <a href="https://discord.gg/FnPb4nM">join our support server</a>.
 
 # Current Dependencies
 <ul>
