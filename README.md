@@ -40,12 +40,12 @@ The most common issue with all bots on Discord is permission errors. If a bot is
 **Thermostat currently needs these permissions in a channel to function correctly:**
 <ol>
   <li><code>Manage Channels</code></li>
-  <li>Read Messages</li>
-  <li>Send Messages</li>
-  <li>Manage Messages</li>
-  <li>Embed Links</li>
-  <li>Read Message History</li>
-  <li>Add Reactions</li>
+  <li><code>Read Messages</code></li>
+  <li><code>Send Messages</code></li>
+  <li><code>Manage Messages</code></li>
+  <li><code>Embed Links</code></li>
+  <li><code>Read Message History</code></li>
+  <li><code>Add Reactions</code></li>
 </ol>
 
 The bot is going to react accordingly to the permissions it is missing. Please make sure that before you submit an issue, you have validated that Thermostat has all needed permissions in the specific channel you're trying to use it in.
