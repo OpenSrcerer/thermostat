@@ -1,3 +1,8 @@
+https://img.shields.io/github/license/OpenSrcerer/thermostat 
+https://img.shields.io/github/stars/OpenSrcerer/thermostat 
+https://img.shields.io/github/forks/OpenSrcerer/thermostat 
+https://img.shields.io/github/issues/OpenSrcerer/thermostat
+
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/700341788136833065.svg" alt="Thermostat"/>
 </a>
