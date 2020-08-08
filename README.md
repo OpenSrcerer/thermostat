@@ -28,10 +28,13 @@ All you have to do is get started with Thermostat is:
   <li><a href="https://top.gg/bot/700341788136833065">Invite Thermostat to your server.</a></li>
   <li>Set up your server prefix by sending the <code>@Thermostat prefix</code> command.</li>
   <li>Monitor the channels you need with <code>`prefix`monitor `channels/categories`</code>.</li>
-  <li>Set up the maximum slowmode upper bound for your channels using <code>@`prefix`setmaximum `channels/categories`</code>.</li>
-</ul>
+  <li>Set up the maximum slowmode upper bound for your channels using <code>`prefix`setmaximum `channels/categories`</code>.</li>
+  <li>Edit the channel sensitivity with <code>`prefix`sensitivity `channels/categories` `sensitivity`</code>.</li>
+</ul>   
 
-**Note:** <code>\`prefix\`</code>, and <code>\`channels/categories\`</code> are variables that should be replaced as per your need. For example, if your prefix is <code>th!</code> and you're trying to monitor a channel called "#general", you would type <code>th!monitor #general</code>.
+**Note:** <code>\`prefix\`</code>, and <code>\`channels/categories\`</code> are variables that should be replaced as per your need. For example, if your prefix is <code>th!</code> and you're trying to monitor a channel called "#general", you would type <code>th!monitor #general</code>.   
+
+**You can find more about these commands in <a href="https://github.com/OpenSrcerer/thermostat/wiki">our wiki</a>.**
 
 # Troubleshooting
 The most common issue with all bots on Discord is permission errors. If a bot is not working properly, the most likely cause is a permission issue. If you need a guide to take you through that, <a href="https://support.discord.com/hc/en-us/articles/206029707-How-do-I-set-up-Permissions-">Discord has a great article all about it</a>.
