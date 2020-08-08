@@ -1,5 +1,4 @@
-[![GitHub license](https://img.shields.io/github/license/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/blob/master/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/stargazers)
+[![CodeFactor](https://www.codefactor.io/repository/github/opensrcerer/thermostat/badge)](https://www.codefactor.io/repository/github/opensrcerer/thermostat)
 [![GitHub forks](https://img.shields.io/github/forks/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/network)
 [![GitHub issues](https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/issues) 
 
