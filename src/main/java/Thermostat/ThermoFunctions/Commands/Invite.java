@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * <h1>Invite Command</h1>
- * <p>
  * Class that manages the th!invite command. Sends
  * an Invite embed when command is called.
  */

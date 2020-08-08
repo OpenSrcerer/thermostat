@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <h1>GetMonitor Command</h1>
- * <p>
  * Class for the th!getmonitor command call.
  * Retrieves all the currently monitored channels
  * and sends them as a single embed in the channel

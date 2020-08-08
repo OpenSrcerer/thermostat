@@ -112,7 +112,7 @@ public class SetMaximum extends ListenerAdapter {
             }
 
             // Parsing the slowmode argument
-            int argumentSlow = 0;
+            int argumentSlow;
             try {
                 argumentSlow = parseSlowmode(args.get(args.size() - 1));
             } catch (NumberFormatException ex) {

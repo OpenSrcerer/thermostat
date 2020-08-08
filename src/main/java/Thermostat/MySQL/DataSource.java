@@ -51,7 +51,7 @@ public class DataSource {
                         ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE
                 );
-                ResultSet rs = pst.executeQuery();
+                ResultSet rs = pst.executeQuery()
         ) {
             resultArray = new ArrayList<>();
             while (rs.next())
@@ -77,19 +77,45 @@ public class DataSource {
                         ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE
                 );
-                ResultSet rs = pst.executeQuery();
+                ResultSet rs = pst.executeQuery()
         ) {
             rs.next();
 
-            if (rs.getBoolean(1))
-                return true;
-            else
-                return false;
+            return rs.getBoolean(1);
         } catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return false;
+    }
+
+    /**
+     * Same as above, returns single int value.
+     */
+    public static float querySens (String Query)
+    {
+        float retVal = 0;
+
+        try (
+                Connection conn = DataSource.getConnection();
+                PreparedStatement pst = conn.prepareStatement(
+                        Query,
+                        ResultSet.TYPE_SCROLL_SENSITIVE,
+                        ResultSet.CONCUR_UPDATABLE
+                );
+                ResultSet rs = pst.executeQuery()
+        ) {
+            if (rs.next())
+            {
+                retVal = rs.getFloat(1);
+            } else {
+                return retVal;
+            }
+        } catch (SQLException ex) {
+            Logger lgr = LoggerFactory.getLogger(ds.getClass());
+            lgr.error(ex.getMessage(), ex);
+        }
+        return retVal;
     }
 
     /**
@@ -106,7 +132,7 @@ public class DataSource {
                         ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE
                 );
-                ResultSet rs = pst.executeQuery();
+                ResultSet rs = pst.executeQuery()
         ) {
             if (rs.next())
             {
@@ -135,7 +161,7 @@ public class DataSource {
                         ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE
                 );
-                ResultSet rs = pst.executeQuery();
+                ResultSet rs = pst.executeQuery()
         ) {
             if (rs.next())
             {
@@ -179,7 +205,7 @@ public class DataSource {
         try (
                 Connection conn = DataSource.getConnection();
                 PreparedStatement pst = conn.prepareStatement(Query);
-                ResultSet rs = pst.executeQuery();
+                ResultSet rs = pst.executeQuery()
         ) {
             if (!rs.next())
                 return false;

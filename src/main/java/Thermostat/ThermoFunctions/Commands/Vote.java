@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * <h1>Monitor Command</h1>
- * <p>
- * Class that manages the th!info command. Sends
- * an Info embed when th!info is called.
+ * Class that manages the th!vote command. Sends
+ * a Vote embed when th!vote is called.
  */
 public class Vote extends ListenerAdapter
 {

@@ -19,8 +19,6 @@ import java.util.List;
 import static Thermostat.ThermoFunctions.Functions.parseMention;
 
 /**
- * <h1>Monitor Command</h1>
- * <p>
  * Adds channels to the database provided in
  * db.properties, upon user running the
  * command. Extends ListenerAdapter thus must

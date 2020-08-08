@@ -10,8 +10,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -20,19 +18,11 @@ import java.util.List;
 
 import static Thermostat.ThermoFunctions.Functions.parseMention;
 
-
-/**
- * Removes channels from the database provided in
- * db.properties, upon user running the
- * command. Extends ListenerAdapter thus must
- * be added as a listener in {@link Thermostat.thermostat}.
- */
-public class UnMonitor extends ListenerAdapter
+public class Sensitivity extends ListenerAdapter
 {
     private static EmbedBuilder embed = new EmbedBuilder();
 
-    public void onGuildMessageReceived(GuildMessageReceivedEvent ev)
-    {
+    public void onGuildMessageReceived(GuildMessageReceivedEvent ev) {
         // gets guild prefix from database. if it doesn't have one, use default
         String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
         if (prefix == null) { prefix = thermostat.prefix; }
@@ -41,22 +31,13 @@ public class UnMonitor extends ListenerAdapter
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         if (
-                args.get(0).equalsIgnoreCase(prefix + "unmonitor") ||
-                args.get(0).equalsIgnoreCase(prefix + "unmon") ||
-                args.get(0).equalsIgnoreCase(prefix + "um")
+                args.get(0).equalsIgnoreCase(prefix + "sensitivity") ||
+                args.get(0).equalsIgnoreCase(prefix + "sens")
         ) {
             // checks if member sending request is a bot
             if (ev.getMember().getUser().isBot()) {
                 return;
             }
-
-            if (args.size() == 1) {
-                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannels());
-                return;
-            }
-
-            // catch to remove command initation with prefix
-            args.remove(0);
 
             // checks if event member has permission
             if (!ev.getMember().hasPermission(Permission.MANAGE_CHANNEL)) {
@@ -64,13 +45,27 @@ public class UnMonitor extends ListenerAdapter
                 return;
             }
 
+            //
+            if (args.size() < 2) {
+                Messages.sendMessage(ev.getChannel(), Embeds.helpSensitivity(prefix));
+                return;
+            }
+
+            // catch to remove command initiation with prefix
+            args.remove(0);
+
             String nonValid = "",
                     noText = "",
                     complete = "",
-                    unmonitored = "";
+                    badSensitivity = "";
+            // shows us if there were arguments before
+            // but were removed due to channel not being found
+            boolean removed = false;
 
             // parses arguments into usable IDs, checks if channels exist
-            for (int index = 0; index < args.size(); ++index) {
+            // up to args.size() - 1 because the last argument is the slowmode
+            for (int index = 0; index < args.size() - 1; ++index) {
+
                 // The argument gets parsed. If it's a mention, it gets formatted
                 // into an ID through the parseMention() function.
                 // All letters are removed, thus the usage of the
@@ -81,6 +76,7 @@ public class UnMonitor extends ListenerAdapter
                 if (args.get(index).isBlank()) {
                     nonValid = nonValid.concat("\"" + originalArgument + "\" ");
                     args.remove(index);
+                    removed = true;
                     --index;
                 }
 
@@ -91,60 +87,92 @@ public class UnMonitor extends ListenerAdapter
                     List<TextChannel> TextChannels = ev.getGuild().getCategoryById(args.get(index)).getTextChannels();
                     // if list is empty add that it is in msg
                     if (TextChannels.isEmpty()) {
-                        noText = noText.concat("<#" + args.get(index) + "> ");
+                        noText = noText.concat("<#" + originalArgument + "> ");
                     }
                     // removes category ID from argument ArrayList
                     args.remove(index);
                     // iterates through every channel and adds its' id to the arg list
                     for (TextChannel it : TextChannels) {
-                        args.add(it.getId());
+                        args.add(0, it.getId());
                     }
                     --index;
                 }
 
                 // removes element from arguments if it's not a valid channel ID
                 else if (ev.getGuild().getTextChannelById(args.get(index)) == null) {
-                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                    nonValid = nonValid.concat("\"" + originalArgument + "\" ");
                     args.remove(index);
+                    removed = true;
                     --index;
                 }
             }
 
-            // connects to database and removes channel
-            for (String it : args) {
+            float offset;
+            try {
+                offset = Float.parseFloat(args.get(args.size() - 1));
+            } catch (NumberFormatException ex) {
+                Messages.sendMessage(ev.getChannel(), Embeds.invalidSensitivity());
+                return;
+            }
+
+
+            if (args.size() >= 2)
+            {
+                for (int index = 0; index < args.size() - 1; ++index) {
+                    try {
+                        // silent guild adder
+                        if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
+                            Create.Guild(ev.getGuild().getId());
+
+                        // check db if channel exists and create it if not
+                        if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index)))
+                            Create.Channel(ev.getGuild().getId(), args.get(index), 0);
+
+                        if (offset >= -10 && offset <= 10)
+                        {
+                            DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = " + (1f + offset/20f) + " WHERE CHANNEL_ID = " + args.get(index));
+                            complete = complete.concat("<#" + args.get(index) + "> ");
+                        } else {
+                            badSensitivity = badSensitivity.concat("<#" + args.get(index) + "> ");
+                        }
+
+                    } catch (Exception ex) {
+                        nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                    }
+                }
+            } else if (!removed) {
                 try {
                     // silent guild adder
                     if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
                         Create.Guild(ev.getGuild().getId());
-                    // checks db if channel exists
-                    if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS " +
-                            "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.CHANNEL_ID = " +
-                            it + " AND CHANNEL_SETTINGS.MONITORED = 1"))
+
+                    // check db if channel exists and create it if not
+                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + ev.getChannel().getId()))
+                        Create.Channel(ev.getGuild().getId(), ev.getChannel().getId(), 0);
+
+                    if (offset >= -10 && offset <= 10)
                     {
-                        Create.ChannelMonitor(ev.getGuild().getId(), it, 0);
-                        complete = complete.concat("<#" + it + "> ");
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = " + (1f + offset/20f) + " WHERE CHANNEL_ID = " + ev.getChannel().getId());
+                        complete = complete.concat("<#" + ev.getChannel().getId() + "> ");
+                    } else {
+                        badSensitivity = badSensitivity.concat("<#" + ev.getChannel().getId() + "> ");
                     }
-                    // if not, do not do anything
-                    else
-                        unmonitored = unmonitored.concat("<#" + it + "> ");
                 } catch (Exception ex) {
-                    Logger lgr = LoggerFactory.getLogger(DataSource.class);
-                    lgr.error(ex.getMessage(), ex);
                     Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
+                    return;
                 }
             }
 
             embed.setColor(0xffff00);
             if (!complete.isEmpty())
             {
-                embed.addField("Successfully unmonitored:", complete, false);
+                embed.addField("Channels given a new sensitivity of " + offset + ":", complete, false);
                 embed.setColor(0x00ff00);
             }
 
-            if (!unmonitored.isEmpty())
+            if (!badSensitivity.isEmpty())
             {
-                embed.addField("Already were not being monitored:", unmonitored, false);
-                embed.setColor(0x00ff00);
+                embed.addField("Offset value was not appropriate:", badSensitivity, false);
             }
 
             if (!nonValid.isEmpty())

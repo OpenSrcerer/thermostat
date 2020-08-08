@@ -8,7 +8,24 @@ import java.time.Instant;
  * Class for all static embeds that do not need
  * runtime editing.
  */
-public class Embeds {
+public abstract class Embeds {
+    public static EmbedBuilder invalidSensitivity() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Please enter a valid sensitivity value.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xffff00);
+        return eb;
+    }
+
+    public static EmbedBuilder helpSensitivity(String prefix) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity [channel(s)] <sensitivity>\n -10 <= Sensitivity <= 10```");
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder incorrectPrefix() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("The prefix you have inserted is not valid.");
@@ -52,7 +69,7 @@ public class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder channelSettings(String channelName, String authorID, int max, int min, boolean monitor) {
+    public static EmbedBuilder channelSettings(String channelName, String authorID, int max, int min, float sensitivity, boolean monitor) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Settings for #" + channelName + ":");
         if (min == 0) {
@@ -73,6 +90,16 @@ public class Embeds {
         } else {
             eb.addField("Currently Monitored:", "**No**", false);
         }
+
+        String indicator = "`   ";
+
+        for (float index = 0.5f; index <= sensitivity; index += 0.05f)
+        {
+            indicator = indicator.concat(" ");
+        }
+
+        indicator = indicator.concat("^ (" + String.format("%.1f", (sensitivity - 1f) * 20f) + ")`");
+        eb.addField("Sensitivity:\n `-10 -------------------- 10`\n " + indicator, "", false);
 
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());

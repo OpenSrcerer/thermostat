@@ -107,9 +107,7 @@ public class Worker {
      * @param time    Int representing the adjustment time.
      */
     public void putSlowmode(TextChannel channel, int time, int max, int min) {
-        Consumer<Throwable> slowmodeFailureConsumer = throwable -> {
-            removeChannel(channel);
-        };
+        Consumer<Throwable> slowmodeFailureConsumer = throwable -> removeChannel(channel);
 
         try {
             // gets the current slowmode
@@ -173,28 +171,30 @@ public class Worker {
         // variables that store the maximum
         // and minimum  slow values for each channel
         int max, min;
+        float offset;
 
         // gets the maximum and minimum slowmode values
         // from the database.
         max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
         min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
+        offset = DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
 
         // accounting for each delay of the messages
         // this function picks an appropriate slowmode
         // adjustment number for each case.
-        if ((averageDelay <= 100) && (firstMessageTime > 0 && firstMessageTime <= 1000)) {
+        if ((averageDelay <= 100 * offset) && (firstMessageTime > 0 && firstMessageTime <= 1000)) {
             putSlowmode(channel, 20, max, min);
-        } else if ((averageDelay <= 250) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
+        } else if ((averageDelay <= 250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
             putSlowmode(channel, 10, max, min);
-        } else if ((averageDelay <= 500) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
+        } else if ((averageDelay <= 500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
             putSlowmode(channel, 6, max, min);
-        } else if ((averageDelay <= 750) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
+        } else if ((averageDelay <= 750 * offset) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
             putSlowmode(channel, 4, max, min);
-        } else if ((averageDelay <= 1000) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+        } else if ((averageDelay <= 1000 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 2, max, min);
-        } else if ((averageDelay <= 1250) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+        } else if ((averageDelay <= 1250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 1, max, min);
-        } else if ((averageDelay <= 1500) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+        } else if ((averageDelay <= 1500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
             putSlowmode(channel, 0, max, min);
         } else if ((firstMessageTime > 0 && firstMessageTime <= 10000) || (averageDelay < 2000 && averageDelay >= 1500)) {
             putSlowmode(channel, -1, max, min);

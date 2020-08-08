@@ -2,6 +2,7 @@ package Thermostat.ThermoFunctions.Listeners;
 
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Commands.*;
+import Thermostat.ThermoFunctions.MonitorThreads.DBLServerMonitor;
 import Thermostat.ThermoFunctions.MonitorThreads.MessageReceived;
 import Thermostat.ThermoFunctions.MonitorThreads.WorkerManager;
 
@@ -41,9 +42,9 @@ public class Ready extends ListenerAdapter
         // creates instance of WorkerManager for guild
         // updating
         WorkerManager workerManager = new WorkerManager();
-
-        // thread to manage bot status monitoring (disabled)
-        // StatusMonitor statusMonitor = new StatusMonitor();
+        // creates instance of DBLServerMonitor in order to
+        // update bot server count on top.gg
+        // DBLServerMonitor dblServerMonitor = new DBLServerMonitor();
 
         thermo.addEventListener(
                 // Command Event Listeners
@@ -55,6 +56,7 @@ public class Ready extends ListenerAdapter
                 new SetMaximum(),
                 new SetMinimum(),
                 new Settings(),
+                new Sensitivity(),
                 new Invite(),
                 new Vote(),
                 new Prefix(),
@@ -66,7 +68,7 @@ public class Ready extends ListenerAdapter
                 new MessageReceived()
         );
         getConnectedGuilds();
-        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.twitch.tv/starttree"));
+        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.youtube.com/watch?v=fC7oUOUEEi4"));
     }
 
     /**

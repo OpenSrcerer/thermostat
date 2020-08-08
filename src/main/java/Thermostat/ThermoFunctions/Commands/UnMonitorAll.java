@@ -19,8 +19,6 @@ import java.util.function.Consumer;
 import static Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage.monitoredMessages;
 
 /**
- * <h1>UnMonitorAll Command</h1>
- * <p>
  * Removes all channels from monitoring.
  */
 public class UnMonitorAll extends ListenerAdapter

@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  * Also controls timed message deletion to prevent spam.
  * Consider this class a "wrapper" for JDA Message Functions.
  */
-public class Messages {
+public abstract class Messages {
     /**
      * Sends an embed to a designated channel, runs
      * a success Consumer afterwards.

@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
- * <h1>Info</h1>
- * <p>
  * Class that manages the th!info command. Sends
  * an Info embed when th!info is called.
  */

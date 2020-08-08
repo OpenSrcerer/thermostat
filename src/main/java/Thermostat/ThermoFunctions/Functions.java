@@ -1,14 +1,9 @@
 package Thermostat.ThermoFunctions;
 
-import jdk.jfr.Unsigned;
-
-import java.math.BigInteger;
-import java.util.regex.Pattern;
-
 /**
  *
  */
-public class Functions {
+public abstract class Functions {
     /**
      * A function that's used to grab IDs from Discord message mentions.
      *
@@ -57,7 +52,7 @@ public class Functions {
      * @return Parsed slowmode value.
      */
     public static Integer parseSlowmode(String slowmode) throws NumberFormatException {
-        Integer retInteger = null;
+        Integer retInteger;
         // second = 1; minute = 60; hour = 3600
         int multiplyValue = 1;
 

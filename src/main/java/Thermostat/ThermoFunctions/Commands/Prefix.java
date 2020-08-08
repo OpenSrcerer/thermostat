@@ -4,6 +4,8 @@ import Thermostat.Embeds;
 import Thermostat.MySQL.DataSource;
 import Thermostat.ThermoFunctions.Messages;
 import Thermostat.thermostat;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -38,7 +40,7 @@ public class Prefix extends ListenerAdapter {
             args.remove(0);
 
             try {
-                prefixAction(args, ev.getChannel(), ev.getAuthor().getAsTag(), ev.getGuild().getId(), prefix);
+                prefixAction(args, ev.getChannel(), ev.getAuthor().getAsTag(), ev.getGuild().getId(), prefix, ev.getMember());
             } catch (SQLException ex) {
                 Messages.sendMessage(ev.getChannel(), Embeds.fatalError("Try setting the prefix again."));
             }
@@ -55,7 +57,7 @@ public class Prefix extends ListenerAdapter {
             args.remove(0);
 
             try {
-                prefixAction(args, ev.getChannel(), ev.getAuthor().getAsTag(), ev.getGuild().getId(), prefix);
+                prefixAction(args, ev.getChannel(), ev.getAuthor().getAsTag(), ev.getGuild().getId(), prefix, ev.getMember());
             } catch (SQLException ex) {
                 Messages.sendMessage(ev.getChannel(), Embeds.fatalError("Try setting the prefix again."));
             }
@@ -71,7 +73,13 @@ public class Prefix extends ListenerAdapter {
      * @param currentPrefix Current prefix of thermostat.
      * @throws SQLException If some error went wrong with the DB conn.
      */
-    public void prefixAction(ArrayList<String> args, TextChannel channel, String author, String guildId, String currentPrefix) throws SQLException {
+    public void prefixAction(ArrayList<String> args, TextChannel channel, String author, String guildId, String currentPrefix, Member eventMember) throws SQLException {
+        // if member isn't server admin, don't continue!
+        if (!eventMember.getPermissions().contains(Permission.ADMINISTRATOR)) {
+            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("ADMINISTRATOR"));
+            return;
+        }
+
         if (args.size() > 1 && args.get(0).equalsIgnoreCase("set")) {
             if (Pattern.matches("[!-~]*", args.get(1)) && args.get(1).length() <= 10) {
                 Messages.sendMessage(channel, Embeds.setPrefix(author, args.get(1)));

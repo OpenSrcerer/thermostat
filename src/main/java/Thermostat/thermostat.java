@@ -10,27 +10,27 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumSet;
 
 /**
- * <h1>Thermostat Bot</h1>*
+ * Thermostat
  * thermostat.java is the main file used to initiate the
- * needed variables, listeners, and gateway intents for
+ * needed variables, flags, and gateway intents for
  * running the bot.
- * <p>
+ *
  *
  * @author Weed-Pot
- * @version 0.6.6
+ * @version 0.6.7
  * @since 2020-04-17
  */
 
 public class thermostat {
     // Bot Initialization Variables
     public static JDA thermo;
+    public static DiscordBotListAPI thermoAPI;
     // default prefix
     public static String prefix = "th!";
 
@@ -51,7 +51,7 @@ public class thermostat {
 
         // adjust the cache flags here
         thermo = JDABuilder
-                .create("YOUR-TOKEN-HERE", intents)
+                .create("TOKEN", intents)
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.EMOTE,
@@ -64,6 +64,11 @@ public class thermostat {
                 .setEnableShutdownHook(true)
                 .build();
 
+        // API Variable for DiscordBotList
+        thermoAPI = new DiscordBotListAPI.Builder()
+                .token("TOKEN")
+                .botId("700341788136833065")
+                .build();
 
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading music..."));
         thermo.addEventListener(new Ready());

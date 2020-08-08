@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -30,7 +29,6 @@ public class Settings extends ListenerAdapter
 
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
-        String embedString = "";
 
         if (
                 args.get(0).equalsIgnoreCase(prefix + "settings") ||
@@ -47,19 +45,25 @@ public class Settings extends ListenerAdapter
                 return;
             }
 
-            if (args.size() == 1) {
-                Messages.sendMessage(ev.getChannel(), Embeds.specifyChannel());
-                return;
-            }
+            // to contain channel id for modification
+            String channelId;
 
-            args.remove(0);
-            args.set(0, parseMention(args.get(0), "#"));
+            // if there are more than two arguments
+            // (command init + channel)
+            if (args.size() >= 2) {
+                args.remove(0);
+                args.set(0, parseMention(args.get(0), "#"));
+                channelId = args.get(0);
 
-            // if channel doesn't exist, show error msg
-            if (args.get(0).isBlank() || ev.getGuild().getTextChannelById(args.get(0)) == null)
-            {
-                Messages.sendMessage(ev.getChannel(), Embeds.channelNotFound());
-                return;
+                // if channel doesn't exist, show error msg
+                if (args.get(0).isBlank() || ev.getGuild().getTextChannelById(args.get(0)) == null)
+                {
+                    Messages.sendMessage(ev.getChannel(), Embeds.channelNotFound());
+                    return;
+                }
+            // if only th!s is sent
+            } else {
+                channelId = ev.getChannel().getId();
             }
 
             // connects to database and creates channel
@@ -69,7 +73,7 @@ public class Settings extends ListenerAdapter
                     Create.Guild(ev.getGuild().getId());
 
                 {
-                    int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0));
+                    int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId);
 
                     if (max == -1) {
                         Messages.sendMessage(ev.getChannel(), Embeds.channelNeverMonitored());
@@ -77,17 +81,18 @@ public class Settings extends ListenerAdapter
                     }
 
                     Messages.sendMessage(ev.getChannel(),
-                            Embeds.channelSettings(ev.getGuild().getTextChannelById(args.get(0)).getName(),
+                            Embeds.channelSettings(ev.getGuild().getTextChannelById(channelId).getName(),
                                     ev.getAuthor().getAsTag(),
                                     max,
-                                    DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0)),
-                                    DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(0))
+                                    DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId),
+                                    DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId),
+                                    DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId)
                             )
                     );
                 }
 
             } catch (Exception ex) {
-                Logger lgr = LoggerFactory.getLogger(DataSource.class);
+                Logger lgr = LoggerFactory.getLogger(Settings.class);
                 lgr.error(ex.getMessage(), ex);
                 Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
             }

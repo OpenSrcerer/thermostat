@@ -3,6 +3,7 @@ package Thermostat.ThermoFunctions.MonitorThreads;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 
 public class MessageReceived extends ListenerAdapter {
@@ -13,7 +14,7 @@ public class MessageReceived extends ListenerAdapter {
      * received.
      * @param ev Event when a message is received.
      */
-    public void onGuildMessageReceived (GuildMessageReceivedEvent ev)
+    public void onGuildMessageReceived (@Nonnull GuildMessageReceivedEvent ev)
     {
         // adds and pops messages from list
         ArrayList<Worker> workers = WorkerManager.getActiveWorkers();

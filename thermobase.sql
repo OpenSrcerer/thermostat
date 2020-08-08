@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.8.3
+-- version 4.9.4
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 26, 2020 at 05:59 AM
--- Server version: 5.6.47-cll-lve
--- PHP Version: 7.2.7
+-- Generation Time: Aug 08, 2020 at 10:39 AM
+-- Server version: 5.6.48-cll-lve
+-- PHP Version: 7.3.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -21,6 +21,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `thermobase`
 --
+CREATE DATABASE IF NOT EXISTS `thermobase` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+USE `thermobase`;
 
 -- --------------------------------------------------------
 
@@ -43,7 +45,8 @@ CREATE TABLE `CHANNEL_SETTINGS` (
   `CHANNEL_ID` bigint(20) UNSIGNED NOT NULL,
   `MIN_SLOW` int(11) DEFAULT NULL,
   `MAX_SLOW` int(11) DEFAULT NULL,
-  `MONITORED` tinyint(1) NOT NULL
+  `MONITORED` tinyint(1) NOT NULL,
+  `SENSOFFSET` float UNSIGNED DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
