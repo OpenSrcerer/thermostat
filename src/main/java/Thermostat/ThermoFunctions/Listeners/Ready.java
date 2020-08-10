@@ -68,6 +68,7 @@ public class Ready extends ListenerAdapter
                 new MessageReceived()
         );
         getConnectedGuilds();
+        DBLServerMonitor.getDBLServerMonitor();
         thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.youtube.com/watch?v=fC7oUOUEEi4"));
     }
 

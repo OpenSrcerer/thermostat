@@ -16,7 +16,7 @@ import static Thermostat.thermostat.thermo;
  */
 public class DBLServerMonitor
 {
-    private static final DBLServerMonitor DBLInstance = new DBLServerMonitor();
+    private static DBLServerMonitor DBLInstance = null;
     private Logger lgr = LoggerFactory.getLogger(DBLServerMonitor.class);
 
     private DBLServerMonitor() {
@@ -29,5 +29,13 @@ public class DBLServerMonitor
         int currentServers = thermo.getGuilds().size();
         thermoAPI.setStats(currentServers);
         lgr.info("DBL Rest // Current Servers: " + currentServers);
+    }
+
+    public static DBLServerMonitor getDBLServerMonitor()
+    {
+        if (DBLInstance == null)
+            DBLInstance = new DBLServerMonitor();
+
+        return DBLInstance;
     }
 }
