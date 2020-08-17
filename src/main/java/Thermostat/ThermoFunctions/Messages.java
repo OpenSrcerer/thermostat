@@ -1,6 +1,6 @@
-package Thermostat.ThermoFunctions;
+package thermostat.thermoFunctions;
 
-import Thermostat.Embeds;
+import thermostat.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
@@ -101,6 +101,7 @@ public abstract class Messages {
      * @param msgId      Message to edit.
      * @param newContent New embed to place in the message.
      */
+    @SuppressWarnings("StatementWithEmptyBody")
     public static void editMessage(TextChannel channel, String msgId, MessageEmbed newContent) {
         Consumer<Throwable> editMessageConsumer = throwable -> {
             if (throwable.toString().contains("UNKNOWN_MESSAGE")) {

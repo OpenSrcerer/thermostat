@@ -1,6 +1,6 @@
-package Thermostat.ThermoFunctions.Listeners;
+package thermostat.thermoFunctions.listeners;
 
-import Thermostat.MySQL.Create;
+import thermostat.mySQL.Create;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
  * Adds a guild to the database provided in
  * db.properties, upon onGuildJoin event
  * occurrence. Extends ListenerAdapter thus must
- * be added as a listener in {@link Thermostat.thermostat}.
+ * be added as a listener in {@link thermostat.thermostat}.
  */
 
 public class GuildJoin extends ListenerAdapter

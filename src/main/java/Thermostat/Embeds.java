@@ -1,4 +1,4 @@
-package Thermostat;
+package thermostat;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 
@@ -26,6 +26,14 @@ public abstract class Embeds {
         return eb;
     }
 
+    public static EmbedBuilder samePrefix(String prefix) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("My prefix is already `" + prefix + "` !");
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder incorrectPrefix() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("The prefix you have inserted is not valid.");
@@ -36,7 +44,7 @@ public abstract class Embeds {
 
     public static EmbedBuilder resetPrefix() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Thermostat's prefix has been reset to `" + thermostat.prefix + "`");
+        eb.setTitle("Thermostat's prefix has been reset to `" + thermostat.prefix + "` .");
         eb.setTimestamp(Instant.now());
         eb.setColor(0x00aeff);
         return eb;
@@ -52,7 +60,7 @@ public abstract class Embeds {
 
     public static EmbedBuilder setPrefix(String authorID, String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Thermostat will now reply to: " + "`" + prefix + "`");
+        eb.setTitle("Thermostat will now reply to: " + "`" + prefix + "` .");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x00aeff);
@@ -109,8 +117,8 @@ public abstract class Embeds {
 
     public static EmbedBuilder getVote(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Vote for Thermostat on top.gg");
-        eb.addField("Link:", "https://top.gg/bot/700341788136833065/vote", true);
+        eb.setTitle("🎉 Thank you for your continuous support! 🎉");
+        eb.setDescription("[Vote for Thermostat on top.gg](https://top.gg/bot/700341788136833065/vote)");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x00aeff);
@@ -119,22 +127,10 @@ public abstract class Embeds {
 
     public static EmbedBuilder inviteServer(String authorID) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Information about invites:");
-        eb.addField("Support Server:", "https://discord.gg/FnPb4nM", false);
-        eb.addField("Get Thermostat:", "https://top.gg/bot/700341788136833065", false);
+        eb.setTitle("Useful Hyperlinks 🔧");
+        eb.setDescription("[Join Support Server](https://discord.gg/FnPb4nM)\n[Get Thermostat for your own server](https://top.gg/bot/700341788136833065)");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0x00aeff);
-        return eb;
-    }
-
-    public static EmbedBuilder channelRemoved() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("This channel was removed from monitoring due to not " +
-                "finding any messages to monitor. If the messages are too old, " +
-                "it will not be possible to monitor the channel.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x00aeff);
         return eb;
     }
@@ -305,6 +301,7 @@ public abstract class Embeds {
         return eb;
     }
 
+
     public static EmbedBuilder getMonitor() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("`th!monitor`");
@@ -320,13 +317,14 @@ public abstract class Embeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("🌡┇Monitoring Commands - Permissions required: `MANAGE_CHANNEL`");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "monitor┇Adds text channels to the slowmode monitoring database.", "Syntax: `" + prefix + "monitor/mon/m <channels>/<categories>.`", false);
-        eb.addField(prefix + "unmonitor┇Removes text channels from the slowmode monitoring database.", "Syntax: `" + prefix + "unmonitor/unmon/um <channels>/<categories>.`", false);
-        eb.addField(prefix + "getmonitor┇Shows which channels are currently being monitored in your server.", "Syntax: `" + prefix + "getmonitor/getmon/gm.`", false);
-        eb.addField(prefix + "unmonitorall┇Stops ALL your channels from being monitored.", "Syntax: `" + prefix + "unmonitorall/unmonall/uma.`", false);
-        eb.addField(prefix + "setminimum┇Sets the lower bound for the slowmode of the channel.", "Syntax: `" + prefix + "setminimum/setmin/smn <channels>/<categories> <slowmode>.`", false);
-        eb.addField(prefix + "setmaximum┇Sets the upper bound for the slowmode of the channel.", "Syntax: `" + prefix + "setmaximum/setmax/smx <channels>/<categories> <slowmode>.`", false);
-        eb.addField(prefix + "settings┇Shows details about the configuration of the given channel.", "Syntax: `" + prefix + "settings/s <channel>.`", false);
+        eb.addField(prefix + "monitor┇Adds text channels to the slowmode monitoring database.", "Syntax: `" + prefix + "monitor/mn <channels>/<categories>.`", false);
+        eb.addField(prefix + "unmonitor┇Removes text channels from the slowmode monitoring database.", "Syntax: `" + prefix + "unmonitor/um <channels>/<categories>.`", false);
+        eb.addField(prefix + "getmonitor┇Shows which channels are currently being monitored in your server.", "Syntax: `" + prefix + "getmonitor/gm.`", false);
+        eb.addField(prefix + "unmonitorall┇Stops ALL your channels from being monitored.", "Syntax: `" + prefix + "unmonitorall/ua.`", false);
+        eb.addField(prefix + "setminimum┇Sets the lower bound for the slowmode of the channel.", "Syntax: `" + prefix + "setminimum/sm <channels>/<categories> <slowmode>.`", false);
+        eb.addField(prefix + "setmaximum┇Sets the upper bound for the slowmode of the channel.", "Syntax: `" + prefix + "setmaximum/sx <channels>/<categories> <slowmode>.`", false);
+        eb.addField(prefix + "settings┇Shows details about the configuration of the given channel.", "Syntax: `" + prefix + "settings/st <channel>.`", false);
+        eb.addField(prefix + "sensitivity┇Sets the sensitivity level for the channel. Requires a value between -10 and 10, you may use decimal numbers. The higher the sensitivity, the easier for Thermostat to initiate slowmode.", "Syntax: `" + prefix + "sensitivity/ss [channel(s)] <sensitivity>.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
         return eb;
@@ -336,10 +334,10 @@ public abstract class Embeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ┇Other Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "info┇Brings up the main help menu.", "`Syntax:" + prefix + "info/i/help/h.`", false);
-        eb.addField("@Thermostat prefix┇Manages Thermostat's prefix.", "Syntax: <@!" + thermostat.thermo.getSelfUser().getId() + "> `prefix/p.`", false);
-        eb.addField(prefix + "vote┇Shows a link to vote for Thermostat on top.gg.", "Syntax: `" + prefix + "vote/v.`", false);
-        eb.addField(prefix + "invite┇Provides an invite link to Thermostat's support server, and the top.gg website.", "Syntax: `" + prefix + "invite/server.`", false);
+        eb.addField(prefix + "info┇Brings up the main help menu.", "`Syntax:" + prefix + "info/io/help/hp.`", false);
+        eb.addField("@Thermostat prefix┇Manages Thermostat's prefix.", "Syntax: <@!" + thermostat.thermo.getSelfUser().getId() + "> `prefix/px.`", false);
+        eb.addField(prefix + "vote┇Shows a link to vote for Thermostat on top.gg.", "Syntax: `" + prefix + "vote/vo.`", false);
+        eb.addField(prefix + "invite┇Provides an invite link to Thermostat's support server, and the top.gg website.", "Syntax: `" + prefix + "invite/iv.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
         return eb;

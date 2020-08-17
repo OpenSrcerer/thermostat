@@ -1,10 +1,11 @@
-package Thermostat.ThermoFunctions.Listeners;
+package thermostat.thermoFunctions.listeners;
 
-import Thermostat.MySQL.DataSource;
-import Thermostat.ThermoFunctions.Commands.*;
-import Thermostat.ThermoFunctions.MonitorThreads.DBLServerMonitor;
-import Thermostat.ThermoFunctions.MonitorThreads.MessageReceived;
-import Thermostat.ThermoFunctions.MonitorThreads.WorkerManager;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.commands.Command;
+
+import thermostat.thermoFunctions.monitorThreads.DBLServerMonitor;
+import thermostat.thermoFunctions.monitorThreads.MessageReceived;
+import thermostat.thermoFunctions.monitorThreads.WorkerManager;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -20,7 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import static Thermostat.thermostat.thermo;
+import static thermostat.thermostat.thermo;
 
 /**
  * Listener class that runs the rest of the
@@ -39,27 +40,8 @@ public class Ready extends ListenerAdapter
             return;
         }
 
-        // creates instance of WorkerManager for guild
-        // updating
-        WorkerManager workerManager = new WorkerManager();
-        // creates instance of DBLServerMonitor in order to
-        // update bot server count on top.gg
-        // DBLServerMonitor dblServerMonitor = new DBLServerMonitor();
-
         thermo.addEventListener(
-                // Command Event Listeners
-                new Monitor(),
-                new UnMonitor(),
-                new GetMonitorList(),
-                new UnMonitorAll(),
-                new Info(),
-                new SetMaximum(),
-                new SetMinimum(),
-                new Settings(),
-                new Sensitivity(),
-                new Invite(),
-                new Vote(),
-                new Prefix(),
+                new Command(),
                 // Other Event Listeners
                 new GuildJoin(),
                 new GuildLeave(),
@@ -67,8 +49,9 @@ public class Ready extends ListenerAdapter
                 new ReactionAddEvent(),
                 new MessageReceived()
         );
+        DBLServerMonitor.getInstance();
+        WorkerManager.getInstance();
         getConnectedGuilds();
-        DBLServerMonitor.getDBLServerMonitor();
         thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.youtube.com/watch?v=fC7oUOUEEi4"));
     }
 
@@ -76,11 +59,14 @@ public class Ready extends ListenerAdapter
      * Checks if database connection can be made.
      * @return boolean value; true if database can be reached; false if not
      */
+
+    @SuppressWarnings({"EmptyTryBlock"})
     public boolean testDatabase()
     {
-
+        // sample connection to check if database
+        // can be reached
         try (
-                Connection conn = DataSource.getConnection()
+                Connection ignored = DataSource.getConnection()
         ) {}
         catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);

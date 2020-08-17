@@ -1,6 +1,6 @@
-package Thermostat;
+package thermostat;
 
-import Thermostat.ThermoFunctions.Listeners.Ready;
+import thermostat.thermoFunctions.listeners.Ready;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -22,8 +22,8 @@ import java.util.EnumSet;
  * running the bot.
  *
  *
- * @author Weed-Pot
- * @version 0.6.7
+ * @author OpenSrcerer
+ * @version 0.7.0
  * @since 2020-04-17
  */
 
@@ -32,10 +32,10 @@ public class thermostat {
     public static JDA thermo;
     public static DiscordBotListAPI thermoAPI;
     // default prefix
-    public static String prefix = "th!";
+    public static final String prefix = "th!";
 
     // Intents to using the Discord Gateway
-    private static EnumSet<GatewayIntent> intents = EnumSet.of(
+    private static final EnumSet<GatewayIntent> intents = EnumSet.of(
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MESSAGE_REACTIONS
     );
@@ -44,14 +44,12 @@ public class thermostat {
      * Main run function for the bot. Event listeners
      * are defined in {@link Ready}.
      *
-     * @param args default java main function
-     * @throws LoginException Issue occurred when logging in.
+     * @throws LoginException Issue occurred when logging in the Discord Gateway.
      */
     public static void main(String[] args) throws LoginException {
 
-        // adjust the cache flags here
         thermo = JDABuilder
-                .create("TOKEN", intents)
+                .create("🎂", intents)
                 .disableCache(
                         CacheFlag.ACTIVITY,
                         CacheFlag.EMOTE,
@@ -62,15 +60,15 @@ public class thermostat {
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .setChunkingFilter(ChunkingFilter.NONE)
                 .setEnableShutdownHook(true)
+                .addEventListeners(new Ready())
                 .build();
 
         // API Variable for DiscordBotList
         thermoAPI = new DiscordBotListAPI.Builder()
-                .token("TOKEN")
+                .token("🎂")
                 .botId("700341788136833065")
                 .build();
 
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading music..."));
-        thermo.addEventListener(new Ready());
     }
 }

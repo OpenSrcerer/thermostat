@@ -1,9 +1,9 @@
-package Thermostat.ThermoFunctions.MonitorThreads;
+package thermostat.thermoFunctions.monitorThreads;
 
-import Thermostat.Embeds;
-import Thermostat.MySQL.DataSource;
-import Thermostat.MySQL.Delete;
-import Thermostat.ThermoFunctions.Messages;
+import thermostat.Embeds;
+import thermostat.mySQL.DataSource;
+import thermostat.mySQL.Delete;
+import thermostat.thermoFunctions.Messages;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
-import static Thermostat.thermostat.thermo;
+import static thermostat.thermostat.thermo;
 
 /**
  * <h1>ChannelWorker</h1>
@@ -31,7 +31,7 @@ import static Thermostat.thermostat.thermo;
 public class Worker {
     private ScheduledFuture<?> scheduledFuture;
     private String assignedGuild;
-    protected List<WorkerChannel> channelsToMonitor = new ArrayList<>();
+    protected final List<WorkerChannel> channelsToMonitor = new ArrayList<>();
 
     /**
      * Creates an instance of the ChannelWorker, representing
@@ -109,6 +109,8 @@ public class Worker {
     public void putSlowmode(TextChannel channel, int time, int max, int min) {
         Consumer<Throwable> slowmodeFailureConsumer = throwable -> removeChannel(channel);
 
+        int slowmodeToSet;
+
         try {
             // gets the current slowmode
             int slow = channel.getSlowmode();
@@ -116,23 +118,24 @@ public class Worker {
             // if slowmode and the added time exceed the max slowmode
             if (slow + time > max && max > 0) {
                 // sets to max DATABASE slowmode value and exits
-                channel.getManager().setSlowmode(max).queue(null, slowmodeFailureConsumer);
-                return;
+                slowmodeToSet = max;
             }
-            if (slow + time > TextChannel.MAX_SLOWMODE) {
-                // sets to max DISCORD slowmode value and exits
-                channel.getManager().setSlowmode(TextChannel.MAX_SLOWMODE).queue(null, slowmodeFailureConsumer);
-                return;
-            }
-            if (slow + time < min)
-            {
-                // if it's less than minimum DB value
+            else // if it's less than minimum DB value
                 // sets it to that minimum value
-                channel.getManager().setSlowmode(min).queue(null, slowmodeFailureConsumer);
-                return;
+                // otherwise just sets it
+                if (slow + time > TextChannel.MAX_SLOWMODE) {
+                // sets to max DISCORD slowmode value
+                slowmodeToSet = TextChannel.MAX_SLOWMODE;
             }
-            // otherwise just sets it
-            channel.getManager().setSlowmode(slow + time).queue(null, slowmodeFailureConsumer);
+            else slowmodeToSet = Math.max(slow + time, min);
+
+            channel.getManager().setSlowmode(slowmodeToSet).queue(null, slowmodeFailureConsumer);
+
+            // Adds +1 to slowmode turning on for charting purposes.
+            if (slow == min && slowmodeToSet > 0)
+            {
+                DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = " + channel.getId() + " AND GUILD_ID = " + channel.getGuild().getId());
+            }
 
         } catch (InsufficientPermissionException ex) {
             removeChannel(channel);

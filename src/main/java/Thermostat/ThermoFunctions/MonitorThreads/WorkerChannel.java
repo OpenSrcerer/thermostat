@@ -1,13 +1,13 @@
-package Thermostat.ThermoFunctions.MonitorThreads;
+package thermostat.thermoFunctions.monitorThreads;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class WorkerChannel {
-    protected String channelId;
+    protected final String channelId;
     // last 25 messages
-    protected List<OffsetDateTime> messageList = new ArrayList<>();
+    protected final List<OffsetDateTime> messageList = new ArrayList<>();
 
     public WorkerChannel(String channelId) {
         this.channelId = channelId;

@@ -1,6 +1,6 @@
-package Thermostat.ThermoFunctions.MonitorThreads;
+package thermostat.thermoFunctions.monitorThreads;
 
-import Thermostat.MySQL.DataSource;
+import thermostat.mySQL.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,16 +9,13 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 
 /**
- * <h1>WorkerManager</h1>
- * <p>
- * Class that manages every Guild's monitoring.
- * Adds / Removes instances as per database, which is checked
+ * Manages Worker instances as per database, which is checked
  * every 5 seconds for changes.
- * Each instance is managed by the Worker class.
  * @see Worker
  */
 public class WorkerManager
 {
+    private static WorkerManager WMInstance;
     protected static ScheduledExecutorService scheduledExecutorService;
     // ActiveWorkers array used for maintaining threads working on monitoring
     private static ArrayList<Worker> activeWorkers = new ArrayList<>();
@@ -38,9 +35,9 @@ public class WorkerManager
 
     /**
      * Constructor, called once in the main function
-     * of the {@link Thermostat.thermostat class}.
+     * of the {@link thermostat.thermostat class}.
      */
-    public WorkerManager()
+    private WorkerManager()
     {
         Runnable setup = WorkerManager::setupMonitoring;
         scheduledExecutorService = new ScheduledThreadPoolExecutor(4);
@@ -48,7 +45,14 @@ public class WorkerManager
         // returning ScheduledFuture is ignored because
         // there's no need to modify the main scheduler
         // it only turns off once the whole program shuts down
-        scheduledExecutorService.scheduleAtFixedRate(setup, 2, 5, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(setup, 0, 5, TimeUnit.SECONDS);
+    }
+
+    public static WorkerManager getInstance() {
+        if (WMInstance == null)
+            WMInstance = new WorkerManager();
+
+        return WMInstance;
     }
 
     /**

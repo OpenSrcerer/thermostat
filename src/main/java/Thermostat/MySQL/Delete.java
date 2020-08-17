@@ -1,4 +1,4 @@
-package Thermostat.MySQL;
+package thermostat.mySQL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

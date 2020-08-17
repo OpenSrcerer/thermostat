@@ -1,7 +1,7 @@
-package Thermostat.ThermoFunctions.Commands.Objects;
+package thermostat.thermoFunctions.entities;
 
-import Thermostat.Embeds;
-import Thermostat.ThermoFunctions.Messages;
+import thermostat.Embeds;
+import thermostat.thermoFunctions.Messages;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
@@ -15,10 +15,10 @@ public class MonitoredMessage {
 
     // Arraylist for all the currently monitored messages
     // associated with events
-    public static ArrayList<MonitoredMessage> monitoredMessages = new ArrayList<>();
+    public static final ArrayList<MonitoredMessage> monitoredMessages = new ArrayList<>();
     // executorservice that handles timed destruction
     // of messages from monitored message arrays
-    public static ScheduledExecutorService executorService;
+    public static final ScheduledExecutorService executorService;
 
     static {
         executorService = Executors.newSingleThreadScheduledExecutor();

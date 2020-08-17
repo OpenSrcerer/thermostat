@@ -1,4 +1,4 @@
-package Thermostat.ThermoFunctions.MonitorThreads;
+package thermostat.thermoFunctions.monitorThreads;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,8 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static Thermostat.thermostat.thermoAPI;
-import static Thermostat.thermostat.thermo;
+import static thermostat.thermostat.thermoAPI;
+import static thermostat.thermostat.thermo;
 
 /**
  * Keeps the DBL API of the bot updated
@@ -17,7 +17,7 @@ import static Thermostat.thermostat.thermo;
 public class DBLServerMonitor
 {
     private static DBLServerMonitor DBLInstance = null;
-    private Logger lgr = LoggerFactory.getLogger(DBLServerMonitor.class);
+    private final Logger lgr = LoggerFactory.getLogger(DBLServerMonitor.class);
 
     private DBLServerMonitor() {
         Runnable status = this::setServers;
@@ -31,7 +31,7 @@ public class DBLServerMonitor
         lgr.info("DBL Rest // Current Servers: " + currentServers);
     }
 
-    public static DBLServerMonitor getDBLServerMonitor()
+    public static DBLServerMonitor getInstance()
     {
         if (DBLInstance == null)
             DBLInstance = new DBLServerMonitor();

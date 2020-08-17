@@ -1,4 +1,4 @@
-package Thermostat.MySQL;
+package thermostat.mySQL;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class DataSource {
 
-    private static HikariDataSource ds;
+    private static final HikariDataSource ds;
 
     static {
         String configFile = "/db.properties";

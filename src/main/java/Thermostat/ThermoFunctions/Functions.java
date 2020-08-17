@@ -1,4 +1,4 @@
-package Thermostat.ThermoFunctions;
+package thermostat.thermoFunctions;
 
 /**
  *
@@ -17,6 +17,7 @@ public abstract class Functions {
      *                      each discriminator.
      * @return The ID that the mention contained.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static String parseMention(String mention, String discriminator) {
         if (mention == null) {
             throw new NullPointerException();
@@ -52,7 +53,7 @@ public abstract class Functions {
      * @return Parsed slowmode value.
      */
     public static Integer parseSlowmode(String slowmode) throws NumberFormatException {
-        Integer retInteger;
+        int retInteger;
         // second = 1; minute = 60; hour = 3600
         int multiplyValue = 1;
 

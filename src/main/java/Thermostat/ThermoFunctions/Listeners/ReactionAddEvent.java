@@ -1,12 +1,12 @@
-package Thermostat.ThermoFunctions.Listeners;
+package thermostat.thermoFunctions.listeners;
 
-import Thermostat.Embeds;
-import Thermostat.MySQL.Create;
-import Thermostat.MySQL.DataSource;
-import Thermostat.ThermoFunctions.Commands.Objects.MenuType;
-import Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage;
-import Thermostat.ThermoFunctions.Messages;
-import Thermostat.thermostat;
+import thermostat.Embeds;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.entities.MenuType;
+import thermostat.thermoFunctions.entities.MonitoredMessage;
+import thermostat.thermoFunctions.Messages;
+import thermostat.thermostat;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-import static Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage.monitoredMessages;
+import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMessages;
 
 public class ReactionAddEvent extends ListenerAdapter
 {

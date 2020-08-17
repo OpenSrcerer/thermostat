@@ -1,11 +1,11 @@
-package Thermostat.ThermoFunctions.Listeners;
+package thermostat.thermoFunctions.listeners;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
 
-import static Thermostat.ThermoFunctions.Commands.Objects.MonitoredMessage.monitoredMessages;
+import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMessages;
 
 public class MessageDeleteEvent extends ListenerAdapter
 {

@@ -1,6 +1,6 @@
-package Thermostat.ThermoFunctions.Listeners;
+package thermostat.thermoFunctions.listeners;
 
-import Thermostat.MySQL.Delete;
+import thermostat.mySQL.Delete;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
  * Removes a guild from the database provided in
  * db.properties, upon onGuildLeave event
  * occurrence. Extends ListenerAdapter thus must
- * be added as a listener in {@link Thermostat.thermostat}.
+ * be added as a listener in {@link thermostat.thermostat}.
  */
 public class GuildLeave extends ListenerAdapter
 {

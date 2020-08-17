@@ -1,4 +1,4 @@
-package Thermostat.ThermoFunctions.MonitorThreads;
+package thermostat.thermoFunctions.monitorThreads;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
