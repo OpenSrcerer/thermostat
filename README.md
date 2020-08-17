@@ -61,6 +61,7 @@ If you still have problems, <a href="https://discord.gg/FnPb4nM">join our suppor
   <li><a href="http://logback.qos.ch/">Logback</a></li>
   <li><a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a></li>
   <li><a href="https://github.com/DiscordBotList/DBL-Java-Library">Discord Bot List Java Library</a></li>
+  <li><a href="https://github.com/knowm/XChart">XChart</a></li>
 </ul>
 
 # License
