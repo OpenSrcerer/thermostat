@@ -43,15 +43,17 @@ All you have to do is get started with Thermostat is:
 # Troubleshooting
 The most common issue with all bots on Discord is permission errors. If a bot is not working properly, the most likely cause is a permission issue. If you need a guide to take you through that, <a href="https://support.discord.com/hc/en-us/articles/206029707-How-do-I-set-up-Permissions-">Discord has a great article all about it</a>.
 
-**Thermostat currently needs these permissions in a channel to function correctly:**
+**Thermostat currently needs these permissions in a channel to function correctly:**  
+**Permission - Purpose**
 <ol>
-  <li><code>Manage Channels</code></li>
-  <li><code>Read Messages</code></li>
-  <li><code>Send Messages</code></li>
-  <li><code>Manage Messages</code></li>
-  <li><code>Embed Links</code></li>
-  <li><code>Read Message History</code></li>
-  <li><code>Add Reactions</code></li>
+  <li><code>Manage Channels - Adjust Slowmode</code></li>
+  <li><code>Read Messages - Receive commands</code></li>
+  <li><code>Send Messages - Show command output</code></li>
+  <li><code>Manage Messages - Update command output</code></li>
+  <li><code>Embed Links - Neatly organize messages</code></li>
+  <li><code>Read Message History - Receive commands</code></li>
+  <li><code>Add Reactions - Reaction UI menus</code></li>
+  <li><code>Attach Files - Uploading chart images</code></li>
 </ol>
 
 The bot is going to react accordingly to the permissions it is missing. Please make sure that before you submit an issue, you have validated that Thermostat has all needed permissions in the specific channel you're trying to use it in.
