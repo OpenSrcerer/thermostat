@@ -137,7 +137,6 @@ public class Chart {
         }
 
         InputStream inputStream = null;
-        BufferedImage chartImage = BitmapEncoder.getBufferedImage(chart);
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
