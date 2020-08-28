@@ -9,7 +9,7 @@
   </appender>
 
   <!--  Switch logging level to Debug if needed -->
-  <root level="info">
+  <root level="Debug">
     <appender-ref ref="STDOUT" />
   </root>
 
