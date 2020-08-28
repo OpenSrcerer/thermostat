@@ -1,5 +1,6 @@
-sudo: false
 language: java
+os: linux
+dist: xenial
 cache:
   directories:
   - "$HOME/.cache"
@@ -10,4 +11,3 @@ before_install:
 deploy:
   provider: script
   script: "mvn -B -V deploy"
-  skip_cleanup: true
