@@ -1,18 +1,19 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/opensrcerer/thermostat/badge)](https://www.codefactor.io/repository/github/opensrcerer/thermostat)
 [![GitHub forks](https://img.shields.io/github/forks/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/network)
-[![GitHub issues](https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/issues) 
+[![GitHub issues](https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/issues)
+[![Build Status](https://travis-ci.com/OpenSrcerer/thermostat.svg)](https://travis-ci.com/github/OpenSrcerer/thermostat)  
 
-# Online Status
+# Online and Build Status
 
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/status/700341788136833065.svg" alt="Thermostat" />
-</a>
+</a>  
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/servers/700341788136833065.svg" alt="Thermostat" />
 </a>
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/upvotes/700341788136833065.svg" alt="Thermostat" />
-</a>  
+</a>
 
 # Thermostat
 Thermostat is a bot created for Discord servers, in order to help out server owners who do not have the time or simply want their channel slowmode to be adjusted automatically. Staff teams should be focused on moderating the server and the people in it. By getting Thermostat in your server, you get rid of all of the stress that keeping an adequate slowmode might bring.
