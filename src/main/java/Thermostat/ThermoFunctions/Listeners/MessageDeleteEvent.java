@@ -7,11 +7,11 @@ import javax.annotation.Nonnull;
 
 import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMessages;
 
-public class MessageDeleteEvent extends ListenerAdapter
-{
-    public void onGuildMessageDelete (@Nonnull GuildMessageDeleteEvent event) {
+public class MessageDeleteEvent extends ListenerAdapter {
+    public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
         try {
             monitoredMessages.removeIf(it -> event.getMessageId().equals(it.getMessageId()));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -1,17 +1,15 @@
 package thermostat.thermoFunctions.commands.monitoring;
 
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
-import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.Messages;
-import thermostat.thermostat;
-
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import thermostat.Embeds;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -20,12 +18,11 @@ import java.util.List;
 
 import static thermostat.thermoFunctions.Functions.parseMention;
 
-public class Sensitivity
-{
+public class Sensitivity {
     private static final EmbedBuilder embed = new EmbedBuilder();
 
     public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember, String prefix) {
-        
+
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
             Messages.sendMessage(eventChannel, Embeds.specifyChannels());
@@ -68,9 +65,7 @@ public class Sensitivity
                 args.remove(index);
                 removed = true;
                 --index;
-            }
-
-            else if (channelContainer != null) {
+            } else if (channelContainer != null) {
                 // firstly creates an immutable list of the channels in the category
                 List<TextChannel> TextChannels = channelContainer.getTextChannels();
                 // if list is empty add that it is in msg
@@ -104,8 +99,7 @@ public class Sensitivity
         }
 
 
-        if (args.size() >= 2)
-        {
+        if (args.size() >= 2) {
             for (int index = 0; index < args.size() - 1; ++index) {
                 try {
                     // silent guild adder
@@ -116,9 +110,8 @@ public class Sensitivity
                     if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index)))
                         Create.Channel(eventGuild.getId(), args.get(index), 0);
 
-                    if (offset >= -10 && offset <= 10)
-                    {
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = " + (1f + offset/20f) + " WHERE CHANNEL_ID = " + args.get(index));
+                    if (offset >= -10 && offset <= 10) {
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = " + (1f + offset / 20f) + " WHERE CHANNEL_ID = " + args.get(index));
                         complete = complete.concat("<#" + args.get(index) + "> ");
                     } else {
                         badSensitivity = badSensitivity.concat("<#" + args.get(index) + "> ");
@@ -138,9 +131,8 @@ public class Sensitivity
                 if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + eventChannel.getId()))
                     Create.Channel(eventGuild.getId(), eventChannel.getId(), 0);
 
-                if (offset >= -10 && offset <= 10)
-                {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = " + (1f + offset/20f) + " WHERE CHANNEL_ID = " + eventChannel.getId());
+                if (offset >= -10 && offset <= 10) {
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = " + (1f + offset / 20f) + " WHERE CHANNEL_ID = " + eventChannel.getId());
                     complete = complete.concat("<#" + eventChannel.getId() + "> ");
                 } else {
                     badSensitivity = badSensitivity.concat("<#" + eventChannel.getId() + "> ");
@@ -152,29 +144,25 @@ public class Sensitivity
         }
 
         embed.setColor(0xffff00);
-        if (!complete.isEmpty())
-        {
+        if (!complete.isEmpty()) {
             embed.addField("Channels given a new sensitivity of " + offset + ":", complete, false);
             embed.setColor(0x00ff00);
         }
 
-        if (!badSensitivity.isEmpty())
-        {
+        if (!badSensitivity.isEmpty()) {
             embed.addField("Offset value was not appropriate:", badSensitivity, false);
         }
 
-        if (!nonValid.isEmpty())
-        {
+        if (!nonValid.isEmpty()) {
             embed.addField("Channels that were not valid or found:", nonValid, false);
         }
 
-        if (!noText.isEmpty())
-        {
+        if (!noText.isEmpty()) {
             embed.addField("Categories with no Text Channels:", noText, false);
         }
 
         embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
+        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
         Messages.sendMessage(eventChannel, embed);
 
         embed.clear();

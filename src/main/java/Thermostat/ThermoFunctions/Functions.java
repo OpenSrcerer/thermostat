@@ -49,6 +49,7 @@ public abstract class Functions {
     /**
      * Function that converts a string slowmode argument
      * to a usable Integer one.
+     *
      * @param slowmode Slowmode argument, in a string.
      * @return Parsed slowmode value.
      */

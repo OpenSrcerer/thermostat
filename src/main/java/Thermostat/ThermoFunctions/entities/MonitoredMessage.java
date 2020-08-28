@@ -1,11 +1,14 @@
 package thermostat.thermoFunctions.entities;
 
+import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.Embeds;
 import thermostat.thermoFunctions.Messages;
-import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class MonitoredMessage {
     private String messageId;

@@ -1,20 +1,17 @@
 package thermostat.thermoFunctions.commands.monitoring;
 
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
-import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.Messages;
-import thermostat.thermostat;
-
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Embeds;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -29,12 +26,11 @@ import static thermostat.thermoFunctions.Functions.parseMention;
  * db.properties, upon user running the
  * command.
  */
-public class UnMonitor
-{
+public class UnMonitor {
     private static final EmbedBuilder embed = new EmbedBuilder();
 
     public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
-        
+
         if (args.size() == 1) {
             Messages.sendMessage(eventChannel, Embeds.specifyChannels());
             return;
@@ -107,8 +103,7 @@ public class UnMonitor
                 // checks db if channel exists
                 if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS " +
                         "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.CHANNEL_ID = " +
-                        it + " AND CHANNEL_SETTINGS.MONITORED = 1"))
-                {
+                        it + " AND CHANNEL_SETTINGS.MONITORED = 1")) {
                     Create.ChannelMonitor(eventGuild.getId(), it, 0);
                     complete = complete.concat("<#" + it + "> ");
                 }
@@ -123,30 +118,26 @@ public class UnMonitor
         }
 
         embed.setColor(0xffff00);
-        if (!complete.isEmpty())
-        {
+        if (!complete.isEmpty()) {
             embed.addField("Successfully unmonitored:", complete, false);
             embed.setColor(0x00ff00);
         }
 
-        if (!unmonitored.isEmpty())
-        {
+        if (!unmonitored.isEmpty()) {
             embed.addField("Already were not being monitored:", unmonitored, false);
             embed.setColor(0x00ff00);
         }
 
-        if (!nonValid.isEmpty())
-        {
+        if (!nonValid.isEmpty()) {
             embed.addField("Channels that were not valid or found:", nonValid, false);
         }
 
-        if (!noText.isEmpty())
-        {
+        if (!noText.isEmpty()) {
             embed.addField("Categories with no Text Channels:", noText, false);
         }
 
         embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
+        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
         Messages.sendMessage(eventChannel, embed);
 
         embed.clear();

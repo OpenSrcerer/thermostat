@@ -1,37 +1,39 @@
 package thermostat.thermoFunctions.monitorThreads;
 
-import thermostat.Embeds;
-import thermostat.mySQL.DataSource;
-import thermostat.mySQL.Delete;
-import thermostat.thermoFunctions.Messages;
-
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Embeds;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Messages;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static thermostat.thermostat.thermo;
 
 /**
- * <h1>ChannelWorker</h1>
- * <p>
- * Manager class for each thread of a Guild.
- * Performs managing actions upon the Guild's
- * channels.
+ * Manager class for each instance of a Guild.
  */
 public class Worker {
     private ScheduledFuture<?> scheduledFuture;
     private String assignedGuild;
+    private static Logger lgr;
     protected final List<WorkerChannel> channelsToMonitor = new ArrayList<>();
+
+    static {
+        lgr = LoggerFactory.getLogger(Worker.class);
+    }
 
     /**
      * Creates an instance of the ChannelWorker, representing
@@ -107,7 +109,12 @@ public class Worker {
      * @param time    Int representing the adjustment time.
      */
     public void putSlowmode(TextChannel channel, int time, int max, int min) {
-        Consumer<Throwable> slowmodeFailureConsumer = throwable -> removeChannel(channel);
+        Consumer<Throwable> slowmodeFailureConsumer = throwable -> {
+            if (!(throwable instanceof IOException)) {
+                lgr.error("I/O Exception!", throwable);
+                removeChannel(channel);
+            }
+        };
 
         int slowmodeToSet;
 
@@ -119,45 +126,45 @@ public class Worker {
             if (slow + time > max && max > 0) {
                 // sets to max DATABASE slowmode value and exits
                 slowmodeToSet = max;
-            }
-            else // if it's less than minimum DB value
+            } else // if it's less than minimum DB value
                 // sets it to that minimum value
                 // otherwise just sets it
                 if (slow + time > TextChannel.MAX_SLOWMODE) {
-                // sets to max DISCORD slowmode value
-                slowmodeToSet = TextChannel.MAX_SLOWMODE;
-            }
-            else slowmodeToSet = Math.max(slow + time, min);
+                    // sets to max DISCORD slowmode value
+                    slowmodeToSet = TextChannel.MAX_SLOWMODE;
+                } else slowmodeToSet = Math.max(slow + time, min);
 
             channel.getManager().setSlowmode(slowmodeToSet).queue(null, slowmodeFailureConsumer);
 
             // Adds +1 to slowmode turning on for charting purposes.
-            if (slow == min && slowmodeToSet > 0)
-            {
+            if (slow == min && slowmodeToSet > 0) {
                 DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = " + channel.getId() + " AND GUILD_ID = " + channel.getGuild().getId());
             }
 
         } catch (InsufficientPermissionException ex) {
             removeChannel(channel);
         } catch (Exception ex) {
-            Logger lgr = LoggerFactory.getLogger(Worker.class);
             lgr.error(ex.getMessage(), ex);
         }
     }
 
     /**
      * Removes channels from monitoring, sending an error msg.
+     *
      * @param channel The channel to be removed.
      */
-    private void removeChannel (TextChannel channel) {
+    private void removeChannel(TextChannel channel) {
         Messages.sendMessage(channel, Embeds.insufficientPerm());
-        for (int index = 0; index < channelsToMonitor.size(); ++index)
-        {
+        for (int index = 0; index < channelsToMonitor.size(); ++index) {
             if (channelsToMonitor.get(index).channelId.equals(channel.getId())) {
                 channelsToMonitor.remove(channelsToMonitor.get(index));
             }
         }
-        Delete.Channel(channel.getGuild().getId(), channel.getId());
+        try {
+            DataSource.update("UPDATE CHANNEL_SETTINGS SET MONITORED = 0 WHERE CHANNEL_ID = " + channel.getId());
+        } catch (SQLException ex) {
+            lgr.error("SQL Exception thrown!", ex);
+        }
     }
 
     /**
@@ -211,9 +218,10 @@ public class Worker {
     /**
      * Gets the delays between each message and puts
      * them into a list.
+     *
      * @param offsetDateTimes List of time when messages
      *                        were sent.
-     * @param chronoUnit Unit, (in ms) of the applied calculations.
+     * @param chronoUnit      Unit, (in ms) of the applied calculations.
      * @return List of delays between messages.
      */
     public List<Long> getListOfDelays(List<OffsetDateTime> offsetDateTimes, ChronoUnit chronoUnit) {
@@ -244,12 +252,16 @@ public class Worker {
      * @param guild The guild that will have the channels monitored.
      */
     public void monitorChannels(Guild guild) {
-        if (guild == null) { return; }
+        if (guild == null) {
+            return;
+        }
 
         // get raw list of channels to monitor from db
-        ArrayList<String> databaseMonitoredChannels = DataSource.query("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+        ArrayList<String> databaseMonitoredChannels = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                 "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNELS.GUILD_ID = " + guild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
+
+        if (databaseMonitoredChannels == null) { return; }
 
         // keeps monitored channels list up to date
         // by adding newly monitored channels
@@ -282,7 +294,7 @@ public class Worker {
                             unit.between(currentWorker.messageList.get(0), nowTime) > 64000) ||
                             DataSource.checkDatabaseForData("SELECT * FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " +
                                     currentWorker.channelId + " AND MONITORED = 0")
-                            ) {
+                    ) {
                         // removes object, emptying list
                         channelsToMonitor.remove(currentWorker);
                         putSlowmode(guild.getTextChannelById(currentWorker.channelId), -99999999, TextChannel.MAX_SLOWMODE, min);

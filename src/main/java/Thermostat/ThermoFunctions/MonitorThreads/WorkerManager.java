@@ -1,20 +1,21 @@
 package thermostat.thermoFunctions.monitorThreads;
 
-import thermostat.mySQL.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.mySQL.DataSource;
 
 import java.util.ArrayList;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages Worker instances as per database, which is checked
  * every 5 seconds for changes.
+ *
  * @see Worker
  */
-public class WorkerManager
-{
+public class WorkerManager {
     private static WorkerManager WMInstance;
     protected static ScheduledExecutorService scheduledExecutorService;
     // ActiveWorkers array used for maintaining threads working on monitoring
@@ -23,6 +24,7 @@ public class WorkerManager
     /**
      * Gives back an array of currently active
      * guild workers.
+     *
      * @return The array of guild workers.
      */
     public static ArrayList<Worker> getActiveWorkers() {
@@ -37,9 +39,8 @@ public class WorkerManager
      * Constructor, called once in the main function
      * of the {@link thermostat.thermostat class}.
      */
-    private WorkerManager()
-    {
-        Runnable setup = WorkerManager::setupMonitoring;
+    private WorkerManager() {
+        Runnable setup = WorkerManager::updateGuilds;
         scheduledExecutorService = new ScheduledThreadPoolExecutor(4);
 
         // returning ScheduledFuture is ignored because
@@ -48,6 +49,7 @@ public class WorkerManager
         scheduledExecutorService.scheduleAtFixedRate(setup, 0, 5, TimeUnit.SECONDS);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static WorkerManager getInstance() {
         if (WMInstance == null)
             WMInstance = new WorkerManager();
@@ -62,22 +64,24 @@ public class WorkerManager
      * accordingly depending on whether Guilds were recently
      * added or removed from the database.
      */
-    public static void setupMonitoring() {
+    public static void updateGuilds() {
         try {
 
             // list that will hold all guilds taken from the DB
-            ArrayList<String> GUILDS = DataSource.query("SELECT GUILD_ID FROM GUILDS");
+            ArrayList<String> guildArray = DataSource.queryStringArray("SELECT GUILD_ID FROM GUILDS");
+
+            if (guildArray == null) { return; }
 
             // case 1: when the guilds array is larger than the current active workers,
             // it means that there were guilds recently added
-            if (GUILDS.size() > activeWorkers.size()) {
+            if (guildArray.size() > activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
                 ArrayList<Worker> workerArrayList = new ArrayList<>();
 
                 // iterates through guilds and activeworkers
                 // checking for lone guilds with no active worker
-                for (String it1 : GUILDS) {
+                for (String it1 : guildArray) {
                     boolean found = false;
 
                     for (Worker it2 : activeWorkers) {
@@ -103,7 +107,7 @@ public class WorkerManager
             }
             // case 2: when the guilds array is smaller than the current active workers,
             // it means that there were guilds recently expunged from the database
-            else if (GUILDS.size() < activeWorkers.size()) {
+            else if (guildArray.size() < activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
 
@@ -115,7 +119,7 @@ public class WorkerManager
                 for (Worker it1 : activeWorkers) {
                     boolean found = false;
 
-                    for (String it2 : GUILDS) {
+                    for (String it2 : guildArray) {
                         if (it1.getAssignedGuild().equals(it2)) {
                             // if a match is found, leave the thread alone
                             found = true;
@@ -132,8 +136,7 @@ public class WorkerManager
                 activeWorkers.removeAll(workersToRemove);
             }
 
-        } catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }

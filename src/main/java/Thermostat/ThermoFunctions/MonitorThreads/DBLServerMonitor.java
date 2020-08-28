@@ -7,15 +7,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static thermostat.thermostat.thermoAPI;
 import static thermostat.thermostat.thermo;
+import static thermostat.thermostat.thermoAPI;
 
 /**
  * Keeps the DBL API of the bot updated
  * with the proper number of servers.
  */
-public class DBLServerMonitor
-{
+public class DBLServerMonitor {
     private static DBLServerMonitor DBLInstance = null;
     private final Logger lgr = LoggerFactory.getLogger(DBLServerMonitor.class);
 
@@ -31,8 +30,7 @@ public class DBLServerMonitor
         lgr.info("DBL Rest // Current Servers: " + currentServers);
     }
 
-    public static DBLServerMonitor getInstance()
-    {
+    public static DBLServerMonitor getInstance() {
         if (DBLInstance == null)
             DBLInstance = new DBLServerMonitor();
 

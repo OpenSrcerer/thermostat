@@ -1,16 +1,15 @@
 package thermostat.thermoFunctions.commands.monitoring;
 
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
-import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.Messages;
-import thermostat.thermostat;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import thermostat.Embeds;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -108,8 +107,7 @@ public class Monitor {
                     // checks whether the channel has the monitor
                     // value on the database set to 1
                     // table CHANNEL_SETTINGS
-                    if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + it))
-                    {
+                    if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + it)) {
                         monitored = monitored.concat("<#" + it + "> ");
                     } else {
                         Create.ChannelMonitor(eventGuild.getId(), it, 1);
@@ -122,30 +120,26 @@ public class Monitor {
         }
 
         embed.setColor(0xffff00);
-        if (!complete.isEmpty())
-        {
+        if (!complete.isEmpty()) {
             embed.addField("Successfully monitored:", complete, false);
             embed.setColor(0x00ff00);
         }
 
-        if (!monitored.isEmpty())
-        {
+        if (!monitored.isEmpty()) {
             embed.addField("Already being monitored:", monitored, false);
             embed.setColor(0x00ff00);
         }
 
-        if (!nonValid.isEmpty())
-        {
+        if (!nonValid.isEmpty()) {
             embed.addField("Channels that were not valid or found:", nonValid, false);
         }
 
-        if (!noText.isEmpty())
-        {
+        if (!noText.isEmpty()) {
             embed.addField("Categories with no Text Channels:", noText, false);
         }
 
         embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
+        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
         Messages.sendMessage(eventChannel, embed);
 
         embed.clear();

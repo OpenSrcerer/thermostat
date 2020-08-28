@@ -1,8 +1,8 @@
 package thermostat.thermoFunctions.listeners;
 
-import thermostat.mySQL.Delete;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import thermostat.mySQL.Delete;
 
 /**
  * <h1>Guild Leave Listener</h1>
@@ -12,10 +12,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
  * occurrence. Extends ListenerAdapter thus must
  * be added as a listener in {@link thermostat.thermostat}.
  */
-public class GuildLeave extends ListenerAdapter
-{
-    public void onGuildLeave(GuildLeaveEvent ev)
-    {
+public class GuildLeave extends ListenerAdapter {
+    public void onGuildLeave(GuildLeaveEvent ev) {
         Delete.Guild(ev.getGuild().getId());
     }
 }

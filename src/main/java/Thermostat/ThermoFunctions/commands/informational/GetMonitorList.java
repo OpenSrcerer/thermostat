@@ -1,19 +1,16 @@
 package thermostat.thermoFunctions.commands.informational;
 
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
-import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.Messages;
-import thermostat.thermostat;
-
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Embeds;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -42,20 +39,18 @@ public class GetMonitorList {
             if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + eventGuild.getId()))
                 Create.Guild(eventGuild.getId());
 
-            List<String> guildList = DataSource.query("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+            List<String> guildList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                     "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                     "WHERE CHANNELS.GUILD_ID = " + eventGuild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
 
-            if (guildList.isEmpty())
-            {
+            if (guildList == null) {
                 embed.addField("Channels currently being monitored:", "None.", false);
-            }
-            else
-            {
+            } else if (guildList.isEmpty()) {
+                embed.addField("Channels currently being monitored:", "None.", false);
+            } else {
                 // iterate through retrieved array, adding
                 // every monitored guild to the ending embed
-                for (String it : guildList)
-                {
+                for (String it : guildList) {
                     TextChannel monitoredChannel = eventGuild.getTextChannelById(it);
 
                     if (monitoredChannel != null)
@@ -76,7 +71,7 @@ public class GetMonitorList {
 
         embed.setColor(0x00aeff);
         embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), thermostat.thermo.getSelfUser().getAvatarUrl());
+        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
         Messages.sendMessage(eventChannel, embed);
 
         embed.clear();

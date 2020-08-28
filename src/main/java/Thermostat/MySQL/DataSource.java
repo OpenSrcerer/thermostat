@@ -5,11 +5,14 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Class that creates a single Hikari
@@ -25,23 +28,57 @@ public class DataSource {
         ds = new HikariDataSource(config);
     }
 
-    public DataSource() {}
+    public DataSource() {
+    }
 
     public static Connection getConnection() throws SQLException {
         return ds.getConnection();
     }
 
     /**
-     * Function that performs a data-grabbing query
-     * upon the database linked.
-     * @param Query A string containing the query that will be
-     *              executed.
-     * @return A ResultSet that contains the information
+     * Queries DB for a string array.
+     *
+     * @param Query A string containing a query that will be
+     *              executed. Expected two values.
+     * @return A String Array that contains the information
      * for the specified query. Returns an empty ResultSet
      * if the provided query did not return any results.
      */
-    public static ArrayList<String> query (String Query)
-    {
+    @Nullable
+    public static Map<String, Integer> queryMap(String Query) {
+        Map<String, Integer> resultMap = null;
+
+        try (
+                Connection conn = DataSource.getConnection();
+                PreparedStatement pst = conn.prepareStatement(
+                        Query,
+                        ResultSet.TYPE_SCROLL_SENSITIVE,
+                        ResultSet.CONCUR_UPDATABLE
+                );
+                ResultSet rs = pst.executeQuery()
+        ) {
+            resultMap = new LinkedHashMap<>();
+            while (rs.next()) {
+                resultMap.put(rs.getString(1), rs.getInt(2));
+            }
+        } catch (SQLException ex) {
+            Logger lgr = LoggerFactory.getLogger(ds.getClass());
+            lgr.error(ex.getMessage(), ex);
+        }
+        return resultMap;
+    }
+
+    /**
+     * Queries DB for a string array.
+     *
+     * @param Query A string containing the query that will be
+     *              executed.
+     * @return A String Array that contains the information
+     * for the specified query. Returns an empty ResultSet
+     * if the provided query did not return any results.
+     */
+    @Nullable
+    public static ArrayList<String> queryStringArray(String Query) {
         ArrayList<String> resultArray = null;
 
         try (
@@ -54,8 +91,7 @@ public class DataSource {
                 ResultSet rs = pst.executeQuery()
         ) {
             resultArray = new ArrayList<>();
-            while (rs.next())
-            {
+            while (rs.next()) {
                 resultArray.add(rs.getString(1));
             }
         } catch (SQLException ex) {
@@ -68,8 +104,7 @@ public class DataSource {
     /**
      * Same as above, returns single boolean value.
      */
-    public static boolean queryBool (String Query)
-    {
+    public static boolean queryBool(String Query) {
         try (
                 Connection conn = DataSource.getConnection();
                 PreparedStatement pst = conn.prepareStatement(
@@ -92,8 +127,7 @@ public class DataSource {
     /**
      * Same as above, returns single int value.
      */
-    public static float querySens (String Query)
-    {
+    public static float querySens(String Query) {
         float retVal = 0;
 
         try (
@@ -105,8 +139,7 @@ public class DataSource {
                 );
                 ResultSet rs = pst.executeQuery()
         ) {
-            if (rs.next())
-            {
+            if (rs.next()) {
                 retVal = rs.getFloat(1);
             } else {
                 return retVal;
@@ -121,8 +154,7 @@ public class DataSource {
     /**
      * Same as above, returns single int value.
      */
-    public static int queryInt (String Query)
-    {
+    public static int queryInt(String Query) {
         int retVal = -1;
 
         try (
@@ -134,8 +166,7 @@ public class DataSource {
                 );
                 ResultSet rs = pst.executeQuery()
         ) {
-            if (rs.next())
-            {
+            if (rs.next()) {
                 retVal = rs.getInt(1);
             } else {
                 return retVal;
@@ -150,8 +181,8 @@ public class DataSource {
     /**
      * Same as above, returns single String value.
      */
-    public static String queryString (String Query)
-    {
+    @Nullable
+    public static String queryString(String Query) {
         String retString = null;
 
         try (
@@ -163,8 +194,7 @@ public class DataSource {
                 );
                 ResultSet rs = pst.executeQuery()
         ) {
-            if (rs.next())
-            {
+            if (rs.next()) {
                 retString = rs.getString(1);
             } else {
                 return null;
@@ -179,12 +209,12 @@ public class DataSource {
     /**
      * Function that performs a data-changing query
      * upon the database.
+     *
      * @param Query A string containing the update that will be
      *              executed.
      * @throws SQLException Error while executing update.
      */
-    public static void update (String Query) throws SQLException
-    {
+    public static void update(String Query) throws SQLException {
         Connection conn = DataSource.getConnection();
         PreparedStatement pst = conn.prepareStatement(Query);
         pst.executeUpdate();
@@ -195,13 +225,12 @@ public class DataSource {
 
     /**
      * Looks up whether a certain ResultSet is empty.
+     *
      * @param Query A string containing the query that will be
      *              executed.
      * @return True if ResultSet had data on it, false if it was empty.
      */
-    public static boolean checkDatabaseForData (String Query) throws SQLException
-    {
-
+    public static boolean checkDatabaseForData(String Query) throws SQLException {
         try (
                 Connection conn = DataSource.getConnection();
                 PreparedStatement pst = conn.prepareStatement(Query);

@@ -12,10 +12,10 @@ public class MessageReceived extends ListenerAdapter {
      * Listener used to update a list of messages in a
      * WorkerChannel object, whenever a message is
      * received.
+     *
      * @param ev Event when a message is received.
      */
-    public void onGuildMessageReceived (@Nonnull GuildMessageReceivedEvent ev)
-    {
+    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent ev) {
         // adds and pops messages from list
         ArrayList<Worker> workers = WorkerManager.getActiveWorkers();
 

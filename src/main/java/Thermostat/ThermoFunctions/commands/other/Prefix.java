@@ -1,12 +1,12 @@
 package thermostat.thermoFunctions.commands.other;
 
-import thermostat.Embeds;
-import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.Messages;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import thermostat.Embeds;
+import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
@@ -27,7 +27,9 @@ public class Prefix {
             return;
         }
 
-        if (args.size() == 1) { return; }
+        if (args.size() == 1) {
+            return;
+        }
 
         args.remove(0);
         args.remove(0);
@@ -41,9 +43,10 @@ public class Prefix {
 
     /**
      * Code to run when the command is called.
-     * @param args User input.
-     * @param channel Channel where command was called.
-     * @param guildId ID of event guild.
+     *
+     * @param args          User input.
+     * @param channel       Channel where command was called.
+     * @param guildId       ID of event guild.
      * @param currentPrefix Current prefix of thermostat.
      * @throws SQLException If some error went wrong with the DB conn.
      */
@@ -56,7 +59,7 @@ public class Prefix {
 
         if (args.size() > 1 && args.get(0).equalsIgnoreCase("set")) {
             if (Pattern.matches("[!-~]*", args.get(1)) && args.get(1).length() <= 10 && !args.get(1).equalsIgnoreCase(currentPrefix)) {
-                Messages.sendMessage(channel, Embeds.setPrefix(member.getUser().getAsTag(), args.get(1)));
+                Messages.sendMessage(channel, Embeds.setPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), args.get(1)));
                 DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = '" + args.get(1) + "' WHERE GUILD_ID = " + guildId);
             } else if (args.get(1).equalsIgnoreCase(currentPrefix)) {
                 Messages.sendMessage(channel, Embeds.samePrefix(currentPrefix));
@@ -69,7 +72,7 @@ public class Prefix {
             DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = " + guildId);
             Messages.sendMessage(channel, Embeds.resetPrefix());
         } else {
-            Messages.sendMessage(channel, Embeds.getPrefix(member.getUser().getAsTag(), currentPrefix));
+            Messages.sendMessage(channel, Embeds.getPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), currentPrefix));
         }
     }
 }

@@ -13,23 +13,21 @@ import java.sql.SQLException;
  * relational dependencies.
  */
 
-public class Delete
-{
+public class Delete {
     /**
      * Deletes a whole guild from the database,
      * including its' respective channels and
      * channel settings.
      * <p>Affects Tables: <b>GUILDS, CHANNELS, CHANNEL_SETTINGS</b>
+     *
      * @param GUILD_ID Guild to be deleted from DB.
      */
-    public static void Guild (String GUILD_ID)
-    {
+    public static void Guild(String GUILD_ID) {
         // update queries to delete SQL rows related to guild
         // that just kicked bot
         // delete child then parent tables
 
-        try
-        {
+        try {
             DataSource.update("DELETE CHANNEL_SETTINGS FROM GUILDS JOIN CHANNELS" +
                     " ON (CHANNELS.GUILD_ID = GUILDS.GUILD_ID) JOIN CHANNEL_SETTINGS" +
                     " ON (CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID)" +
@@ -43,9 +41,7 @@ public class Delete
             );
 
             DataSource.update("DELETE FROM GUILDS WHERE GUILD_ID = " + GUILD_ID);
-        }
-        catch (SQLException ex)
-        {
+        } catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
@@ -55,13 +51,12 @@ public class Delete
      * Deletes a channel from the database,
      * including its' respective settings.
      * <p>Affects Tables: <b>CHANNELS, CHANNEL_SETTINGS</b>
-     * @param GUILD_ID Guild where the channel resides in.
+     *
+     * @param GUILD_ID   Guild where the channel resides in.
      * @param CHANNEL_ID Channel that will be removed from DB.
      */
-    public static void Channel (String GUILD_ID, String CHANNEL_ID)
-    {
-        try
-        {
+    public static void Channel(String GUILD_ID, String CHANNEL_ID) {
+        try {
             DataSource.update("DELETE CHANNEL_SETTINGS FROM GUILDS JOIN CHANNELS" +
                     " ON (CHANNELS.GUILD_ID = GUILDS.GUILD_ID) JOIN CHANNEL_SETTINGS" +
                     " ON (CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID)" +
@@ -75,9 +70,7 @@ public class Delete
                             "WHERE GUILDS.GUILD_ID = " + GUILD_ID +
                             " AND CHANNELS.CHANNEL_ID = " + CHANNEL_ID
             );
-        }
-        catch (SQLException ex)
-        {
+        } catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
