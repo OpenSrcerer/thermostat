@@ -30,7 +30,10 @@ All you have to do is get started with Thermostat is:
   <li>Monitor the channels you need with <code>`prefix`monitor `channels/categories`</code>.</li>
   <li>Set up the maximum slowmode upper bound for your channels using <code>`prefix`setmaximum `channels/categories`</code>.</li>
   <li>Edit the channel sensitivity with <code>`prefix`sensitivity `channels/categories` `sensitivity`</code>.</li>
-</ul>   
+  <li>Empower your server and visualize your most active channels with <code>`prefix`chart</code>!</li>
+</ul>  
+
+<img src="https://i.ibb.co/4gxBbKB/chart.png" alt="Chart"/>
 
 **Note:** <code>\`prefix\`</code>, and <code>\`channels/categories\`</code> are variables that should be replaced as per your need. For example, if your prefix is <code>th!</code> and you're trying to monitor a channel called "#general", you would type <code>th!monitor #general</code>.   
 
@@ -62,6 +65,7 @@ If you still have problems, <a href="https://discord.gg/FnPb4nM">join our suppor
   <li><a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a></li>
   <li><a href="https://github.com/DiscordBotList/DBL-Java-Library">Discord Bot List Java Library</a></li>
   <li><a href="https://github.com/knowm/XChart">XChart</a></li>
+  <li><a href="https://code.google.com/archive/p/json-simple/">json-simple</a></li>
 </ul>
 
 # License
