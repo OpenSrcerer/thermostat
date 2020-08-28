@@ -1,6 +1,6 @@
 language: java
 os: linux
 dist: xenial
-package:
+deploy:
   provider: script
   script: "mvn -B -V package"
