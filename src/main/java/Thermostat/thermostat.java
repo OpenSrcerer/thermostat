@@ -17,10 +17,8 @@ import org.slf4j.LoggerFactory;
 import thermostat.thermoFunctions.listeners.Ready;
 
 import javax.security.auth.login.LoginException;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URL;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 
 /**
@@ -46,7 +44,7 @@ public class thermostat {
             GatewayIntent.GUILD_MESSAGE_REACTIONS
     );
 
-    public static String prefix, JDAToken, DBLToken;
+    public static String prefix;
 
     /**
      * Main run function for the bot. Event listeners
@@ -54,19 +52,20 @@ public class thermostat {
      */
     public static void main(String[] args) {
 
+        String DBLToken;
+        String JDAToken;
+
         {
-            JSONParser parser = new JSONParser();
-
             try {
-                URL JSONConfig = thermostat.class.getClassLoader().getResource("config.json");
+                InputStream configFile = thermostat.class.getClassLoader().getResourceAsStream("config.json");
 
-                if (JSONConfig == null) {
-                    logger.error("JSON config file not found.");
-                    return;
-                }
+                if (configFile == null) { logger.error("JSON config file not found."); return; }
 
-                Object obj = parser.parse(new FileReader(JSONConfig.getFile()));
-                JSONObject jsonObject = (JSONObject) obj;
+                JSONParser parser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) parser.parse(
+                        new InputStreamReader(configFile, StandardCharsets.UTF_8
+                        )
+                );
 
                 prefix = jsonObject.get("Prefix").toString();
                 JDAToken = jsonObject.get("Token").toString();

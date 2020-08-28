@@ -103,7 +103,7 @@ public class Chart {
                     new Color(255, 99, 97),
                     new Color(255, 166, 0)
             };
-            Font titleFont = new Font("Arial", Font.BOLD, 20);
+            Font titleFont = new Font("Arial", Font.BOLD, 16);
 
             // Customize Chart Colors
             chart.getStyler()
