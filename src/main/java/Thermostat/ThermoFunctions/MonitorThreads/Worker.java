@@ -137,7 +137,7 @@ public class Worker {
             channel.getManager().setSlowmode(slowmodeToSet).queue(null, slowmodeFailureConsumer);
 
             // Adds +1 to slowmode turning on for charting purposes.
-            if (slow == min && slowmodeToSet > 0 && max != min) {
+            if (slow == min && slowmodeToSet > min) {
                 DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = " + channel.getId() + " AND GUILD_ID = " + channel.getGuild().getId());
             }
 
