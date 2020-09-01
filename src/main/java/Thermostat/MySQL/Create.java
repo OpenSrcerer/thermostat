@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 // Driver class for importing data
 // into the database
@@ -19,7 +20,6 @@ public class Create {
 
     /**
      * Creates a new instance of a guild in the database.
-     * <p>Affects tables: <b>GUILDS</b>
      *
      * @param GUILD_ID Guild that is about to be added to DB.
      */
@@ -29,7 +29,7 @@ public class Create {
         }
 
         try {
-            DataSource.update("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (" + GUILD_ID + ", 0);");
+            DataSource.update("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (?, 0);", GUILD_ID);
         } catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
@@ -52,9 +52,10 @@ public class Create {
         }
 
         try {
-            DataSource.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (" + CHANNEL_ID + ", " + GUILD_ID + ");");
+            DataSource.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (?, ?);", Arrays.asList(CHANNEL_ID, GUILD_ID));
             // add channelID, min, and max slowmode
-            DataSource.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES (" + CHANNEL_ID + ", 0, 0, " + monitor + ");");
+            DataSource.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES (?, 0, 0, ?);",
+                    Arrays.asList(CHANNEL_ID, Integer.toString(monitor)));
         } catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
@@ -74,8 +75,9 @@ public class Create {
             DataSource.update("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
                     "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
                     "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
-                    "SET MONITORED = " + monitor + " WHERE CHANNEL_SETTINGS.CHANNEL_ID = " +
-                    CHANNEL_ID + " AND GUILDS.GUILD_ID = " + GUILD_ID);
+                    "SET MONITORED = ? WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?" +
+                    " AND GUILDS.GUILD_ID = ?",
+                    Arrays.asList(Integer.toString(monitor), CHANNEL_ID, GUILD_ID));
         } catch (SQLException ex) {
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);

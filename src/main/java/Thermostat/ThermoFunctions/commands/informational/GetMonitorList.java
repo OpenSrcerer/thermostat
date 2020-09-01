@@ -36,12 +36,13 @@ public class GetMonitorList {
 
         try {
             // Adds the guild to the database if it's not in it!
-            if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + eventGuild.getId()))
+            if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
                 Create.Guild(eventGuild.getId());
 
             List<String> guildList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                     "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                    "WHERE CHANNELS.GUILD_ID = " + eventGuild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
+                    "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
+                    eventGuild.getId());
 
             if (guildList == null) {
                 embed.addField("Channels currently being monitored:", "None.", false);

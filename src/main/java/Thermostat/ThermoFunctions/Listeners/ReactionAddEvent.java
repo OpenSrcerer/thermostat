@@ -14,6 +14,7 @@ import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
 import thermostat.thermostat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         ev.getUserId().equals(monitoredMessage.getMessageOwner())
         ) {
             // gets guild prefix from database. if it doesn't have one, use default
-            String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+            String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", );
             if (prefix == null) {
                 prefix = thermostat.prefix;
             }
