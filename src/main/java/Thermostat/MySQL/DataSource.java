@@ -81,34 +81,6 @@ public class DataSource {
      * if the provided query did not return any results.
      */
     @Nullable
-    public static ArrayList<String> queryStringArray(String Query, List<String> args) {
-        ArrayList<String> resultArray = null;
-
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            // updates all variables "?" in PreparedStatement
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
-            }
-            ResultSet rs = pst.executeQuery();
-
-            resultArray = new ArrayList<>();
-            while (rs.next()) {
-                resultArray.add(rs.getString(1));
-            }
-        } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
-            lgr.error(ex.getMessage(), ex);
-        }
-        return resultArray;
-    }
-
     public static ArrayList<String> queryStringArray(String Query, String argument) {
         ArrayList<String> resultArray = null;
 
@@ -120,7 +92,9 @@ public class DataSource {
                         ResultSet.CONCUR_UPDATABLE
                 )
         ) {
-            pst.setString(1, argument);
+            if (!argument.isEmpty())
+                pst.setString(1, argument);
+
             ResultSet rs = pst.executeQuery();
 
             resultArray = new ArrayList<>();
@@ -137,29 +111,6 @@ public class DataSource {
     /**
      * Same as above, returns single boolean value.
      */
-    public static boolean queryBool(String Query, List<String> args) {
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
-            }
-            ResultSet rs = pst.executeQuery();
-            rs.next();
-
-            return rs.getBoolean(1);
-        } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
-            lgr.error(ex.getMessage(), ex);
-        }
-        return false;
-    }
-
     public static boolean queryBool(String Query, String argument) {
         try (
                 Connection conn = DataSource.getConnection();
@@ -184,34 +135,6 @@ public class DataSource {
     /**
      * Same as above, returns single int value.
      */
-    public static float querySens(String Query, List<String> args) {
-        float retVal = 0;
-
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
-            }
-            ResultSet rs = pst.executeQuery();
-
-            if (rs.next()) {
-                retVal = rs.getFloat(1);
-            } else {
-                return retVal;
-            }
-        } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
-            lgr.error(ex.getMessage(), ex);
-        }
-        return retVal;
-    }
-
     public static float querySens(String Query, String argument) {
         float retVal = 0;
 
@@ -241,34 +164,6 @@ public class DataSource {
     /**
      * Same as above.
      */
-    public static int queryInt(String Query, List<String> args) {
-        int retVal = -1;
-
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
-            }
-            ResultSet rs = pst.executeQuery();
-
-            if (rs.next()) {
-                retVal = rs.getInt(1);
-            } else {
-                return retVal;
-            }
-        } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
-            lgr.error(ex.getMessage(), ex);
-        }
-        return retVal;
-    }
-
     public static int queryInt(String Query, String argument) {
         int retVal = -1;
 
@@ -298,8 +193,7 @@ public class DataSource {
     /**
      * Same as above, returns single String value.
      */
-    @Nullable
-    public static String queryString(String Query, List<String> args) {
+    public static String queryString(String Query, String argument) {
         String retString = null;
 
         try (
@@ -310,9 +204,7 @@ public class DataSource {
                         ResultSet.CONCUR_UPDATABLE
                 )
         ) {
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
-            }
+            pst.setString(1, argument);
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
@@ -364,22 +256,6 @@ public class DataSource {
      *              executed.
      * @return True if ResultSet had data on it, false if it was empty.
      */
-    public static boolean checkDatabaseForData(String Query, List<String> args) throws SQLException {
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(Query)
-        ) {
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
-            }
-            ResultSet rs = pst.executeQuery();
-
-            if (!rs.next())
-                return false;
-        }
-        return true;
-    }
-
     public static boolean checkDatabaseForData(String Query, String argument) throws SQLException {
         try (
                 Connection conn = DataSource.getConnection();

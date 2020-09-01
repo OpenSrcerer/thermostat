@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -21,24 +23,6 @@ public class WorkerManager {
     // ActiveWorkers array used for maintaining threads working on monitoring
     private static ArrayList<Worker> activeWorkers = new ArrayList<>();
 
-    /**
-     * Gives back an array of currently active
-     * guild workers.
-     *
-     * @return The array of guild workers.
-     */
-    public static ArrayList<Worker> getActiveWorkers() {
-        return activeWorkers;
-    }
-
-    public static void setActiveWorkers(ArrayList<Worker> workers) {
-        activeWorkers = workers;
-    }
-
-    /**
-     * Constructor, called once in the main function
-     * of the {@link thermostat.thermostat class}.
-     */
     private WorkerManager() {
         Runnable setup = WorkerManager::updateGuilds;
         scheduledExecutorService = new ScheduledThreadPoolExecutor(4);
@@ -47,6 +31,36 @@ public class WorkerManager {
         // there's no need to modify the main scheduler
         // it only turns off once the whole program shuts down
         scheduledExecutorService.scheduleAtFixedRate(setup, 0, 5, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Gives back an array of currently active
+     * guild workers.
+     *
+     * @return The array of guild workers.
+     */
+    @Nonnull
+    public static ArrayList<Worker> getActiveWorkers() {
+        return activeWorkers;
+    }
+
+    /**
+     * Assigns active worker array.
+     * @param workers New worker array.
+     */
+    public static void setActiveWorkers(ArrayList<Worker> workers) {
+        activeWorkers = workers;
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Nullable
+    public static Worker getActiveWorkerById(String guildId) {
+        for (int it = 0; it < activeWorkers.size(); ++it) {
+            if (activeWorkers.get(it).getAssignedGuild().equals(guildId)) {
+                return activeWorkers.get(it);
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -68,7 +82,7 @@ public class WorkerManager {
         try {
 
             // list that will hold all guilds taken from the DB
-            ArrayList<String> guildArray = DataSource.queryStringArray("SELECT GUILD_ID FROM GUILDS");
+            ArrayList<String> guildArray = DataSource.queryStringArray("SELECT GUILD_ID FROM GUILDS", "");
 
             if (guildArray == null) { return; }
 

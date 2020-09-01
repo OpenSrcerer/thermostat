@@ -52,11 +52,11 @@ public class Settings {
         // connects to database and creates channel
         try {
             // silent guild adder
-            if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + eventGuild.getId()))
+            if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
                 Create.Guild(eventGuild.getId());
 
             {
-                int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId);
+                int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId);
 
                 if (max == -1) {
                     Messages.sendMessage(eventChannel, Embeds.channelNeverMonitored());
@@ -71,9 +71,9 @@ public class Settings {
                                     eventMember.getUser().getAsTag(),
                                     eventMember.getUser().getAvatarUrl(),
                                     max,
-                                    DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId),
-                                    DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId),
-                                    DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channelId)
+                                    DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
+                                    DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
+                                    DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId)
                             )
                     );
                 }

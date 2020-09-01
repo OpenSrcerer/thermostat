@@ -14,7 +14,6 @@ import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
 import thermostat.thermostat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         ev.getUserId().equals(monitoredMessage.getMessageOwner())
         ) {
             // gets guild prefix from database. if it doesn't have one, use default
-            String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", );
+            String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", ev.getGuild().getId());
             if (prefix == null) {
                 prefix = thermostat.prefix;
             }
@@ -111,13 +110,13 @@ public class ReactionAddEvent extends ListenerAdapter {
             ) {
                 try {
                     // silent guild adder (to not cause conflicts)
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId()))
+                    if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", ev.getGuild().getId()))
                         Create.Guild(ev.getGuild().getId());
                     // checks db if channel exists
                     if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS " +
-                            "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = " +
-                            ev.getGuild().getId() + " AND CHANNEL_SETTINGS.MONITORED = 1")) {
-                        List<String> channelsToUnMonitor = DataSource.queryStringArray("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = " + ev.getGuild().getId());
+                            "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ?" +
+                            " AND CHANNEL_SETTINGS.MONITORED = 1", ev.getGuild().getId())) {
+                        List<String> channelsToUnMonitor = DataSource.queryStringArray("SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = ?", ev.getGuild().getId());
 
                         if (channelsToUnMonitor == null) { return; }
 

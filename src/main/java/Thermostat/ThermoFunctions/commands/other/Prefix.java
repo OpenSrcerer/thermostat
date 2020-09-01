@@ -11,6 +11,7 @@ import thermostat.thermoFunctions.Messages;
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Prefix {
@@ -60,7 +61,8 @@ public class Prefix {
         if (args.size() > 1 && args.get(0).equalsIgnoreCase("set")) {
             if (Pattern.matches("[!-~]*", args.get(1)) && args.get(1).length() <= 10 && !args.get(1).equalsIgnoreCase(currentPrefix)) {
                 Messages.sendMessage(channel, Embeds.setPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), args.get(1)));
-                DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = '" + args.get(1) + "' WHERE GUILD_ID = " + guildId);
+                DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = '?' WHERE GUILD_ID = ?",
+                        Arrays.asList(args.get(1), guildId));
             } else if (args.get(1).equalsIgnoreCase(currentPrefix)) {
                 Messages.sendMessage(channel, Embeds.samePrefix(currentPrefix));
             } else {
@@ -69,7 +71,7 @@ public class Prefix {
         } else if (args.size() == 1 && args.get(0).equalsIgnoreCase("set")) {
             Messages.sendMessage(channel, Embeds.insertPrefix());
         } else if (args.size() >= 1 && args.get(0).equalsIgnoreCase("reset")) {
-            DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = " + guildId);
+            DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = ?", guildId);
             Messages.sendMessage(channel, Embeds.resetPrefix());
         } else {
             Messages.sendMessage(channel, Embeds.getPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), currentPrefix));

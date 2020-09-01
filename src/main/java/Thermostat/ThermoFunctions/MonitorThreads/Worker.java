@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -138,7 +139,8 @@ public class Worker {
 
             // Adds +1 to slowmode turning on for charting purposes.
             if (slow == min && slowmodeToSet > min) {
-                DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = " + channel.getId() + " AND GUILD_ID = " + channel.getGuild().getId());
+                DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?",
+                        Arrays.asList(channel.getId(), channel.getGuild().getId()));
             }
 
         } catch (InsufficientPermissionException ex) {
@@ -149,19 +151,19 @@ public class Worker {
     }
 
     /**
-     * Removes channels from monitoring, sending an error msg.
+     * Removes channels from monitoring.
      *
      * @param channel The channel to be removed.
      */
-    private void removeChannel(TextChannel channel) {
+    public void removeChannel(TextChannel channel) {
         Messages.sendMessage(channel, Embeds.insufficientPerm());
         for (int index = 0; index < channelsToMonitor.size(); ++index) {
-            if (channelsToMonitor.get(index).channelId.equals(channel.getId())) {
+            if (channelsToMonitor.get(index).getChannelId().equals(channel.getId())) {
                 channelsToMonitor.remove(channelsToMonitor.get(index));
             }
         }
         try {
-            DataSource.update("UPDATE CHANNEL_SETTINGS SET MONITORED = 0 WHERE CHANNEL_ID = " + channel.getId());
+            DataSource.update("UPDATE CHANNEL_SETTINGS SET MONITORED = 0 WHERE CHANNEL_ID = ?", channel.getId());
         } catch (SQLException ex) {
             lgr.error("SQL Exception thrown!", ex);
         }
@@ -185,9 +187,9 @@ public class Worker {
 
         // gets the maximum and minimum slowmode values
         // from the database.
-        max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
-        min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
-        offset = DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + channel.getId());
+        max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+        min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+        offset = DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
 
         // accounting for each delay of the messages
         // this function picks an appropriate slowmode
@@ -259,7 +261,7 @@ public class Worker {
         // get raw list of channels to monitor from db
         ArrayList<String> databaseMonitoredChannels = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                 "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                "WHERE CHANNELS.GUILD_ID = " + guild.getId() + " AND CHANNEL_SETTINGS.MONITORED = 1");
+                "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1", guild.getId());
 
         if (databaseMonitoredChannels == null) { return; }
 
@@ -268,7 +270,7 @@ public class Worker {
         for (String it : databaseMonitoredChannels) {
             boolean channelMatch = false;
             for (WorkerChannel jt : channelsToMonitor) {
-                if (it.equals(jt.channelId)) {
+                if (it.equals(jt.getChannelId())) {
                     channelMatch = true;
                     break;
                 }
@@ -288,22 +290,22 @@ public class Worker {
                     ChronoUnit unit = ChronoUnit.MILLIS;
                     OffsetDateTime nowTime = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(unit);
 
-                    int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + currentWorker.channelId);
+                    int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", currentWorker.getChannelId());
 
                     if ((
                             unit.between(currentWorker.messageList.get(0), nowTime) > 64000) ||
-                            DataSource.checkDatabaseForData("SELECT * FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " +
-                                    currentWorker.channelId + " AND MONITORED = 0")
+                            DataSource.checkDatabaseForData("SELECT * FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?" +
+                                    " AND MONITORED = 0", currentWorker.getChannelId())
                     ) {
                         // removes object, emptying list
                         channelsToMonitor.remove(currentWorker);
-                        putSlowmode(guild.getTextChannelById(currentWorker.channelId), -99999999, TextChannel.MAX_SLOWMODE, min);
+                        putSlowmode(guild.getTextChannelById(currentWorker.getChannelId()), -99999999, TextChannel.MAX_SLOWMODE, min);
                     } else {
                         OffsetDateTime firstMessageTime = currentWorker.messageList.get(0);
                         List<Long> delays = getListOfDelays(currentWorker.messageList, unit);
 
                         slowmodeSwitch(
-                                guild.getTextChannelById(currentWorker.channelId),
+                                guild.getTextChannelById(currentWorker.getChannelId()),
                                 calculateAverageTime(delays),
                                 unit.between(firstMessageTime, nowTime)
                         );

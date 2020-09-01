@@ -33,7 +33,7 @@ public class Command extends ListenerAdapter {
         if (ev.getMember().getUser().isBot())
             return;
 
-        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = " + ev.getGuild().getId());
+        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", ev.getGuild().getId());
         if (prefix == null) {
             prefix = thermostat.prefix;
         }

@@ -98,12 +98,12 @@ public class UnMonitor {
         for (String it : args) {
             try {
                 // silent guild adder
-                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + eventGuild.getId()))
+                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
                     Create.Guild(eventGuild.getId());
                 // checks db if channel exists
                 if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS " +
-                        "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.CHANNEL_ID = " +
-                        it + " AND CHANNEL_SETTINGS.MONITORED = 1")) {
+                        "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.CHANNEL_ID = ?" +
+                        " AND CHANNEL_SETTINGS.MONITORED = 1", it)) {
                     Create.ChannelMonitor(eventGuild.getId(), it, 0);
                     complete = complete.concat("<#" + it + "> ");
                 }

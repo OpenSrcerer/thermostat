@@ -14,6 +14,7 @@ import thermostat.thermoFunctions.Messages;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static thermostat.thermoFunctions.Functions.parseMention;
@@ -111,22 +112,23 @@ public class SetMinimum {
             for (int index = 0; index < args.size() - 1; ++index) {
                 try {
                     // silent guild adder
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + eventGuild.getId()))
+                    if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
                         Create.Guild(eventGuild.getId());
 
                     // check db if channel exists and create it if not
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + args.get(index)))
+                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?" , args.get(index)))
                         Create.Channel(eventGuild.getId(), args.get(index), 0);
 
                     int minimumSlow;
-                    minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + args.get(index));
+                    minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", args.get(index));
 
                     if (argumentSlow >= minimumSlow && argumentSlow <= 21600) {
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + args.get(index));
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + args.get(index));
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
+                                Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), args.get(index)));
                         complete = complete.concat("<#" + args.get(index) + "> ");
                     } else if (argumentSlow < minimumSlow && argumentSlow <= 21600) {
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + args.get(index));
+                        DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
+                                Arrays.asList(Integer.toString(argumentSlow), args.get(index)));
                         complete = complete.concat("<#" + args.get(index) + "> ");
                     } else {
                         badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
@@ -139,22 +141,23 @@ public class SetMinimum {
         } else if (!removed) {
             try {
                 // silent guild adder
-                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = " + eventGuild.getId()))
+                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
                     Create.Guild(eventGuild.getId());
 
                 // check db if channel exists and create it if not
-                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = " + eventChannel.getId()))
+                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", eventChannel.getId()))
                     Create.Channel(eventGuild.getId(), eventChannel.getId(), 0);
 
                 int minimumSlow;
-                minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = " + eventChannel.getId());
+                minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", eventChannel.getId());
 
                 if (argumentSlow >= minimumSlow && argumentSlow <= 21600) {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + eventChannel.getId());
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + eventChannel.getId());
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
+                            Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), eventChannel.getId()));
                     complete = complete.concat("<#" + eventChannel.getId() + "> ");
                 } else if (argumentSlow < minimumSlow && argumentSlow <= 21600) {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = " + argumentSlow + " WHERE CHANNEL_ID = " + eventChannel.getId());
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
+                            Arrays.asList(Integer.toString(argumentSlow), eventChannel.getId()));
                     complete = complete.concat("<#" + eventChannel.getId() + "> ");
                 } else {
                     badSlowmode = badSlowmode.concat("<#" + eventChannel.getId() + "> ");
