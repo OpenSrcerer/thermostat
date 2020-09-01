@@ -20,7 +20,7 @@ public class MessageReceived extends ListenerAdapter {
         ArrayList<Worker> workers = WorkerManager.getActiveWorkers();
 
         workers.forEach(worker -> worker.channelsToMonitor.forEach(channel -> {
-            if (ev.getChannel().getId().equals(channel.channelId)) {
+            if (ev.getChannel().getId().equals(channel.getChannelId())) {
 
                 if (channel.messageList.size() < 10) {
                     channel.messageList.add(0, ev.getMessage().getTimeCreated());
