@@ -45,7 +45,7 @@ public class DataSource {
      * if the provided query did not return any results.
      */
     @Nullable
-    public static Map<String, Integer> queryMap(String Query) {
+    public static Map<String, Integer> queryMap(String Query, String argument) {
         Map<String, Integer> resultMap = null;
 
         try (
@@ -54,9 +54,11 @@ public class DataSource {
                         Query,
                         ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE
-                );
-                ResultSet rs = pst.executeQuery()
+                )
         ) {
+            pst.setString(1, argument);
+            ResultSet rs = pst.executeQuery();
+
             resultMap = new LinkedHashMap<>();
             while (rs.next()) {
                 resultMap.put(rs.getString(1), rs.getInt(2));

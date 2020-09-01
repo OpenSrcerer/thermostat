@@ -15,7 +15,6 @@ import thermostat.thermoFunctions.Messages;
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -65,8 +64,8 @@ public class Chart {
     public static void frequencyChart(Guild eventGuild, TextChannel eventChannel, Member eventMember) {
 
         Map<String, Integer> top5slowmode =
-                DataSource.queryMap("SELECT CHANNEL_ID, MANIPULATED  FROM CHANNELS WHERE GUILD_ID = "
-                        + eventGuild.getId() + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5");
+                DataSource.queryMap("SELECT CHANNEL_ID, MANIPULATED  FROM CHANNELS WHERE GUILD_ID = ?"
+                        + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5", eventGuild.getId());
 
         if (top5slowmode == null) {
             Messages.sendMessage(eventChannel, Embeds.noChannelsEverSlowmoded());
