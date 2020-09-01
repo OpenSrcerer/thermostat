@@ -28,7 +28,7 @@ import java.util.EnumSet;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 0.8.0
+ * @version 0.8.1
  * @since 2020-04-17
  */
 
@@ -102,10 +102,10 @@ public class thermostat {
             logger.error("Error while logging in the Discord Gateway!", ex);
         }
 
-        /*thermoAPI = new DiscordBotListAPI.Builder()
+        thermoAPI = new DiscordBotListAPI.Builder()
                 .token(DBLToken)
                 .botId(thermo.getSelfUser().getId())
-                .build();*/
+                .build();
 
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading sounds..."));
     }
