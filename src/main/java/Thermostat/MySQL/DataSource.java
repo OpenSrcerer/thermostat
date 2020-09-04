@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,7 +44,6 @@ public class DataSource {
      * for the specified query. Returns an empty ResultSet
      * if the provided query did not return any results.
      */
-    @Nullable
     public static Map<String, Integer> queryMap(String Query, String argument) {
         Map<String, Integer> resultMap = null;
 
@@ -80,7 +78,6 @@ public class DataSource {
      * for the specified query. Returns an empty ResultSet
      * if the provided query did not return any results.
      */
-    @Nullable
     public static ArrayList<String> queryStringArray(String Query, String argument) {
         ArrayList<String> resultArray = null;
 

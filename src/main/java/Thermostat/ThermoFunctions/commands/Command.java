@@ -12,12 +12,12 @@ import thermostat.thermoFunctions.commands.other.Invite;
 import thermostat.thermoFunctions.commands.other.Prefix;
 import thermostat.thermoFunctions.commands.other.Vote;
 import thermostat.thermoFunctions.entities.CommandType;
+import thermostat.thermoFunctions.listeners.WordFilterEvent;
 import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 
 /**
  * Main adapter class for any sort of command
@@ -41,12 +41,17 @@ public class Command extends ListenerAdapter {
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
-        if (
+        // Checks for whether the channel has the offensive-word filter activated.
+        if (DataSource.queryBool("SELECT WORDFILTER FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", ev.getChannel().getId())) {
+            new WordFilterEvent().filter(ev.getChannel(), ev.getMessage());
+        }
+
+        else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias2())
         ) Chart.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
 
-        if (
+        else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias2())
         ) GetMonitorList.execute(ev.getGuild(), ev.getChannel(), ev.getMember());
