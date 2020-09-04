@@ -43,10 +43,10 @@ public class Command extends ListenerAdapter {
 
         // Checks for whether the channel has the offensive-word filter activated.
         if (DataSource.queryBool("SELECT WORDFILTER FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", ev.getChannel().getId())) {
-            new WordFilterEvent().filter(ev.getChannel(), ev.getMessage());
+            new WordFilterEvent().filter(ev.getChannel(), ev.getAuthor(), args);
         }
 
-        else if (
+        if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias2())
         ) Chart.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
