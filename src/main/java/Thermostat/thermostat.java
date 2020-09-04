@@ -28,7 +28,7 @@ import java.util.EnumSet;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 0.8.1
+ * @version 0.8.2
  * @since 2020-04-17
  */
 

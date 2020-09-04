@@ -1,5 +1,8 @@
 package thermostat.thermoFunctions.listeners;
 
+import club.minnced.discord.webhook.WebhookClient;
+import club.minnced.discord.webhook.WebhookClientBuilder;
+import club.minnced.discord.webhook.send.AllowedMentions;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import org.jetbrains.annotations.NotNull;
@@ -10,36 +13,67 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static thermostat.thermostat.thermo;
 
 public class WordFilterEvent {
 
-    /*
-    private final EnumSet<Permission> neededPermissions = EnumSet.of(
-            Permission.MANAGE_WEBHOOKS,
-            Permission.
-    );*/
-
-    private final Logger lgr = LoggerFactory.getLogger(this.getClass());
+    private static final Logger lgr = LoggerFactory.getLogger(WordFilterEvent.class);
+    private static final List<String>
+            prohibitedWords = new ArrayList<>(),
+            niceWords = new ArrayList<>();
+    private static final Random random = new Random();
 
     public WordFilterEvent() { }
 
-    public void filter(@NotNull TextChannel eventChannel, @NotNull Message eventMessage) {
+    public void filter(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, List<String> message) {
+
+        boolean messageWasChanged = false;
+        for (int index = 0; index < message.size(); ++index) {
+            String string = message.get(index);
+
+            if (prohibitedWords.stream().anyMatch(string::equalsIgnoreCase)) {
+                messageWasChanged = true;
+                message.set(index, niceWords.get(random.nextInt(niceWords.size())));
+            }
+        }
+
+        if (messageWasChanged) {
+            String webhookURL = getWebhookURL(eventChannel, eventAuthor);
+
+            if (webhookURL != null) {
+                WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
+                builder.setAllowedMentions(AllowedMentions.none());
+                WebhookClient client = builder.build();
+
+                client.send(String.join(" ", message));
+                client.close();
+            } else {
+                failure(new NullPointerException("Webhook URL is null, cancelled filter job."));
+            }
+        }
+    }
+
+    @Nullable
+    public String getWebhookURL(@NotNull TextChannel eventChannel, @NotNull User eventAuthor) {
+        var retWebhook = new Object() { String webhookURL = null; };
+
         eventChannel.getGuild().retrieveMember(thermo.getSelfUser()).queue(thermostat -> {
             if (thermostat.hasPermission(Permission.MANAGE_WEBHOOKS)) {
 
                 Webhook webhook = getThermoWebhook(eventChannel, thermostat);
-                String userAvatarURL = eventMessage.getAuthor().getAvatarUrl(),
-                username = eventMessage.getAuthor().getName();
+                String userAvatarURL = eventAuthor.getAvatarUrl(),
+                        username = eventAuthor.getName();
                 Icon userAvatar;
 
                 try {
                     if (userAvatarURL != null) {
                         InputStream imageStream = new URL(userAvatarURL).openStream();
                         userAvatar = Icon.from(imageStream, Icon.IconType.PNG);
-                    } else { return; }
+                    } else { lgr.error("userAvatarURL is null. Guild: " + eventChannel.getGuild().getName()); return;}
                 } catch (IOException ex) {
                     lgr.error("Something went wrong while reading from the Author URL!", ex);
                     return;
@@ -48,16 +82,20 @@ public class WordFilterEvent {
                 if (webhook == null) {
                     eventChannel.createWebhook(username).queue(newWebhook -> {
                         newWebhook.getManager().setAvatar(userAvatar).queue();
+                        retWebhook.webhookURL = newWebhook.getUrl();
                     });
                 } else {
                     webhook.getManager().setAvatar(userAvatar).setName(username).queue();
+                    retWebhook.webhookURL = webhook.getUrl();
                 }
             }
         });
+
+        return retWebhook.webhookURL;
     }
 
     @Nullable
-    public static Webhook getThermoWebhook(@NotNull TextChannel eventChannel, @NotNull Member thermoMember) {
+    public Webhook getThermoWebhook(@NotNull TextChannel eventChannel, @NotNull Member thermoMember) {
         var wrapper = new Object() { Webhook webhook = null; };
 
         eventChannel.retrieveWebhooks().queue(webhooks -> {
@@ -71,7 +109,11 @@ public class WordFilterEvent {
         return wrapper.webhook;
     }
 
-    public static void failure(Throwable throwable) {
+    public void failure(Throwable throwable) {
+
+    }
+
+    public static void initializeWordArray() {
 
     }
 }
