@@ -1,9 +1,19 @@
 package thermostat.thermoFunctions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
+
+import java.sql.SQLException;
+
 /**
  *
  */
 public abstract class Functions {
+
+    private static final Logger lgr = LoggerFactory.getLogger(Functions.class);
+
     /**
      * A function that's used to grab IDs from Discord message mentions.
      *
@@ -68,5 +78,37 @@ public abstract class Functions {
         retInteger = Integer.parseUnsignedInt(slowmode) * multiplyValue;
 
         return retInteger;
+    }
+
+    /**
+     * Converts a string to a boolean value.
+     * @param value Value to convert.
+     * @return Converted boolean.
+     */
+    public static boolean convertToBoolean(String value) {
+        boolean returnValue = false;
+        if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) ||
+                "true".equalsIgnoreCase(value))
+            returnValue = true;
+        return returnValue;
+    }
+
+    /**
+     * Function to make sure that the guild commands run on
+     * are in the database.
+     * @param guildId ID of the guild to check.
+     * @param channelId Channel of the guild to check.
+     */
+    public static void checkGuildAndChannelThenSet(String guildId, String channelId) {
+        try {
+            // silent guild adder
+            if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", guildId))
+                Create.Guild(guildId);
+            // check db if channel exists and create it if not
+            if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", guildId))
+                Create.Channel(guildId, channelId, 0);
+        } catch (SQLException ex) {
+            lgr.error("SQL Exception while setting guild ID: " + guildId + " and channel ID: " + channelId);
+        }
     }
 }

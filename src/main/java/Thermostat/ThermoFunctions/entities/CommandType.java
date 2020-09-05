@@ -22,6 +22,9 @@ public enum CommandType {
     UNMONITOR("unmonitor", "um"),
     UNMONITORALL("unmonitorall", "ua"),
 
+    // ---- Utility ----
+    FILTER("filter", "ft"),
+
     // ---- Other ----
     INFO("info", "io"),
     HELP("help", "hp"),

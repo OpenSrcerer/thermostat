@@ -12,6 +12,8 @@ import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.monitorThreads.DBLServerMonitor;
 import thermostat.thermoFunctions.monitorThreads.MessageReceived;
 import thermostat.thermoFunctions.monitorThreads.WorkerManager;
+import thermostat.thermoFunctions.threaded.InitWordFiles;
+import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.sql.Connection;
@@ -26,11 +28,19 @@ import static thermostat.thermostat.thermo;
  * initialization.
  */
 public class Ready extends ListenerAdapter {
+    private static final Logger lgr = LoggerFactory.getLogger(thermostat.class);
+
     public void onReady(@Nonnull ReadyEvent event) {
         if (!testDatabase()) {
             // kill the JDA instance if database is not working properly
             thermo.shutdownNow();
-            System.out.println("A database connection could not be made!\nCheck your login details in db.properties.\nBot instance shutting down...");
+            lgr.error("A database connection could not be made!\nCheck your login details in db.properties.\nBot instance shutting down...");
+            return;
+        }
+
+        else if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
+            thermo.shutdownNow();
+            lgr.error("Word files could not be set up!\nBot instance shutting down...");
             return;
         }
 
@@ -44,6 +54,7 @@ public class Ready extends ListenerAdapter {
                 new MessageReceived(),
                 new ChannelDeleteEvent()
         );
+
         DBLServerMonitor.getInstance();
         WorkerManager.getInstance();
         getConnectedGuilds();
@@ -57,18 +68,16 @@ public class Ready extends ListenerAdapter {
      */
 
     @SuppressWarnings({"EmptyTryBlock"})
-    public boolean testDatabase() {
+    private boolean testDatabase() {
         // sample connection to check if database
         // can be reached
         try (
                 Connection ignored = DataSource.getConnection()
         ) {
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error("There's an error with your database login credentials! Check db.properties!", ex);
             return false;
         } catch (Exception ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error("Could not find db.properties file!", ex);
             return false;
         }
@@ -77,7 +86,7 @@ public class Ready extends ListenerAdapter {
 
     // Prints out list of currently connected guilds
     // with names, owner ids, and guild ids.
-    public void getConnectedGuilds() {
+    private void getConnectedGuilds() {
         List<Guild> guildList = thermo.getGuilds();
 
         guildList.forEach(

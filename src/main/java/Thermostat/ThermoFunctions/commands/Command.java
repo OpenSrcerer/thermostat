@@ -11,6 +11,7 @@ import thermostat.thermoFunctions.commands.other.Info;
 import thermostat.thermoFunctions.commands.other.Invite;
 import thermostat.thermoFunctions.commands.other.Prefix;
 import thermostat.thermoFunctions.commands.other.Vote;
+import thermostat.thermoFunctions.commands.utility.Filter;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermoFunctions.listeners.WordFilterEvent;
 import thermostat.thermostat;
@@ -42,7 +43,7 @@ public class Command extends ListenerAdapter {
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
         // Checks for whether the channel has the offensive-word filter activated.
-        if (DataSource.queryBool("SELECT WORDFILTER FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", ev.getChannel().getId())) {
+        if (DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", ev.getChannel().getId())) {
             new WordFilterEvent().filter(ev.getChannel(), ev.getAuthor(), args);
         }
 
@@ -50,6 +51,11 @@ public class Command extends ListenerAdapter {
                 args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias2())
         ) Chart.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+
+        else if (
+                args.get(0).equalsIgnoreCase(prefix + CommandType.FILTER.getAlias1()) ||
+                        args.get(0).equalsIgnoreCase(prefix + CommandType.FILTER.getAlias2())
+        ) Filter.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias1()) ||

@@ -1,4 +1,4 @@
-package thermostat.thermoFunctions.commands.monitoring;
+package thermostat.thermoFunctions.commands.utility;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -7,48 +7,47 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.Embeds;
-import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static thermostat.thermoFunctions.Functions.parseMention;
+import static thermostat.thermoFunctions.Functions.*;
 
-public class Sensitivity {
+public class Filter {
     private static final EmbedBuilder embed = new EmbedBuilder();
 
-    public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember, String prefix) {
+    public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
 
         // checks if event member has permission
-        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.specifyChannels());
+        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL, Permission.MANAGE_WEBHOOKS)) {
+            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL, MANAGE_WEBHOOKS"));
             return;
         }
 
-        // wrong command format
-        if (args.size() < 2) {
-            Messages.sendMessage(eventChannel, Embeds.helpSensitivity(prefix));
-            return;
-        }
+        checkGuildAndChannelThenSet(eventGuild.getId(), eventChannel.getId());
 
-        // catch to remove command initiation with prefix
-        args.remove(0);
+        if (args.size() >= 2) {
+            args.remove(0);
+        } else {
+            args.set(0, eventChannel.getId());
+        }
 
         String nonValid = "",
                 noText = "",
-                complete = "",
-                badSensitivity = "";
+                complete = "";
+
         // shows if there were arguments before
         // but were removed due to channel not being found
         boolean removed = false;
 
         // parses arguments into usable IDs, checks if channels exist
-        // up to args.size() - 1 because the last argument is the slowmode
+        // up to args.size() - 1 because the last argument is the filter value
         for (int index = 0; index < args.size() - 1; ++index) {
 
             // The argument gets parsed. If it's a mention, it gets formatted
@@ -91,55 +90,24 @@ public class Sensitivity {
             }
         }
 
-        float offset;
-        try {
-            offset = Float.parseFloat(args.get(args.size() - 1));
-        } catch (NumberFormatException ex) {
-            Messages.sendMessage(eventChannel, Embeds.invalidSensitivity());
-            return;
-        }
-
+        boolean filtered = convertToBoolean(args.get(args.size() - 1));
 
         if (args.size() >= 2) {
             for (int index = 0; index < args.size() - 1; ++index) {
                 try {
-                    // silent guild adder
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                        Create.Guild(eventGuild.getId());
-
-                    // check db if channel exists and create it if not
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", args.get(index)))
-                        Create.Channel(eventGuild.getId(), args.get(index), 0);
-
-                    if (offset >= -10 && offset <= 10) {
-                        DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?",
-                                Arrays.asList(Float.toString(1f + offset / 20f), args.get(index)));
-                        complete = complete.concat("<#" + args.get(index) + "> ");
-                    } else {
-                        badSensitivity = badSensitivity.concat("<#" + args.get(index) + "> ");
-                    }
-
-                } catch (Exception ex) {
-                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
+                            Arrays.asList(Boolean.toString(filtered), args.get(index)));
+                    complete = complete.concat("<#" + eventChannel.getId() + "> ");
+                } catch (SQLException ex) {
+                    Messages.sendMessage(eventChannel, Embeds.fatalError());
+                    return;
                 }
             }
         } else if (!removed) {
             try {
-                // silent guild adder
-                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                    Create.Guild(eventGuild.getId());
-
-                // check db if channel exists and create it if not
-                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", eventChannel.getId()))
-                    Create.Channel(eventGuild.getId(), eventChannel.getId(), 0);
-
-                if (offset >= -10 && offset <= 10) {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?",
-                            Arrays.asList(Float.toString(1f + offset / 20f), eventChannel.getId()));
-                    complete = complete.concat("<#" + eventChannel.getId() + "> ");
-                } else {
-                    badSensitivity = badSensitivity.concat("<#" + eventChannel.getId() + "> ");
-                }
+                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
+                        Arrays.asList(Boolean.toString(filtered), eventChannel.getId()));
+                complete = complete.concat("<#" + eventChannel.getId() + "> ");
             } catch (Exception ex) {
                 Messages.sendMessage(eventChannel, Embeds.fatalError());
                 return;
@@ -148,12 +116,11 @@ public class Sensitivity {
 
         embed.setColor(0xffff00);
         if (!complete.isEmpty()) {
-            embed.addField("Channels given a new sensitivity of " + offset + ":", complete, false);
+            if (filtered)
+                embed.addField("Enabled filtering on:", complete, false);
+            else
+                embed.addField("Disabled filtering on:", complete, false);
             embed.setColor(0x00ff00);
-        }
-
-        if (!badSensitivity.isEmpty()) {
-            embed.addField("Offset value was not appropriate:", badSensitivity, false);
         }
 
         if (!nonValid.isEmpty()) {

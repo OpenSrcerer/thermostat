@@ -10,6 +10,14 @@ import java.time.Instant;
  */
 public abstract class Embeds {
 
+    public static EmbedBuilder helpFilter(String prefix) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder chartHolder(String authorID, String authorAvatarURL, String serverName) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Slowmode Frequency Chart");
@@ -275,9 +283,9 @@ public abstract class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder userNoPermission() {
+    public static EmbedBuilder userNoPermission(String perm) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("You must have the `MANAGE_CHANNELS` permission in order to execute this command.");
+        eb.setTitle("You must have the `"+ perm +"` permission(s) in order to execute this command.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -22,9 +23,9 @@ import static thermostat.thermostat.thermo;
 public class WordFilterEvent {
 
     private static final Logger lgr = LoggerFactory.getLogger(WordFilterEvent.class);
-    private static final List<String>
-            prohibitedWords = new ArrayList<>(),
-            niceWords = new ArrayList<>();
+    private static List<String>
+            badWords,
+            niceWords;
     private static final Random random = new Random();
 
     public WordFilterEvent() { }
@@ -35,7 +36,7 @@ public class WordFilterEvent {
         for (int index = 0; index < message.size(); ++index) {
             String string = message.get(index);
 
-            if (prohibitedWords.stream().anyMatch(string::equalsIgnoreCase)) {
+            if (badWords.stream().anyMatch(string::equalsIgnoreCase)) {
                 messageWasChanged = true;
                 message.set(index, niceWords.get(random.nextInt(niceWords.size())));
             }
@@ -52,7 +53,8 @@ public class WordFilterEvent {
                 client.send(String.join(" ", message));
                 client.close();
             } else {
-                failure(new NullPointerException("Webhook URL is null, cancelled filter job."));
+                lgr.debug("Webhook URL is null, cancelled filter job. Guild: "
+                        + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
             }
         }
     }
@@ -109,11 +111,8 @@ public class WordFilterEvent {
         return wrapper.webhook;
     }
 
-    public void failure(Throwable throwable) {
-
-    }
-
-    public static void initializeWordArray() {
-
+    public static void setWordArrays(ArrayList<String> nice, ArrayList<String> prohibited) {
+        niceWords = nice;
+        badWords = prohibited;
     }
 }

@@ -9,16 +9,12 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.discordbots.api.client.DiscordBotListAPI;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.thermoFunctions.listeners.Ready;
+import thermostat.thermoFunctions.threaded.InitTokens;
 
 import javax.security.auth.login.LoginException;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 
 /**
@@ -52,40 +48,11 @@ public class thermostat {
      */
     public static void main(String[] args) {
 
-        String DBLToken;
-        String JDAToken;
-
-        {
-            try {
-                InputStream configFile = thermostat.class.getClassLoader().getResourceAsStream("config.json");
-
-                if (configFile == null) { logger.error("JSON config file not found."); return; }
-
-                JSONParser parser = new JSONParser();
-                JSONObject jsonObject = (JSONObject) parser.parse(
-                        new InputStreamReader(configFile, StandardCharsets.UTF_8
-                        )
-                );
-
-                prefix = jsonObject.get("Prefix").toString();
-                JDAToken = jsonObject.get("Token").toString();
-                DBLToken = jsonObject.get("DBLToken").toString();
-
-            } catch (FileNotFoundException ex) {
-                logger.error("JSON config file not found.");
-                return;
-            } catch (ParseException ex) {
-                logger.error("Parsing error!", ex);
-                return;
-            } catch (IOException ex) {
-                logger.error("I/O Error while parsing JSON file.", ex);
-                return;
-            }
-        }
+        String[] tokens = new InitTokens().call();
 
         try {
             thermo = JDABuilder
-                    .create(JDAToken, intents)
+                    .create(tokens[1], intents)
                     .disableCache(
                             CacheFlag.ACTIVITY,
                             CacheFlag.EMOTE,
@@ -102,8 +69,10 @@ public class thermostat {
             logger.error("Error while logging in the Discord Gateway!", ex);
         }
 
+        prefix = tokens[0];
+
         thermoAPI = new DiscordBotListAPI.Builder()
-                .token(DBLToken)
+                .token(tokens[2])
                 .botId(thermo.getSelfUser().getId())
                 .build();
 
