@@ -39,6 +39,7 @@ public class Ready extends ListenerAdapter {
         }
 
         else if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
+            DataSource.killDataSource();
             thermo.shutdownNow();
             lgr.error("Word files could not be set up!\nBot instance shutting down...");
             return;

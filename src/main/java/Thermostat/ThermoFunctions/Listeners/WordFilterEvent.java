@@ -5,10 +5,14 @@ import club.minnced.discord.webhook.WebhookClientBuilder;
 import club.minnced.discord.webhook.send.AllowedMentions;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.thermoFunctions.Messages;
+import thermostat.thermostat;
+import thermostat.Embeds;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -16,9 +20,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
-
-import static thermostat.thermostat.thermo;
 
 public class WordFilterEvent {
 
@@ -28,9 +31,21 @@ public class WordFilterEvent {
             niceWords;
     private static final Random random = new Random();
 
-    public WordFilterEvent() { }
+    private final TextChannel eventChannel;
+    private final User eventAuthor;
+    private final List<String> message;
 
-    public void filter(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, List<String> message) {
+    private final RestAction<Member> retrieveThermostatMember;
+
+    public WordFilterEvent(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, @Nonnull List<String> message) {
+        this.eventChannel = eventChannel;
+        this.eventAuthor = eventAuthor;
+        this.message = message;
+        retrieveThermostatMember = eventChannel.getGuild().retrieveMember(thermostat.thermo.getSelfUser());
+        this.filter();
+    }
+
+    public void filter() {
 
         boolean messageWasChanged = false;
         for (int index = 0; index < message.size(); ++index) {
@@ -43,72 +58,76 @@ public class WordFilterEvent {
         }
 
         if (messageWasChanged) {
-            String webhookURL = getWebhookURL(eventChannel, eventAuthor);
+            Member thermostatMember = eventChannel.getGuild().getMember(thermostat.thermo.getSelfUser());
 
-            if (webhookURL != null) {
-                WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
-                builder.setAllowedMentions(AllowedMentions.none());
-                WebhookClient client = builder.build();
+            if (thermostatMember != null) {
+                if (!thermostatMember.hasPermission(Permission.MANAGE_WEBHOOKS)) {
+                    Messages.sendMessage(eventChannel, Embeds.simpleInsufficientPerm("MANAGE_WEBHOOKS"));
+                    return;
+                }
 
-                client.send(String.join(" ", message));
-                client.close();
-            } else {
-                lgr.debug("Webhook URL is null, cancelled filter job. Guild: "
-                        + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
+                RestAction<Webhook> getWebhook = getWebhook(eventChannel, eventAuthor);
+
+                if (getWebhook == null) {
+                    lgr.debug("Webhook is null, cancelled filter job. Guild: "
+                            + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
+                    return;
+                }
+
+                getWebhook.queue(webhook -> {
+                    WebhookClientBuilder builder = new WebhookClientBuilder(webhook.getId());
+                    builder.setAllowedMentions(AllowedMentions.none());
+                    WebhookClient client = builder.build();
+
+                    client.send(String.join(" ", message));
+                    client.close();
+                });
             }
         }
     }
 
     @Nullable
-    public String getWebhookURL(@NotNull TextChannel eventChannel, @NotNull User eventAuthor) {
-        var retWebhook = new Object() { String webhookURL = null; };
+    public RestAction<Webhook> getWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor) {
 
-        eventChannel.getGuild().retrieveMember(thermo.getSelfUser()).queue(thermostat -> {
-            if (thermostat.hasPermission(Permission.MANAGE_WEBHOOKS)) {
+        String userAvatarURL = eventAuthor.getAvatarUrl(),
+                username = eventAuthor.getName();
+        Icon userAvatar;
 
-                Webhook webhook = getThermoWebhook(eventChannel, thermostat);
-                String userAvatarURL = eventAuthor.getAvatarUrl(),
-                        username = eventAuthor.getName();
-                Icon userAvatar;
-
-                try {
-                    if (userAvatarURL != null) {
-                        InputStream imageStream = new URL(userAvatarURL).openStream();
-                        userAvatar = Icon.from(imageStream, Icon.IconType.PNG);
-                    } else { lgr.error("userAvatarURL is null. Guild: " + eventChannel.getGuild().getName()); return;}
-                } catch (IOException ex) {
-                    lgr.error("Something went wrong while reading from the Author URL!", ex);
-                    return;
-                }
-
-                if (webhook == null) {
-                    eventChannel.createWebhook(username).queue(newWebhook -> {
-                        newWebhook.getManager().setAvatar(userAvatar).queue();
-                        retWebhook.webhookURL = newWebhook.getUrl();
-                    });
-                } else {
-                    webhook.getManager().setAvatar(userAvatar).setName(username).queue();
-                    retWebhook.webhookURL = webhook.getUrl();
-                }
+        try {
+            if (userAvatarURL != null) {
+                InputStream imageStream = new URL(userAvatarURL).openStream();
+                userAvatar = Icon.from(imageStream, Icon.IconType.PNG);
+            } else {
+                lgr.error("UserAvatarURL is null. Guild: " + eventChannel.getGuild().getName());
+                return null;
             }
-        });
+        } catch (IOException ex) {
+            lgr.error("Something went wrong while reading from the Author URL!", ex);
+            return null;
+        }
 
-        return retWebhook.webhookURL;
+        return eventChannel.retrieveWebhooks()
+                .and(
+                        retrieveThermostatMember,
+                        WordFilterEvent::findWebhook
+                )
+                .flatMap(
+                        Objects::isNull,
+                        (webhook) -> eventChannel.createWebhook(username)
+                )
+                .map(
+                        (webhook) -> webhook.getManager().setAvatar(userAvatar).setName(username).getWebhook()
+                );
     }
 
-    @Nullable
-    public Webhook getThermoWebhook(@NotNull TextChannel eventChannel, @NotNull Member thermoMember) {
-        var wrapper = new Object() { Webhook webhook = null; };
-
-        eventChannel.retrieveWebhooks().queue(webhooks -> {
-            webhooks.forEach(webhook -> {
-                if (webhook.getOwner() == thermoMember) {
-                    wrapper.webhook = webhook;
-                }
-            });
-        });
-
-        return wrapper.webhook;
+    public static Webhook findWebhook(List<Webhook> webhookList, Member thermostatMember) {
+        Webhook foundWebhook = null;
+        for (Webhook webhook : webhookList) {
+            if (webhook.getOwner() == thermostatMember) {
+                foundWebhook = webhook;
+            }
+        }
+        return foundWebhook;
     }
 
     public static void setWordArrays(ArrayList<String> nice, ArrayList<String> prohibited) {

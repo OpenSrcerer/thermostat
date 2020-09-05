@@ -3,6 +3,7 @@ package thermostat.thermoFunctions.commands;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import thermostat.mySQL.DataSource;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.informational.Chart;
 import thermostat.thermoFunctions.commands.informational.GetMonitorList;
 import thermostat.thermoFunctions.commands.informational.Settings;
@@ -42,9 +43,14 @@ public class Command extends ListenerAdapter {
         // gets given arguments and passes them to a list
         ArrayList<String> args = new ArrayList<>(Arrays.asList(ev.getMessage().getContentRaw().split("\\s+")));
 
+        Functions.checkGuildAndChannelThenSet(ev.getGuild().getId(), ev.getChannel().getId());
+
         // Checks for whether the channel has the offensive-word filter activated.
-        if (DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", ev.getChannel().getId())) {
-            new WordFilterEvent().filter(ev.getChannel(), ev.getAuthor(), args);
+        if (DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS JOIN CHANNELS ON " +
+                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
+                "AND CHANNELS.CHANNEL_ID = ?",
+                Arrays.asList(ev.getGuild().getId(), ev.getChannel().getId()))) {
+            new WordFilterEvent(ev.getChannel(), ev.getAuthor(), args);
         }
 
         if (

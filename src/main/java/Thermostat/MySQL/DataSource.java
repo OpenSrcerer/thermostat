@@ -28,11 +28,14 @@ public class DataSource {
         ds = new HikariDataSource(config);
     }
 
-    public DataSource() {
-    }
+    public DataSource() { }
 
     public static Connection getConnection() throws SQLException {
         return ds.getConnection();
+    }
+
+    public static void killDataSource() {
+        ds.close();
     }
 
     /**
@@ -118,6 +121,29 @@ public class DataSource {
                 )
         ) {
             pst.setString(1, argument);
+            ResultSet rs = pst.executeQuery();
+            rs.next();
+
+            return rs.getBoolean(1);
+        } catch (SQLException ex) {
+            Logger lgr = LoggerFactory.getLogger(ds.getClass());
+            lgr.error(ex.getMessage(), ex);
+        }
+        return false;
+    }
+
+    public static boolean queryBool(String Query, List<String> args) {
+        try (
+                Connection conn = DataSource.getConnection();
+                PreparedStatement pst = conn.prepareStatement(
+                        Query,
+                        ResultSet.TYPE_SCROLL_SENSITIVE,
+                        ResultSet.CONCUR_UPDATABLE
+                )
+        ) {
+            for (int it = 0; it < args.size(); ++it) {
+                pst.setString(it + 1, args.get(it));
+            }
             ResultSet rs = pst.executeQuery();
             rs.next();
 

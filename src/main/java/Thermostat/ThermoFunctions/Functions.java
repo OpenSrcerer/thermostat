@@ -85,12 +85,17 @@ public abstract class Functions {
      * @param value Value to convert.
      * @return Converted boolean.
      */
-    public static boolean convertToBoolean(String value) {
+    public static String convertToBooleanString(String value) {
         boolean returnValue = false;
         if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) ||
                 "true".equalsIgnoreCase(value))
             returnValue = true;
-        return returnValue;
+
+        if (returnValue) {
+            return "1";
+        } else {
+            return "0";
+        }
     }
 
     /**
@@ -105,7 +110,7 @@ public abstract class Functions {
             if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", guildId))
                 Create.Guild(guildId);
             // check db if channel exists and create it if not
-            if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", guildId))
+            if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", channelId))
                 Create.Channel(guildId, channelId, 0);
         } catch (SQLException ex) {
             lgr.error("SQL Exception while setting guild ID: " + guildId + " and channel ID: " + channelId);

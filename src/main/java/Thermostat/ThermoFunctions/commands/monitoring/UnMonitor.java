@@ -41,7 +41,7 @@ public class UnMonitor {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.userNoPermission());
+            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL"));
             return;
         }
 

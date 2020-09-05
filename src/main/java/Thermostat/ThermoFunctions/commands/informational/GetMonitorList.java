@@ -27,6 +27,7 @@ public class GetMonitorList {
 
     public static void execute(@Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
         String embedString = "";
+        String filteredString = "";
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
@@ -42,6 +43,11 @@ public class GetMonitorList {
             List<String> guildList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                     "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                     "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
+                    eventGuild.getId());
+
+            List<String> filteredList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                            "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                            "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1",
                     eventGuild.getId());
 
             if (guildList == null) {
@@ -61,6 +67,23 @@ public class GetMonitorList {
                 }
             }
 
+            if (filteredList == null) {
+                embed.addField("Channels currently being filtered:", "None.", false);
+            } else if (filteredList.isEmpty()) {
+                embed.addField("Channels currently being filtered:", "None.", false);
+            } else {
+                // iterate through retrieved array, adding
+                // every monitored guild to the ending embed
+                for (String it : filteredList) {
+                    TextChannel filteredChannel = eventGuild.getTextChannelById(it);
+
+                    if (filteredChannel != null)
+                        filteredString = filteredString.concat("<#" + filteredChannel.getId() + "> ");
+                    else
+                        filteredString = filteredString.concat(it + " ");
+                }
+            }
+
         } catch (Exception ex) {
             Messages.sendMessage(eventChannel, Embeds.fatalError());
             Logger lgr = LoggerFactory.getLogger(DataSource.class);
@@ -68,7 +91,9 @@ public class GetMonitorList {
         }
 
         if (!embedString.isEmpty())
-            embed.addField("Channels currently being monitored:", embedString, true);
+            embed.addField("Channels currently being monitored:", embedString, false);
+        if (!filteredString.isEmpty())
+            embed.addField("Channels currently being filtered:", filteredString, false);
 
         embed.setColor(0x00aeff);
         embed.setTimestamp(Instant.now());

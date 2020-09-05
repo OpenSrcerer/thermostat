@@ -30,8 +30,6 @@ public class Filter {
             return;
         }
 
-        checkGuildAndChannelThenSet(eventGuild.getId(), eventChannel.getId());
-
         if (args.size() >= 2) {
             args.remove(0);
         } else {
@@ -90,13 +88,13 @@ public class Filter {
             }
         }
 
-        boolean filtered = convertToBoolean(args.get(args.size() - 1));
+        String filtered = convertToBooleanString(args.get(args.size() - 1));
 
         if (args.size() >= 2) {
             for (int index = 0; index < args.size() - 1; ++index) {
                 try {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
-                            Arrays.asList(Boolean.toString(filtered), args.get(index)));
+                            Arrays.asList(filtered, args.get(index)));
                     complete = complete.concat("<#" + eventChannel.getId() + "> ");
                 } catch (SQLException ex) {
                     Messages.sendMessage(eventChannel, Embeds.fatalError());
@@ -106,7 +104,7 @@ public class Filter {
         } else if (!removed) {
             try {
                 DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
-                        Arrays.asList(Boolean.toString(filtered), eventChannel.getId()));
+                        Arrays.asList(filtered, eventChannel.getId()));
                 complete = complete.concat("<#" + eventChannel.getId() + "> ");
             } catch (Exception ex) {
                 Messages.sendMessage(eventChannel, Embeds.fatalError());
@@ -116,7 +114,7 @@ public class Filter {
 
         embed.setColor(0xffff00);
         if (!complete.isEmpty()) {
-            if (filtered)
+            if (filtered.equals("1"))
                 embed.addField("Enabled filtering on:", complete, false);
             else
                 embed.addField("Disabled filtering on:", complete, false);
