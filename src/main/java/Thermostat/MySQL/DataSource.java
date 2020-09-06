@@ -2,9 +2,11 @@ package thermostat.mySQL;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.naming.CommunicationException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,18 +22,24 @@ import java.util.Map;
  */
 public class DataSource {
 
-    private static final HikariDataSource ds;
-
-    static {
-        String configFile = "/db.properties";
-        HikariConfig config = new HikariConfig(configFile);
-        ds = new HikariDataSource(config);
-    }
+    private static HikariDataSource ds;
+    private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
 
     public DataSource() { }
 
     public static Connection getConnection() throws SQLException {
         return ds.getConnection();
+    }
+
+    public static HikariDataSource getDataSource() {
+
+        if (ds == null) {
+            String configFile = "/db.properties";
+            HikariConfig config = new HikariConfig(configFile);
+            ds = new HikariDataSource(config);
+        }
+
+        return ds;
     }
 
     public static void killDataSource() {
@@ -102,7 +110,6 @@ public class DataSource {
                 resultArray.add(rs.getString(1));
             }
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return resultArray;
@@ -126,7 +133,6 @@ public class DataSource {
 
             return rs.getBoolean(1);
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return false;
@@ -149,7 +155,6 @@ public class DataSource {
 
             return rs.getBoolean(1);
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return false;
@@ -178,7 +183,6 @@ public class DataSource {
                 return retVal;
             }
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return retVal;
@@ -207,7 +211,6 @@ public class DataSource {
                 return retVal;
             }
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return retVal;
@@ -216,6 +219,7 @@ public class DataSource {
     /**
      * Same as above, returns single String value.
      */
+    @Nullable
     public static String queryString(String Query, String argument) {
         String retString = null;
 
@@ -236,7 +240,6 @@ public class DataSource {
                 return null;
             }
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
             lgr.error(ex.getMessage(), ex);
         }
         return retString;

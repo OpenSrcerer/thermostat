@@ -1,5 +1,6 @@
 package thermostat.thermoFunctions.listeners;
 
+import com.zaxxer.hikari.HikariDataSource;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
@@ -16,7 +17,6 @@ import thermostat.thermoFunctions.threaded.InitWordFiles;
 import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -31,14 +31,10 @@ public class Ready extends ListenerAdapter {
     private static final Logger lgr = LoggerFactory.getLogger(thermostat.class);
 
     public void onReady(@Nonnull ReadyEvent event) {
-        if (!testDatabase()) {
-            // kill the JDA instance if database is not working properly
-            thermo.shutdownNow();
-            lgr.error("A database connection could not be made!\nCheck your login details in db.properties.\nBot instance shutting down...");
-            return;
-        }
 
-        else if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
+        HikariDataSource dataSource = DataSource.getDataSource();
+
+        if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
             DataSource.killDataSource();
             thermo.shutdownNow();
             lgr.error("Word files could not be set up!\nBot instance shutting down...");
@@ -60,29 +56,6 @@ public class Ready extends ListenerAdapter {
         WorkerManager.getInstance();
         getConnectedGuilds();
         thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.youtube.com/watch?v=fC7oUOUEEi4"));
-    }
-
-    /**
-     * Checks if database connection can be made.
-     *
-     * @return boolean value; true if database can be reached; false if not
-     */
-
-    @SuppressWarnings({"EmptyTryBlock"})
-    private boolean testDatabase() {
-        // sample connection to check if database
-        // can be reached
-        try (
-                Connection ignored = DataSource.getConnection()
-        ) {
-        } catch (SQLException ex) {
-            lgr.error("There's an error with your database login credentials! Check db.properties!", ex);
-            return false;
-        } catch (Exception ex) {
-            lgr.error("Could not find db.properties file!", ex);
-            return false;
-        }
-        return true;
     }
 
     // Prints out list of currently connected guilds

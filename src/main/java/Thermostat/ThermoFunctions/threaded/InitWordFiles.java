@@ -46,7 +46,7 @@ public class InitWordFiles implements Callable<Boolean> {
             if (niceFile != null && badFile != null) {
                 Scanner niceScanner = new Scanner(niceFile);
                 Scanner badScanner = new Scanner(badFile);
-                niceScanner.useDelimiter("\\s+");
+                niceScanner.useDelimiter(",+");
                 badScanner.useDelimiter("\\s+");
 
                 while (niceScanner.hasNext()) {

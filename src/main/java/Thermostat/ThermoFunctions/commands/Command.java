@@ -50,7 +50,7 @@ public class Command extends ListenerAdapter {
                 "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
                 "AND CHANNELS.CHANNEL_ID = ?",
                 Arrays.asList(ev.getGuild().getId(), ev.getChannel().getId()))) {
-            new WordFilterEvent(ev.getChannel(), ev.getAuthor(), args);
+            new WordFilterEvent(ev.getChannel(), ev.getMessage(), args);
         }
 
         if (

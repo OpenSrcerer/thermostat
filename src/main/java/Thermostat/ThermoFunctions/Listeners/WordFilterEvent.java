@@ -5,6 +5,7 @@ import club.minnced.discord.webhook.WebhookClientBuilder;
 import club.minnced.discord.webhook.send.AllowedMentions;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,14 @@ public class WordFilterEvent {
 
             if (webhookURL != null) {
                 if (webhookURL.equals("N/A")) {
-                    createWebhook(eventChannel, eventMessage.getAuthor());
+
+                    String finalWebhookURL1 = webhookURL;
+                    createWebhook(eventChannel, eventMessage.getAuthor())
+                    .map(unused -> {
+                                sendWebhookMessage(finalWebhookURL1);
+                                return unused;
+                            }
+                    ).queue();
 
                     webhookURL = DataSource.queryString("SELECT WEBHOOK_URL FROM " +
                             "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
@@ -97,28 +105,32 @@ public class WordFilterEvent {
                     if (webhookURL == null) {
                         lgr.debug("Webhook is null, cancelled filter job. Guild: "
                                 + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                        return;
                     }
                 } else {
-                    updateWebhook(eventChannel, eventMessage.getAuthor(), webhookURL);
+                    String finalWebhookURL = webhookURL;
+                    updateWebhook(eventChannel, eventMessage.getAuthor(), webhookURL)
+                    .map(unused -> {
+                        sendWebhookMessage(finalWebhookURL);
+                        return unused;
+                    }).queue();
                 }
             } else {
                 lgr.debug("Webhook is null, cancelled filter job. Guild: "
                         + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                return;
             }
-
-
-            WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
-            builder.setAllowedMentions(AllowedMentions.none());
-            WebhookClient client = builder.build();
-
-            client.send(String.join(" ", message));
-            client.close();
         }
     }
 
-    public void updateWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, String webhookURL) {
+    public void sendWebhookMessage(String webhookURL) {
+        WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
+        builder.setAllowedMentions(AllowedMentions.none());
+        WebhookClient client = builder.build();
+
+        client.send(String.join(" ", message));
+        client.close();
+    }
+
+    public RestAction<Void> updateWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, String webhookURL) {
 
         String username = eventAuthor.getName();
         String userAvatarURL;
@@ -130,12 +142,13 @@ public class WordFilterEvent {
 
         Icon userAvatar = getUserIcon(userAvatarURL);
 
-        eventChannel
+        return eventChannel
                 .retrieveWebhooks()
-                .submit()
-                .thenApply(webhookList -> findWebhook(webhookList, webhookURL))
-                .thenApply(webhook -> webhook.getManager().setName(username).setAvatar(userAvatar)
-                        .submit()
+                .map(webhookList -> findWebhook(webhookList, webhookURL))
+                .flatMap(webhook -> webhook.getManager().setName(username).setAvatar(userAvatar))
+                .onErrorFlatMap(
+                        throwable -> createWebhook(eventChannel, eventAuthor)
+                        .flatMap(Webhook::getManager)
                 );
     }
 
@@ -152,7 +165,7 @@ public class WordFilterEvent {
     }
 
 
-    public void createWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor) {
+    public RestAction<Webhook> createWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor) {
 
         String username = eventAuthor.getName();
         String userAvatarURL;
@@ -164,37 +177,32 @@ public class WordFilterEvent {
 
         Icon userAvatar = getUserIcon(userAvatarURL);
 
-        if (userAvatar != null) {
-            eventChannel
-                    .createWebhook(username)
-                    .submit()
-                    .thenApply(
-                            webhook -> {
-                                webhook.getManager().setAvatar(userAvatar).setName(username)
-                                        .submit();
-                                try {
-                                    DataSource.update("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
-                                                    "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                                                    "SET CHANNEL_SETTINGS.WEBHOOK_URL = ? " +
-                                                    "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
-                                            Arrays.asList(webhook.getUrl(), eventChannel.getId()));
-                                } catch (SQLException ex) {
-                                    lgr.error("Something went wrong while setting Webhook ID!", ex);
-                                }
-                                return webhook;
+        return eventChannel
+                .createWebhook(username)
+                .map(
+                        webhook -> {
+                            webhook.getManager().setAvatar(userAvatar).setName(username)
+                                    .queue();
+                            try {
+                                DataSource.update("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
+                                                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                                                "SET CHANNEL_SETTINGS.WEBHOOK_URL = ? " +
+                                                "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
+                                        Arrays.asList(webhook.getUrl(), eventChannel.getId()));
+                            } catch (SQLException ex) {
+                                lgr.error("Something went wrong while setting Webhook ID!", ex);
                             }
-                    );
-        } else {
-            lgr.error("UserAvatarURL is null. Guild: " + eventChannel.getGuild().getName());
-        }
+                            return webhook;
+                        }
+                );
     }
 
     @Nullable
     @CheckReturnValue
     public Icon getUserIcon(@Nonnull String avatarURL) {
         try {
-            InputStream imageStream = new URL(avatarURL).openStream();
-            return Icon.from(imageStream, Icon.IconType.PNG);
+            InputStream imageStream = new URL(avatarURL + "?size=64").openStream();
+            return Icon.from(imageStream, Icon.IconType.JPEG);
         } catch (IOException ex) {
             return null;
         }
