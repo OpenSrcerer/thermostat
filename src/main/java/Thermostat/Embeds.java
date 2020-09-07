@@ -9,6 +9,8 @@ import java.time.Instant;
  * runtime editing.
  */
 public abstract class Embeds {
+    
+
 
     public static EmbedBuilder helpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
@@ -31,6 +33,15 @@ public abstract class Embeds {
     public static EmbedBuilder ioError() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("An I/O Error occurred when trying to fetch the chart, please try again.");
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
+    public static EmbedBuilder webhookError() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("An error occurred when trying to manage the filter webhook. Resetting it.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);

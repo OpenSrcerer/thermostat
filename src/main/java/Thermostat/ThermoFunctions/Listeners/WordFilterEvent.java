@@ -43,7 +43,6 @@ public class WordFilterEvent {
     }
 
     public void filter() {
-
         Member thermostatMember = eventChannel.getGuild().getMember(thermostat.thermo.getSelfUser());
 
         if (thermostatMember != null) {
@@ -71,7 +70,7 @@ public class WordFilterEvent {
         for (int index = 0; index < message.size(); ++index) {
             String string = message.get(index);
 
-            if (badWords.stream().anyMatch(string::equalsIgnoreCase)) {
+            if (badWords.stream().anyMatch(string.toLowerCase()::contains)) {
                 messageWasChanged = true;
                 message.set(index, niceWords.get(random.nextInt(niceWords.size())));
             }
@@ -83,45 +82,31 @@ public class WordFilterEvent {
                     .reason("Inappropriate Language Filter (Thermostat)")
                     .queue();
 
-            String webhookURL = DataSource.queryString("SELECT WEBHOOK_URL FROM " +
-                    "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                    "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", eventChannel.getId());
+            String webhookURL = getWebhookURL();
 
-            if (webhookURL != null) {
-                if (webhookURL.equals("N/A")) {
-
-                    String finalWebhookURL1 = webhookURL;
-                    createWebhook(eventChannel, eventMessage.getAuthor())
-                    .map(unused -> {
-                                sendWebhookMessage(finalWebhookURL1);
-                                return unused;
-                            }
-                    ).queue();
-
-                    webhookURL = DataSource.queryString("SELECT WEBHOOK_URL FROM " +
-                            "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                            "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", eventChannel.getId());
-
-                    if (webhookURL == null) {
-                        lgr.debug("Webhook is null, cancelled filter job. Guild: "
-                                + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                    }
-                } else {
-                    String finalWebhookURL = webhookURL;
-                    updateWebhook(eventChannel, eventMessage.getAuthor(), webhookURL)
-                    .map(unused -> {
-                        sendWebhookMessage(finalWebhookURL);
-                        return unused;
-                    }).queue();
-                }
+            if (webhookURL.equals("N/A")) {
+                createWebhook(eventChannel, eventMessage.getAuthor())
+                .map(unused -> {
+                            sendWebhookMessage(getWebhookURL());
+                            return unused;
+                }).queue();
             } else {
-                lgr.debug("Webhook is null, cancelled filter job. Guild: "
-                        + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
+                updateWebhook(eventChannel, eventMessage.getAuthor(), webhookURL)
+                .map(unused -> {
+                    sendWebhookMessage(webhookURL);
+                    return unused;
+                }).queue();
             }
         }
     }
 
-    public void sendWebhookMessage(String webhookURL) {
+    public String getWebhookURL() {
+        return DataSource.queryString("SELECT WEBHOOK_URL FROM " +
+                "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", eventChannel.getId());
+    }
+
+    public void sendWebhookMessage(@Nonnull String webhookURL) {
         WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
         builder.setAllowedMentions(AllowedMentions.none());
         WebhookClient client = builder.build();
@@ -145,22 +130,22 @@ public class WordFilterEvent {
         return eventChannel
                 .retrieveWebhooks()
                 .map(webhookList -> findWebhook(webhookList, webhookURL))
-                .flatMap(webhook -> webhook.getManager().setName(username).setAvatar(userAvatar))
-                .onErrorFlatMap(
-                        throwable -> createWebhook(eventChannel, eventAuthor)
-                        .flatMap(Webhook::getManager)
+                .flatMap(
+                        Objects::nonNull,
+                        webhook -> webhook.getManager().setName(username).setAvatar(userAvatar)
                 );
     }
 
     @Nullable
-    @CheckReturnValue
-    public static Webhook findWebhook(@Nonnull List<Webhook> webhookList, @Nonnull String webhookURL) {
+    public Webhook findWebhook(@Nonnull List<Webhook> webhookList, @Nonnull String webhookURL) {
         Webhook foundWebhook = null;
+
         for (Webhook webhook : webhookList) {
             if (webhook.getUrl().equals(webhookURL)) {
                 foundWebhook = webhook;
             }
         }
+
         return foundWebhook;
     }
 
@@ -190,7 +175,7 @@ public class WordFilterEvent {
                                                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
                                         Arrays.asList(webhook.getUrl(), eventChannel.getId()));
                             } catch (SQLException ex) {
-                                lgr.error("Something went wrong while setting Webhook ID!", ex);
+                                lgr.error("Something went wrong while setting Webhook URL!", ex);
                             }
                             return webhook;
                         }

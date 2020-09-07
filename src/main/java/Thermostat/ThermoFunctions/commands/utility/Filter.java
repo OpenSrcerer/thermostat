@@ -92,24 +92,10 @@ public class Filter {
 
         if (args.size() >= 2) {
             for (int index = 0; index < args.size() - 1; ++index) {
-                try {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
-                            Arrays.asList(filtered, args.get(index)));
-                    complete = complete.concat("<#" + eventChannel.getId() + "> ");
-                } catch (SQLException ex) {
-                    Messages.sendMessage(eventChannel, Embeds.fatalError());
-                    return;
-                }
+                complete = setDatabase(filtered, args.get(index), eventChannel, complete);
             }
         } else if (!removed) {
-            try {
-                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
-                        Arrays.asList(filtered, eventChannel.getId()));
-                complete = complete.concat("<#" + eventChannel.getId() + "> ");
-            } catch (Exception ex) {
-                Messages.sendMessage(eventChannel, Embeds.fatalError());
-                return;
-            }
+            complete = setDatabase(filtered, eventChannel.getId(), eventChannel, complete);
         }
 
         embed.setColor(0xffff00);
@@ -134,5 +120,21 @@ public class Filter {
         Messages.sendMessage(eventChannel, embed);
 
         embed.clear();
+    }
+
+    public static String setDatabase(String filtered, String targetChannel, TextChannel eventChannel, String complete) {
+        try {
+            if (filtered.equals("0")) {
+                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_URL = \"N/A\" WHERE CHANNEL_ID = ?",
+                        Arrays.asList(filtered, targetChannel));
+            } else {
+                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
+                        Arrays.asList(filtered, targetChannel));
+            }
+            complete = complete.concat("<#" + targetChannel + "> ");
+        } catch (Exception ex) {
+            Messages.sendMessage(eventChannel, Embeds.fatalError());
+        }
+        return complete;
     }
 }
