@@ -23,6 +23,11 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * This class manages Word Filtering Events if enabled by the user.
+ * Principle: All "prohibited" words in a message get changed to the "nice" words.
+ * Used to filter out slurs.
+ */
 public class WordFilterEvent {
 
     private static final Logger lgr = LoggerFactory.getLogger(WordFilterEvent.class);
@@ -42,8 +47,13 @@ public class WordFilterEvent {
         this.filter();
     }
 
+    /**
+     * Initiate the WFEvent.
+     */
     public void filter() {
         Member thermostatMember = eventChannel.getGuild().getMember(thermostat.thermo.getSelfUser());
+
+        // first catch conditions to not initiate event if permissions are lacked
 
         if (thermostatMember != null) {
             if (!thermostatMember.hasPermission(Permission.MANAGE_WEBHOOKS)) {
@@ -77,7 +87,6 @@ public class WordFilterEvent {
         }
 
         if (messageWasChanged) {
-
             eventMessage.delete()
                     .reason("Inappropriate Language Filter (Thermostat)")
                     .queue();
@@ -100,12 +109,20 @@ public class WordFilterEvent {
         }
     }
 
+    /**
+     * Retrieves Webhook URL from DB.
+     * @return webhookurl
+     */
     public String getWebhookURL() {
         return DataSource.queryString("SELECT WEBHOOK_URL FROM " +
                 "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", eventChannel.getId());
     }
 
+    /**
+     * Sends compiled message through the webhook provided.
+     * @param webhookURL Webhook URL to send the msg through.
+     */
     public void sendWebhookMessage(@Nonnull String webhookURL) {
         WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
         builder.setAllowedMentions(AllowedMentions.none());
@@ -115,6 +132,14 @@ public class WordFilterEvent {
         client.close();
     }
 
+
+    /**
+     * Updates an existing webhook with new parameters.
+     * @param eventChannel Channel where webhook resides in.
+     * @param eventAuthor User object that carries the new params.
+     * @param webhookURL Webhook target
+     * @return RestAction to call when necessary
+     */
     public RestAction<Void> updateWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, String webhookURL) {
 
         String username = eventAuthor.getName();
@@ -136,6 +161,12 @@ public class WordFilterEvent {
                 );
     }
 
+    /**
+     * Find a webhook in a list of webhooks.
+     * @param webhookList The list of webhooks.
+     * @param webhookURL Webhook URL from the database.
+     * @return Found webhook.
+     */
     @Nullable
     public Webhook findWebhook(@Nonnull List<Webhook> webhookList, @Nonnull String webhookURL) {
         Webhook foundWebhook = null;
@@ -150,6 +181,13 @@ public class WordFilterEvent {
     }
 
 
+    /**
+     * RestAction creator for a webhook.
+     * @param eventChannel Channel where the webhook is going to be created.
+     * @param eventAuthor User object of the user that the webhook will inherit
+     *                    the profile picture from, along with the name.
+     * @return RestAction with the created webhook as a parameter
+     */
     public RestAction<Webhook> createWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor) {
 
         String username = eventAuthor.getName();
@@ -182,6 +220,12 @@ public class WordFilterEvent {
                 );
     }
 
+    /**
+     * Gets the user icon in a JPEG format from the Discord servers.
+     * @param avatarURL URL of user avatar image
+     * @return User's avatar image in an Icon format
+     * ready to be processed by the Webhook Creator
+     */
     @Nullable
     @CheckReturnValue
     public Icon getUserIcon(@Nonnull String avatarURL) {
@@ -193,6 +237,11 @@ public class WordFilterEvent {
         }
     }
 
+    /**
+     * Set function for word lists upon initialization.
+     * @param nice Words that will replace the prohibited words.
+     * @param prohibited Prohibited words that will get removed.
+     */
     public static void setWordArrays(ArrayList<String> nice, ArrayList<String> prohibited) {
         niceWords = nice;
         badWords = prohibited;
