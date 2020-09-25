@@ -357,7 +357,7 @@ public abstract class Embeds {
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
         eb.addField(prefix + "monitor┇Adds text channels to the slowmode monitoring database.", "Syntax: `" + prefix + "monitor/mn <channels>/<categories>.`", false);
         eb.addField(prefix + "unmonitor┇Removes text channels from the slowmode monitoring database.", "Syntax: `" + prefix + "unmonitor/um <channels>/<categories>.`", false);
-        eb.addField(prefix + "getmonitor┇Shows which channels are currently being monitored in your server.", "Syntax: `" + prefix + "getmonitor/gm.`", false);
+        eb.addField(prefix + "getmonitor┇Shows which channels are currently being monitored or filtered in your server.", "Syntax: `" + prefix + "getmonitor/gm.`", false);
         eb.addField(prefix + "unmonitorall┇Stops ALL your channels from being monitored.", "Syntax: `" + prefix + "unmonitorall/ua.`", false);
         eb.addField(prefix + "setminimum┇Sets the lower bound for the slowmode of the channel.", "Syntax: `" + prefix + "setminimum/sm <channels>/<categories> <slowmode>.`", false);
         eb.addField(prefix + "setmaximum┇Sets the upper bound for the slowmode of the channel.", "Syntax: `" + prefix + "setmaximum/sx <channels>/<categories> <slowmode>.`", false);
@@ -374,7 +374,8 @@ public abstract class Embeds {
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
         eb.addField(prefix + "info┇Brings up the main help menu.", "`Syntax:" + prefix + "info/io/help/hp.`", false);
         eb.addField("@Thermostat prefix┇Manages Thermostat's prefix.", "Syntax: <@!" + thermostat.thermo.getSelfUser().getId() + "> `prefix/px.`", false);
-        eb.addField(prefix + "chart┇Command that gives informational data about Thermostat's operation in chart form", "Syntax: `" + prefix + "chart/ch <charttype>.`", false);
+        eb.addField(prefix + "chart┇Command that gives informational data about Thermostat's operation in chart form.", "Syntax: `" + prefix + "chart/ch <charttype>.`", false);
+        eb.addField(prefix + "filter┇Enables/Disables curse-word filtering for a channel.", "Syntax: `" + prefix + "filter/ft <charttype>.`", false);
         eb.addField(prefix + "vote┇Shows a link to vote for Thermostat on top.gg.", "Syntax: `" + prefix + "vote/vo.`", false);
         eb.addField(prefix + "invite┇Provides an invite link to Thermostat's support server, and the top.gg website.", "Syntax: `" + prefix + "invite/iv.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);

@@ -66,7 +66,7 @@ public class WordFilterEvent {
             if (!thermostatMember.hasPermission(Permission.MESSAGE_MANAGE)) {
                 lgr.debug("Thermostat lacks permission MANAGE_MESSAGES. Guild: "
                         + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                Messages.sendMessage(eventChannel, Embeds.simpleInsufficientPerm("MANAGE_WEBHOOKS"));
+                Messages.sendMessage(eventChannel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
                 return;
             }
 
@@ -91,18 +91,18 @@ public class WordFilterEvent {
                     .reason("Inappropriate Language Filter (Thermostat)")
                     .queue();
 
-            String webhookURL = getWebhookURL();
+            String webhookId = getWebhookID(), webhookToken = getWebhookToken();
 
-            if (webhookURL.equals("N/A")) {
+            if (webhookId.equals("0")) {
                 createWebhook(eventChannel, eventMessage.getAuthor())
                 .map(unused -> {
-                            sendWebhookMessage(getWebhookURL());
+                            sendWebhookMessage(getWebhookID(), getWebhookToken());
                             return unused;
                 }).queue();
             } else {
-                updateWebhook(eventChannel, eventMessage.getAuthor(), webhookURL)
+                updateWebhook(eventMessage.getAuthor(), webhookId)
                 .map(unused -> {
-                    sendWebhookMessage(webhookURL);
+                    sendWebhookMessage(webhookId, webhookToken);
                     return unused;
                 }).queue();
             }
@@ -113,18 +113,29 @@ public class WordFilterEvent {
      * Retrieves Webhook URL from DB.
      * @return webhookurl
      */
-    public String getWebhookURL() {
-        return DataSource.queryString("SELECT WEBHOOK_URL FROM " +
+    public String getWebhookToken() {
+        return DataSource.queryString("SELECT WEBHOOK_TOKEN FROM " +
+                "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", eventChannel.getId());
+    }
+
+    /**
+     * Retrieves Webhook URL from DB.
+     * @return webhookurl
+     */
+    public String getWebhookID() {
+        return DataSource.queryString("SELECT WEBHOOK_ID FROM " +
                 "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", eventChannel.getId());
     }
 
     /**
      * Sends compiled message through the webhook provided.
-     * @param webhookURL Webhook URL to send the msg through.
+     * @param webhookID Webhook Id
+     * @param webhookToken Webhook Token
      */
-    public void sendWebhookMessage(@Nonnull String webhookURL) {
-        WebhookClientBuilder builder = new WebhookClientBuilder(webhookURL);
+    public void sendWebhookMessage(@Nonnull String webhookID, String webhookToken) {
+        WebhookClientBuilder builder = new WebhookClientBuilder(Long.parseLong(webhookID), webhookToken);
         builder.setAllowedMentions(AllowedMentions.none());
         WebhookClient client = builder.build();
 
@@ -135,12 +146,11 @@ public class WordFilterEvent {
 
     /**
      * Updates an existing webhook with new parameters.
-     * @param eventChannel Channel where webhook resides in.
      * @param eventAuthor User object that carries the new params.
-     * @param webhookURL Webhook target
+     * @param webhookId Webhook target ID
      * @return RestAction to call when necessary
      */
-    public RestAction<Void> updateWebhook(@NotNull TextChannel eventChannel, @NotNull User eventAuthor, String webhookURL) {
+    public RestAction<Void> updateWebhook(@NotNull User eventAuthor, String webhookId) {
 
         String username = eventAuthor.getName();
         String userAvatarURL;
@@ -152,34 +162,13 @@ public class WordFilterEvent {
 
         Icon userAvatar = getUserIcon(userAvatarURL);
 
-        return eventChannel
-                .retrieveWebhooks()
-                .map(webhookList -> findWebhook(webhookList, webhookURL))
+        return thermostat.thermo
+                .retrieveWebhookById(webhookId)
                 .flatMap(
                         Objects::nonNull,
                         webhook -> webhook.getManager().setName(username).setAvatar(userAvatar)
                 );
     }
-
-    /**
-     * Find a webhook in a list of webhooks.
-     * @param webhookList The list of webhooks.
-     * @param webhookURL Webhook URL from the database.
-     * @return Found webhook.
-     */
-    @Nullable
-    public Webhook findWebhook(@Nonnull List<Webhook> webhookList, @Nonnull String webhookURL) {
-        Webhook foundWebhook = null;
-
-        for (Webhook webhook : webhookList) {
-            if (webhook.getUrl().equals(webhookURL)) {
-                foundWebhook = webhook;
-            }
-        }
-
-        return foundWebhook;
-    }
-
 
     /**
      * RestAction creator for a webhook.
@@ -209,11 +198,12 @@ public class WordFilterEvent {
                             try {
                                 DataSource.update("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
                                                 "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                                                "SET CHANNEL_SETTINGS.WEBHOOK_URL = ? " +
+                                                "SET CHANNEL_SETTINGS.WEBHOOK_ID = ?, " +
+                                                "CHANNEL_SETTINGS.WEBHOOK_TOKEN = ? " +
                                                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
-                                        Arrays.asList(webhook.getUrl(), eventChannel.getId()));
+                                        Arrays.asList(webhook.getId(), webhook.getToken(), eventChannel.getId()));
                             } catch (SQLException ex) {
-                                lgr.error("Something went wrong while setting Webhook URL!", ex);
+                                lgr.error("Something went wrong while setting Webhook Params!", ex);
                             }
                             return webhook;
                         }

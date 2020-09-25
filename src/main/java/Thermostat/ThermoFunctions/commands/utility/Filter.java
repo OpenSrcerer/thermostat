@@ -11,7 +11,6 @@ import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
