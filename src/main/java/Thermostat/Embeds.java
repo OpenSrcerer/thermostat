@@ -5,13 +5,9 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import java.time.Instant;
 
 /**
- * Class for all static embeds that do not need
- * runtime editing.
+ * Class for all static embeds.
  */
 public abstract class Embeds {
-    
-
-
     public static EmbedBuilder helpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");

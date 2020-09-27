@@ -6,17 +6,14 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-// Driver class for importing data
-// into the database
-
 /**
- * <h1>Create</h1>
- * <p>Class that contains functions used to
+ * Contains functions used to
  * initiate a database connection and insert
  * new Guilds or Channels to the DB.
  */
 
-public class Create {
+public abstract class Create {
+    public static final Logger lgr = LoggerFactory.getLogger(Create.class);
 
     /**
      * Creates a new instance of a guild in the database.
@@ -31,7 +28,6 @@ public class Create {
         try {
             DataSource.update("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (?, 0);", GUILD_ID);
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
     }
@@ -39,7 +35,6 @@ public class Create {
     /**
      * Initializes a new entry for a channel with a matching
      * guild in the database.
-     * <p>Affects tables: <b>GUILDS, CHANNELS, CHANNEL_SETTINGS</b>
      *
      * @param GUILD_ID   Guild that the channel resides in.
      * @param CHANNEL_ID The channel about to be added to the DB.
@@ -57,7 +52,6 @@ public class Create {
             DataSource.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES (?, 0, 0, ?);",
                     Arrays.asList(CHANNEL_ID, Integer.toString(monitor)));
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
     }
@@ -79,7 +73,6 @@ public class Create {
                     " AND GUILDS.GUILD_ID = ?",
                     Arrays.asList(Integer.toString(monitor), CHANNEL_ID, GUILD_ID));
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
     }

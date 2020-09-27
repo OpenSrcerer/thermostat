@@ -13,7 +13,9 @@ import java.util.Collections;
  * deletion operations.
  */
 
-public class Delete {
+public abstract class Delete {
+    private static final Logger lgr = LoggerFactory.getLogger(Delete.class);
+
     /**
      * Deletes a whole guild from the database,
      * including its' respective channels and
@@ -41,7 +43,6 @@ public class Delete {
 
             DataSource.update("DELETE FROM GUILDS WHERE GUILD_ID = ?", GUILD_ID);
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
     }
@@ -67,7 +68,6 @@ public class Delete {
                             "WHERE GUILDS.GUILD_ID = ? AND CHANNELS.CHANNEL_ID = ?",
             Arrays.asList(GUILD_ID, CHANNEL_ID));
         } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
     }
