@@ -27,26 +27,25 @@ public class UnMonitorAll {
         }
 
         if (!eventGuild.getSelfMember().hasPermission(eventChannel, Permission.MESSAGE_HISTORY)) {
-            Messages.sendMessage(eventChannel, Embeds.insufficientReact("Read Message History"));
+            Messages.sendMessage(eventChannel, Embeds.insufficientReact("READ_MESSAGE_HISTORY"));
             return;
         } else if (!eventGuild.getSelfMember().hasPermission(eventChannel, Permission.MESSAGE_ADD_REACTION)) {
             Messages.sendMessage(eventChannel, Embeds.insufficientReact());
             return;
         }
 
-        // Custom consumer in order to also add reaction
-        // and start the monitoring thread
+        // add reaction & start message listener
         Consumer<Message> consumer = message -> {
             try {
                 Messages.addReaction(message, "☑");
-                MonitoredMessage unmonitorallMessage = new MonitoredMessage(
+                MonitoredMessage unMonitorAllMessage = new MonitoredMessage(
                         message.getId(),
                         eventMember.getId(),
                         MenuType.UNMONITORALL
                 );
-                unmonitorallMessage.resetDestructionTimer(eventChannel);
+                unMonitorAllMessage.resetDestructionTimer(eventChannel);
                 // adds the object to the list
-                monitoredMessages.add(unmonitorallMessage);
+                monitoredMessages.add(unMonitorAllMessage);
             } catch (PermissionException ignored) {
             }
         };

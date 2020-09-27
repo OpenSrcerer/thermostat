@@ -24,6 +24,7 @@ import java.util.List;
 public class GetMonitorList {
     // dynamic embed that gets posted
     private static final EmbedBuilder embed = new EmbedBuilder();
+    private static Logger lgr = LoggerFactory.getLogger(GetMonitorList.class);
 
     public static void execute(@Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
         String embedString = "";
@@ -36,10 +37,6 @@ public class GetMonitorList {
         }
 
         try {
-            // Adds the guild to the database if it's not in it!
-            if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                Create.Guild(eventGuild.getId());
-
             List<String> guildList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                     "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                     "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
@@ -67,9 +64,7 @@ public class GetMonitorList {
                 }
             }
 
-            if (filteredList == null) {
-                embed.addField("Channels currently being filtered:", "None.", false);
-            } else if (filteredList.isEmpty()) {
+            if (filteredList == null || filteredList.isEmpty()) {
                 embed.addField("Channels currently being filtered:", "None.", false);
             } else {
                 // iterate through retrieved array, adding
@@ -86,7 +81,6 @@ public class GetMonitorList {
 
         } catch (Exception ex) {
             Messages.sendMessage(eventChannel, Embeds.fatalError());
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
 

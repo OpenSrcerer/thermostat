@@ -63,6 +63,19 @@ public class ReactionAddEvent extends ListenerAdapter {
                             }
                         }
                         break;
+                    case "🔧":
+                        // Informational Menu
+                        if (monitoredMessage.getMenuType() == MenuType.SELECTION) {
+                            monitoredMessage.resetDestructionTimer(ev.getChannel());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getUtilityInfo(prefix).build());
+                            monitoredMessage.setMenuType(MenuType.UTILITY);
+                            try {
+                                Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
+                                Messages.addReactions(ev.getChannel(), monitoredMessage.getMessageId(), Arrays.asList("⬆", "❌"));
+                            } catch (PermissionException ignored) {
+                            }
+                        }
+                        break;
                     case "ℹ":
                         // Informational Menu
                         if (monitoredMessage.getMenuType() == MenuType.SELECTION) {

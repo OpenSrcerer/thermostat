@@ -28,6 +28,7 @@ import static thermostat.thermoFunctions.Functions.parseMention;
  */
 public class UnMonitor {
     private static final EmbedBuilder embed = new EmbedBuilder();
+    private static final Logger lgr = LoggerFactory.getLogger(UnMonitor.class);
 
     public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
 
@@ -97,21 +98,13 @@ public class UnMonitor {
         // connects to database and removes channel
         for (String it : args) {
             try {
-                // silent guild adder
-                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                    Create.Guild(eventGuild.getId());
-                // checks db if channel exists
-                if (DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS " +
-                        "ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.CHANNEL_ID = ?" +
-                        " AND CHANNEL_SETTINGS.MONITORED = 1", it)) {
+                if (!DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", it)) {
+                    unmonitored = unmonitored.concat("<#" + it + "> ");
+                } else {
                     Create.ChannelMonitor(eventGuild.getId(), it, 0);
                     complete = complete.concat("<#" + it + "> ");
                 }
-                // if not, do not do anything
-                else
-                    unmonitored = unmonitored.concat("<#" + it + "> ");
             } catch (Exception ex) {
-                Logger lgr = LoggerFactory.getLogger(DataSource.class);
                 lgr.error(ex.getMessage(), ex);
                 Messages.sendMessage(eventChannel, Embeds.fatalError());
             }

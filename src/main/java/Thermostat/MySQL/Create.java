@@ -21,10 +21,6 @@ public abstract class Create {
      * @param GUILD_ID Guild that is about to be added to DB.
      */
     public static void Guild(String GUILD_ID) {
-        if (GUILD_ID == null) {
-            throw new NullPointerException();
-        }
-
         try {
             DataSource.update("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (?, 0);", GUILD_ID);
         } catch (SQLException ex) {
@@ -42,10 +38,6 @@ public abstract class Create {
      *                   monitored (inits with 1 or 0).
      */
     public static void Channel(String GUILD_ID, String CHANNEL_ID, int monitor) {
-        if (GUILD_ID == null || CHANNEL_ID == null) {
-            throw new NullPointerException();
-        }
-
         try {
             DataSource.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (?, ?);", Arrays.asList(CHANNEL_ID, GUILD_ID));
             // add channelID, min, and max slowmode

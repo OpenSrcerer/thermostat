@@ -106,12 +106,12 @@ public abstract class Functions {
      */
     public static void checkGuildAndChannelThenSet(String guildId, String channelId) {
         try {
-            // silent guild adder
+            // Check if guild and channel are in the database.
             if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", guildId))
                 Create.Guild(guildId);
-            // check db if channel exists and create it if not
             if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", channelId))
                 Create.Channel(guildId, channelId, 0);
+
         } catch (SQLException ex) {
             lgr.error("SQL Exception while setting guild ID: " + guildId + " and channel ID: " + channelId);
         }

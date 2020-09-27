@@ -23,7 +23,7 @@ public class Info {
     public static void execute(@Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
         Consumer<Message> consumer = message -> {
             try {
-                Messages.addReactions(message, Arrays.asList("🌡", "ℹ", "❌"));
+                Messages.addReactions(message, Arrays.asList("🌡", "ℹ", "🔧", "❌"));
                 // create the information message object
                 // to be added to the monitored message
                 // ArrayList

@@ -96,23 +96,13 @@ public class Monitor {
         // connects to database and creates channel
         for (String it : args) {
             try {
-                // silent guild adder
-                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                    Create.Guild(eventGuild.getId());
-                // check db if channel exists
-                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", it)) {
-                    Create.Channel(eventGuild.getId(), it, 1);
-                    complete = complete.concat("<#" + it + "> ");
+                // checks whether the channel has the monitor
+                // value on the database set to 1
+                if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", it)) {
+                    monitored = monitored.concat("<#" + it + "> ");
                 } else {
-                    // checks whether the channel has the monitor
-                    // value on the database set to 1
-                    // table CHANNEL_SETTINGS
-                    if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", it)) {
-                        monitored = monitored.concat("<#" + it + "> ");
-                    } else {
-                        Create.ChannelMonitor(eventGuild.getId(), it, 1);
-                        complete = complete.concat("<#" + it + "> ");
-                    }
+                    Create.ChannelMonitor(eventGuild.getId(), it, 1);
+                    complete = complete.concat("<#" + it + "> ");
                 }
             } catch (Exception ex) {
                 nonValid = nonValid.concat("\"" + it + "\" ");

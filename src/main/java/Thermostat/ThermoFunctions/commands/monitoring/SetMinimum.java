@@ -108,18 +108,11 @@ public class SetMinimum {
             return;
         }
 
+        int minimumSlow;
+
         if (args.size() >= 2) {
             for (int index = 0; index < args.size() - 1; ++index) {
                 try {
-                    // silent guild adder
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                        Create.Guild(eventGuild.getId());
-
-                    // check db if channel exists and create it if not
-                    if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?" , args.get(index)))
-                        Create.Channel(eventGuild.getId(), args.get(index), 0);
-
-                    int minimumSlow;
                     minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", args.get(index));
 
                     if (argumentSlow >= minimumSlow && argumentSlow <= 21600) {
@@ -140,15 +133,6 @@ public class SetMinimum {
             }
         } else if (!removed) {
             try {
-                // silent guild adder
-                if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", eventGuild.getId()))
-                    Create.Guild(eventGuild.getId());
-
-                // check db if channel exists and create it if not
-                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", eventChannel.getId()))
-                    Create.Channel(eventGuild.getId(), eventChannel.getId(), 0);
-
-                int minimumSlow;
                 minimumSlow = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", eventChannel.getId());
 
                 if (argumentSlow >= minimumSlow && argumentSlow <= 21600) {
@@ -192,4 +176,6 @@ public class SetMinimum {
 
         embed.clear();
     }
+
+
 }

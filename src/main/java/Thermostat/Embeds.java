@@ -131,7 +131,7 @@ public abstract class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder channelSettings(String channelName, String authorID, String authorAvatarURL, int max, int min, float sensitivity, boolean monitor) {
+    public static EmbedBuilder channelSettings(String channelName, String authorID, String authorAvatarURL, int max, int min, float sensitivity, boolean monitor, boolean filter) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Settings for #" + channelName + ":");
         if (min == 0) {
@@ -148,9 +148,15 @@ public abstract class Embeds {
 
 
         if (monitor) {
-            eb.addField("Currently Monitored:", "**Yes**", false);
+            eb.addField("Monitored:", "**Yes**", false);
         } else {
-            eb.addField("Currently Monitored:", "**No**", false);
+            eb.addField("Monitored:", "**No**", false);
+        }
+
+        if (filter) {
+            eb.addField("Filtered:", "**Yes**", true);
+        } else {
+            eb.addField("Filtered:", "**No**", true);
         }
 
         String indicator = "`   ";
@@ -359,6 +365,16 @@ public abstract class Embeds {
         eb.addField(prefix + "setmaximum┇Sets the upper bound for the slowmode of the channel.", "Syntax: `" + prefix + "setmaximum/sx <channels>/<categories> <slowmode>.`", false);
         eb.addField(prefix + "settings┇Shows details about the configuration of the given channel.", "Syntax: `" + prefix + "settings/st <channel>.`", false);
         eb.addField(prefix + "sensitivity┇Sets the sensitivity level for the channel. Requires a value between -10 and 10, you may use decimal numbers. The higher the sensitivity, the easier for Thermostat to initiate slowmode.", "Syntax: `" + prefix + "sensitivity/ss [channel(s)] <sensitivity>.`", false);
+        eb.addField("❌ Exit", "Exit the info menu.", false);
+        eb.setColor(0x00aeff);
+        return eb;
+    }
+
+    public static EmbedBuilder getUtilityInfo(String prefix) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("ℹ┇Utility Commands");
+        eb.addField("⬆ Menu", "Go back to the Main Menu", false);
+        eb.addField(prefix + "filter┇Enables/Disables curse-word filtering for a channel.", "Syntax: `" + prefix + "filter/ft <charttype>.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
         return eb;
