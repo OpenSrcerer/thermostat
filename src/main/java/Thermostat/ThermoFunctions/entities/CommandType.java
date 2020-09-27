@@ -1,11 +1,11 @@
 package thermostat.thermoFunctions.entities;
 
-import thermostat.thermoFunctions.commands.Command;
+import thermostat.thermoFunctions.commands.CommandManager;
 
 /**
  * Used to identifty commands on the Command listener.
  *
- * @see Command
+ * @see CommandManager
  */
 public enum CommandType {
 

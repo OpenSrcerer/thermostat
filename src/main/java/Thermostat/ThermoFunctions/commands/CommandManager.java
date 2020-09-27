@@ -25,7 +25,7 @@ import java.util.Arrays;
  * Main adapter class for any sort of command
  * based on the GuildMessageReactionEvent event.
  */
-public class Command extends ListenerAdapter {
+public class CommandManager extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent ev) {
 

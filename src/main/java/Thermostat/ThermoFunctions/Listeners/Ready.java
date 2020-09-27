@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.commands.Command;
+import thermostat.thermoFunctions.commands.CommandManager;
 import thermostat.thermoFunctions.monitorThreads.DBLServerMonitor;
 import thermostat.thermoFunctions.monitorThreads.MessageReceived;
 import thermostat.thermoFunctions.monitorThreads.WorkerManager;
@@ -17,7 +17,6 @@ import thermostat.thermoFunctions.threaded.InitWordFiles;
 import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
-import java.sql.SQLException;
 import java.util.List;
 
 import static thermostat.thermostat.thermo;
@@ -42,7 +41,7 @@ public class Ready extends ListenerAdapter {
         }
 
         thermo.addEventListener(
-                new Command(),
+                new CommandManager(),
                 // Other Event Listeners
                 new GuildJoin(),
                 new GuildLeave(),
