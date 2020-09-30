@@ -2,6 +2,8 @@ package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.informational.Chart;
@@ -50,6 +52,8 @@ public class CommandManager extends ListenerAdapter {
                 "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
                 "AND CHANNELS.CHANNEL_ID = ?",
                 Arrays.asList(ev.getGuild().getId(), ev.getChannel().getId()))) {
+            Logger lgr = LoggerFactory.getLogger(CommandManager.class);
+            lgr.debug("Starting WFE");
             new WordFilterEvent(ev.getChannel(), ev.getMessage(), args);
         }
 
@@ -84,14 +88,9 @@ public class CommandManager extends ListenerAdapter {
         ) Sensitivity.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
 
         else if (
-                args.get(0).equalsIgnoreCase(prefix + CommandType.SETMAXIMUM.getAlias1()) ||
-                        args.get(0).equalsIgnoreCase(prefix + CommandType.SETMAXIMUM.getAlias2())
+                args.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias1()) ||
+                        args.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias2())
         ) SetMaximum.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
-
-        else if (
-                args.get(0).equalsIgnoreCase(prefix + CommandType.SETMINIMUM.getAlias1()) ||
-                        args.get(0).equalsIgnoreCase(prefix + CommandType.SETMINIMUM.getAlias2())
-        ) SetMinimum.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITOR.getAlias1()) ||

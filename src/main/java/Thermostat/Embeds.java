@@ -1,13 +1,24 @@
 package thermostat;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 
 import java.time.Instant;
+import java.util.EnumSet;
 
 /**
  * Class for all static embeds.
  */
 public abstract class Embeds {
+
+    public static EmbedBuilder permissionError(EnumSet<Permission> memberPermissions, EnumSet<Permission> thermoPermissions) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder helpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
@@ -34,16 +45,6 @@ public abstract class Embeds {
         eb.setColor(0xff0000);
         return eb;
     }
-
-    public static EmbedBuilder webhookError() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("An error occurred when trying to manage the filter webhook. Resetting it.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
 
     public static EmbedBuilder noChannelsEverSlowmoded() {
         EmbedBuilder eb = new EmbedBuilder();
@@ -212,45 +213,6 @@ public abstract class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder insufficientReact(String perm) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Error executing command! Insufficient permissions: `" + perm + "`");
-        eb.setDescription("Thermostat needs the `" + perm + "` permission in this channel in order to perform this action.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder insufficientReact() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Error executing command! Insufficient permissions: `ADD_REACTIONS`");
-        eb.setDescription("Add the `ADD_REACTIONS` permission to Thermostat and try again.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder simpleInsufficientPerm(String perm) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Unable to perform action! Insufficient permissions: \n`" + perm + "`");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder insufficientPerm() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Error managing channel! Insufficient permissions: `MANAGE_CHANNELS`");
-        eb.setDescription("Channel was removed from monitoring database. Add the `MANAGE_CHANNELS` permission to Thermostat and re-monitor the channel with th!monitor.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
     public static EmbedBuilder allRemoved(String authorID, String authorAvatarURL) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("All channels are no longer being monitored.");
@@ -293,15 +255,6 @@ public abstract class Embeds {
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x36393f);
-        return eb;
-    }
-
-    public static EmbedBuilder userNoPermission(String perm) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("You must have the `"+ perm +"` permission(s) in order to execute this command.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
         return eb;
     }
 
@@ -355,7 +308,7 @@ public abstract class Embeds {
 
     public static EmbedBuilder getMonitorInfo(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("🌡┇Monitoring Commands - Permissions required: `MANAGE_CHANNEL`");
+        eb.setTitle("🌡┇Monitoring Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
         eb.addField(prefix + "monitor┇Adds text channels to the slowmode monitoring database.", "Syntax: `" + prefix + "monitor/mn <channels>/<categories>.`", false);
         eb.addField(prefix + "unmonitor┇Removes text channels from the slowmode monitoring database.", "Syntax: `" + prefix + "unmonitor/um <channels>/<categories>.`", false);
@@ -372,7 +325,7 @@ public abstract class Embeds {
 
     public static EmbedBuilder getUtilityInfo(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("ℹ┇Utility Commands");
+        eb.setTitle("🔧┇Utility Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
         eb.addField(prefix + "filter┇Enables/Disables curse-word filtering for a channel.", "Syntax: `" + prefix + "filter/ft <charttype>.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
@@ -399,6 +352,7 @@ public abstract class Embeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Menu");
         eb.addField("🌡 Monitoring", "Commands to help you manage slowmode in channels.", false);
+        eb.addField("🔧 Utility", "Useful features to help you moderate your server.", false);
         eb.addField("ℹ Other", "Informational commands that provide other functionalities.", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);

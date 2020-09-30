@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.Embeds;
-import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -47,7 +46,8 @@ public class SetMinimum {
                 noText = "",
                 complete = "",
                 badSlowmode = "";
-        // shows us if there were arguments before
+
+        // shows if there were arguments before
         // but were removed due to channel not being found
         boolean removed = false;
 
@@ -157,15 +157,12 @@ public class SetMinimum {
             embed.addField("Channels given a minimum slowmode of " + argumentSlow + ":", complete, false);
             embed.setColor(0x00ff00);
         }
-
         if (!badSlowmode.isEmpty()) {
             embed.addField("Channels for which the given slowmode value was not appropriate:", badSlowmode, false);
         }
-
         if (!nonValid.isEmpty()) {
             embed.addField("Channels that were not valid or found:", nonValid, false);
         }
-
         if (!noText.isEmpty()) {
             embed.addField("Categories with no Text Channels:", noText, false);
         }

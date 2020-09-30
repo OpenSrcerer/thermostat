@@ -76,6 +76,8 @@ public class WordFilterEvent {
             return;
         }
 
+        lgr.debug("Member acquired and permission check complete");
+
         boolean messageWasChanged = false;
         for (int index = 0; index < message.size(); ++index) {
             String string = message.get(index);
@@ -85,6 +87,8 @@ public class WordFilterEvent {
                 message.set(index, niceWords.get(random.nextInt(niceWords.size())));
             }
         }
+
+        lgr.debug("Message manipulated");
 
         if (messageWasChanged) {
             eventMessage.delete()
@@ -106,6 +110,8 @@ public class WordFilterEvent {
                     return unused;
                 }).queue();
             }
+
+            lgr.debug("Webhook message sent");
         }
     }
 

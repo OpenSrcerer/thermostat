@@ -29,10 +29,6 @@ public abstract class Functions {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static String parseMention(String mention, String discriminator) {
-        if (mention == null) {
-            throw new NullPointerException();
-        }
-
         String retString = mention;
 
         if (mention.startsWith("<" + discriminator) && mention.endsWith(">"))
