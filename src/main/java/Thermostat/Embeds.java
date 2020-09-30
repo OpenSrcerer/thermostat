@@ -11,9 +11,21 @@ import java.util.EnumSet;
  */
 public abstract class Embeds {
 
-    public static EmbedBuilder permissionError(EnumSet<Permission> memberPermissions, EnumSet<Permission> thermoPermissions) {
+    public static EmbedBuilder permissionError(EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
+        eb.setTitle("❌ Error encountered! Details:");
+
+        if (!thermoPermissions.isEmpty()) {
+            StringBuilder missingPerms = new StringBuilder();
+            thermoPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
+            eb.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
+        }
+        if (!memberPermissions.isEmpty()) {
+            StringBuilder missingPerms = new StringBuilder();
+            memberPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
+            eb.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
+        }
+
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
