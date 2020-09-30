@@ -90,7 +90,7 @@ public class CommandManager extends ListenerAdapter {
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias2())
-        ) SetMaximum.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) new SetBounds(ev.getGuild(), ev.getChannel(), ev.getMember(), args);
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITOR.getAlias1()) ||

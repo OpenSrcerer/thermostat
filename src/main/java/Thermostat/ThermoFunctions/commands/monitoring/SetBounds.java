@@ -27,13 +27,13 @@ public class SetBounds implements CommandEvent {
     private final Guild eventGuild;
     private final TextChannel eventChannel;
     private final Member eventMember;
-    private final ArrayList<StringBuilder> args;
+    private final ArrayList<String> args;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
     private static final EmbedBuilder embed = new EmbedBuilder();
 
-    public SetBounds(Guild eg, TextChannel tc, Member em, ArrayList<StringBuilder> ag)
+    public SetBounds(Guild eg, TextChannel tc, Member em, ArrayList<String> ag)
     {
         eventGuild = eg;
         eventChannel = tc;
@@ -44,7 +44,7 @@ public class SetBounds implements CommandEvent {
         if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
             execute();
         } else {
-
+            Messages.sendMessage(eventChannel, Embeds.permissionError(missingThermostatPerms, missingMemberPerms));
         }
     }
 
@@ -82,16 +82,10 @@ public class SetBounds implements CommandEvent {
         // catch to remove command initiation with prefix
         args.remove(0);
 
-        // checks if event member has permission
-        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL"));
-            return;
-        }
-
-        String nonValid = "",
-                noText = "",
-                complete = "",
-                badSlowmode = "";
+        StringBuilder nonValid = new StringBuilder(),
+                noText = new StringBuilder(),
+                complete = new StringBuilder(),
+                badSlowmode = new StringBuilder();
         // shows us if there were arguments before
         // but were removed due to channel not being found
         boolean removed = false;
@@ -104,14 +98,14 @@ public class SetBounds implements CommandEvent {
             // into an ID through the parseMention() function.
             // All letters are removed, thus the usage of the
             // originalArgument string.
-            StringBuilder originalArgument = args.get(index);
+            String originalArgument = args.get(index);
             args.set(index, parseMention(args.get(index), "#"));
 
             // Category holder for null checking
             Category channelContainer = eventGuild.getCategoryById(args.get(index));
 
             if (args.get(index).isBlank()) {
-                nonValid = nonValid.concat("\"" + originalArgument + "\" ");
+                nonValid.append("\"").append(originalArgument).append("\" ");
                 args.remove(index);
                 removed = true;
                 --index;
@@ -121,7 +115,7 @@ public class SetBounds implements CommandEvent {
                 List<TextChannel> TextChannels = channelContainer.getTextChannels();
                 // if list is empty add that it is in msg
                 if (TextChannels.isEmpty()) {
-                    noText = noText.concat("<#" + originalArgument + "> ");
+                    noText.append("<#").append(originalArgument).append("> ");
                 }
                 // removes category ID from argument ArrayList
                 args.remove(index);
@@ -134,7 +128,7 @@ public class SetBounds implements CommandEvent {
 
             // removes element from arguments if it's not a valid channel ID
             else if (eventGuild.getTextChannelById(args.get(index)) == null) {
-                nonValid = nonValid.concat("\"" + originalArgument + "\" ");
+                nonValid.append("\"").append(originalArgument).append("\" ");
                 args.remove(index);
                 removed = true;
                 --index;
@@ -159,17 +153,17 @@ public class SetBounds implements CommandEvent {
                     if (argumentSlow <= minimumSlow && argumentSlow <= 21600) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
                                 Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), args.get(index)));
-                        complete = complete.concat("<#" + args.get(index) + "> ");
+                        complete.append("<#").append(args.get(index)).append("> ");
                     } else if (argumentSlow > minimumSlow && argumentSlow <= 21600) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
                                 Arrays.asList(Integer.toString(argumentSlow), args.get(index)));
-                        complete = complete.concat("<#" + args.get(index) + "> ");
+                        complete.append("<#").append(args.get(index)).append("> ");
                     } else {
-                        badSlowmode = badSlowmode.concat("<#" + args.get(index) + "> ");
+                        badSlowmode.append("<#").append(args.get(index)).append("> ");
                     }
 
                 } catch (Exception ex) {
-                    nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
+                    nonValid.append("\"").append(args.get(index)).append("\" ");
                 }
             }
         } else if (!removed) {
@@ -180,13 +174,13 @@ public class SetBounds implements CommandEvent {
                 if (argumentSlow <= minimumSlow && argumentSlow <= 21600) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
                             Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), eventChannel.getId()));
-                    complete = complete.concat("<#" + eventChannel.getId() + "> ");
+                    complete.append("<#").append(eventChannel.getId()).append("> ");
                 } else if (argumentSlow > minimumSlow && argumentSlow <= 21600) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
                             Arrays.asList(Integer.toString(argumentSlow), eventChannel.getId()));
-                    complete = complete.concat("<#" + eventChannel.getId() + "> ");
+                    complete.append("<#").append(eventChannel.getId()).append("> ");
                 } else {
-                    badSlowmode = badSlowmode.concat("<#" + eventChannel.getId() + "> ");
+                    badSlowmode.append("<#").append(eventChannel.getId()).append("> ");
                 }
             } catch (Exception ex) {
                 Messages.sendMessage(eventChannel, Embeds.fatalError());
@@ -195,20 +189,20 @@ public class SetBounds implements CommandEvent {
         }
 
         embed.setColor(0xffff00);
-        if (!complete.isEmpty()) {
+        if (!(complete.length() == 0)) {
             embed.addField("Channels given a maximum slowmode of " + argumentSlow + ":", complete, false);
             embed.setColor(0x00ff00);
         }
 
-        if (!badSlowmode.isEmpty()) {
+        if (!(badSlowmode.length() == 0)) {
             embed.addField("Channels for which the given slowmode value was not appropriate:", badSlowmode, false);
         }
 
-        if (!nonValid.isEmpty()) {
+        if (!(nonValid.length() == 0)) {
             embed.addField("Channels that were not valid or found:", nonValid, false);
         }
 
-        if (!noText.isEmpty()) {
+        if (!(noText.length() == 0)) {
             embed.addField("Categories with no Text Channels:", noText, false);
         }
 
