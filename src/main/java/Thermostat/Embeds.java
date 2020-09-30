@@ -23,7 +23,7 @@ public abstract class Embeds {
         if (!memberPermissions.isEmpty()) {
             StringBuilder missingPerms = new StringBuilder();
             memberPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
-            eb.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
+            eb.addField("You lack these permissions:", missingPerms.toString(), false);
         }
 
         eb.setTimestamp(Instant.now());
