@@ -30,12 +30,9 @@ public interface CommandEvent {
                 // Channels that are valid, but are not text channels
                 noText = new StringBuilder();
 
-        // shows if there were arguments before
-        // but were removed due to channel not being found
-        boolean removed = false;
         // parses arguments into usable IDs, checks if channels exist
-        // up to args.size() - 1 because the last argument is the slowmode
-        for (int index = 0; index < args.size() - 1; ++index) {
+        // up to args.size(), last channel
+        for (int index = 0; index < args.size(); ++index) {
 
             // The argument gets parsed. If it's a mention, it gets formatted
             // into an ID through the parseMention() function.
@@ -50,7 +47,6 @@ public interface CommandEvent {
             if (args.get(index).isBlank()) {
                 nonValid.append("\"").append(originalArgument).append("\" ");
                 args.remove(index);
-                removed = true;
                 --index;
 
             } else if (channelContainer != null) {
@@ -73,11 +69,10 @@ public interface CommandEvent {
             else if (eventGuild.getTextChannelById(args.get(index)) == null) {
                 nonValid.append("\"").append(originalArgument).append("\" ");
                 args.remove(index);
-                removed = true;
                 --index;
             }
         }
 
-        return Arrays.asList(nonValid, noText, removed, args);
+        return Arrays.asList(nonValid, noText, args);
     }
 }
