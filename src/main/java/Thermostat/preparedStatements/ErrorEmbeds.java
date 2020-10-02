@@ -7,7 +7,7 @@ import thermostat.thermostat;
 import java.time.Instant;
 import java.util.EnumSet;
 
-public class ErrorEmbeds {
+public abstract class ErrorEmbeds {
     public static EmbedBuilder errPermission(EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❌ Error encountered! Details:");
