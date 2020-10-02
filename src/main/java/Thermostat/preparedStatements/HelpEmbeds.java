@@ -6,6 +6,14 @@ import java.time.Instant;
 
 public abstract class HelpEmbeds {
 
+    public static EmbedBuilder helpSetBounds(String prefix) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder helpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
