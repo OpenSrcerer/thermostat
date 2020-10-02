@@ -73,17 +73,8 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_HISTORY,
                     Permission.MANAGE_CHANNEL
-            ),
-            EnumSet.of(
-                    Permission.MANAGE_CHANNEL
-            )),
-    UNMONITORALL("unmonitorall", "ua",
-            EnumSet.of(
-                    Permission.MESSAGE_WRITE,
-                    Permission.MESSAGE_EMBED_LINKS,
-                    Permission.MANAGE_CHANNEL,
-                    Permission.MESSAGE_ADD_REACTION
             ),
             EnumSet.of(
                     Permission.MANAGE_CHANNEL
@@ -94,6 +85,7 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_HISTORY,
                     Permission.MANAGE_CHANNEL,
                     Permission.MANAGE_WEBHOOKS
             ),
@@ -107,6 +99,7 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_HISTORY,
                     Permission.MESSAGE_ADD_REACTION
             ),
             EnumSet.noneOf(

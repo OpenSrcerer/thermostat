@@ -5,14 +5,17 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.commands.CommandEvent;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -20,12 +23,27 @@ import java.util.List;
  * and sends them as a single embed in the channel
  * where the command was called.
  */
-public class GetMonitorList {
-    // dynamic embed that gets posted
-    private static final EmbedBuilder embed = new EmbedBuilder();
-    private static Logger lgr = LoggerFactory.getLogger(GetMonitorList.class);
+public class GetMonitorList implements CommandEvent {
 
-    public static void execute(@Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+    private static final Logger lgr = LoggerFactory.getLogger(GetMonitorList.class);
+
+    public GetMonitorList(@Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+
+    }
+
+    @Override
+    public void checkPermissions() {
+
+    }
+
+    @NotNull
+    @Override
+    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
+        return null;
+    }
+
+    @Override
+    public void execute() {
         String embedString = "";
         String filteredString = "";
 
@@ -37,8 +55,8 @@ public class GetMonitorList {
 
         try {
             List<String> guildList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
-                    "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                    "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
+                            "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                            "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
                     eventGuild.getId());
 
             List<String> filteredList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +

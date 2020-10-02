@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
@@ -13,6 +14,7 @@ import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.commands.CommandEvent;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
@@ -23,12 +25,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 
-public class Chart {
+public class Chart implements CommandEvent {
 
-    public static void execute(@Nonnull ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember, String prefix) {
+    public Chart(@Nonnull ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember, String prefix) {
 
+    }
+
+    @Override
+    public void checkPermissions() {
+
+    }
+
+    @NotNull
+    @Override
+    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
+        return null;
+    }
+
+    @Override
+    public void execute() {
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
             Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL"));

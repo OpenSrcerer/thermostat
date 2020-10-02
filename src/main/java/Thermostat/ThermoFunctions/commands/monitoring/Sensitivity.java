@@ -6,24 +6,41 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.commands.CommandEvent;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 import static thermostat.thermoFunctions.Functions.parseMention;
 
-public class Sensitivity {
-    private static final EmbedBuilder embed = new EmbedBuilder();
+public class Sensitivity implements CommandEvent {
 
-    public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember, String prefix) {
+    public Sensitivity(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember, String prefix) {
 
+    }
+
+    @Override
+    public void checkPermissions() {
+
+    }
+
+    @NotNull
+    @Override
+    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
+        return null;
+    }
+
+    @Override
+    public void execute() {
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
             Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());

@@ -48,6 +48,8 @@ public class SetBounds implements CommandEvent {
         if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
             execute();
         } else {
+            lgr.info("Missing permissions on (" + eventGuild.getName() + "/" + eventGuild.getId() + "):" +
+                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
             Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
         }
     }
@@ -135,9 +137,7 @@ public class SetBounds implements CommandEvent {
         
         if (type != ActionType.INVALID) {
             for (String arg : args) {
-                try {
-
-                    {
+                try {{
                         List<Integer> channelSlowmodes = DataSource.queryInts("SELECT MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", arg);
 
                         minimumSlow = channelSlowmodes.get(0);
@@ -183,15 +183,14 @@ public class SetBounds implements CommandEvent {
                 // to the user so they retry
                 } catch (SQLException ex) {
                     nonValid.append("\"").append(arg).append("\" ");
+                    lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
                 }
             }
-
         } else {
             Messages.sendMessage(eventChannel, HelpEmbeds.helpSetBounds(eventPrefix));
         }
 
         // #7 - Send the results embed
-
         Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
                 Arrays.asList(
                         "Channels given a maximum slowmode of " + argumentSlow + ":",
@@ -207,5 +206,6 @@ public class SetBounds implements CommandEvent {
                 ),
                 eventMember.getUser()
         ));
+        lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
     }
 }

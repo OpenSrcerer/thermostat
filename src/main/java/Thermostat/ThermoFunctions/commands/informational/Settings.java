@@ -4,15 +4,18 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.commands.CommandEvent;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 import static thermostat.thermoFunctions.Functions.parseMention;
 
@@ -20,10 +23,27 @@ import static thermostat.thermoFunctions.Functions.parseMention;
  * Command that when called, shows an embed
  * with the settings of a specific channel.
  */
-public class Settings {
+public class Settings implements CommandEvent {
+
     private static final Logger lgr = LoggerFactory.getLogger(Settings.class);
 
-    public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+    public Settings(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+
+    }
+
+    @Override
+    public void checkPermissions() {
+
+    }
+
+    @NotNull
+    @Override
+    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
+        return null;
+    }
+
+    @Override
+    public void execute() {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {

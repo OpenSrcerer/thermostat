@@ -1,29 +1,62 @@
 package thermostat.thermoFunctions.commands.utility;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.commands.CommandEvent;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
-import static thermostat.thermoFunctions.Functions.*;
+import static thermostat.thermoFunctions.Functions.convertToBooleanString;
+import static thermostat.thermoFunctions.Functions.parseMention;
 
-public class Filter {
-    private static final EmbedBuilder embed = new EmbedBuilder();
+public class Filter implements CommandEvent {
 
-    public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+    public Filter(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
 
+    }
+
+    @Override
+    public void checkPermissions() {
+
+    }
+
+    @NotNull
+    @Override
+    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
+        return null;
+    }
+
+    public static String setDatabase(String filtered, String targetChannel, TextChannel eventChannel, String complete) {
+        try {
+            if (filtered.equals("0")) {
+                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_URL = \"N/A\" WHERE CHANNEL_ID = ?",
+                        Arrays.asList(filtered, targetChannel));
+            } else {
+                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
+                        Arrays.asList(filtered, targetChannel));
+            }
+            complete = complete.concat("<#" + targetChannel + "> ");
+        } catch (Exception ex) {
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
+        }
+        return complete;
+    }
+
+    @Override
+    public void execute() {
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL, Permission.MANAGE_WEBHOOKS)) {
             Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL, MANAGE_WEBHOOKS"));
@@ -120,21 +153,5 @@ public class Filter {
         Messages.sendMessage(eventChannel, embed);
 
         embed.clear();
-    }
-
-    public static String setDatabase(String filtered, String targetChannel, TextChannel eventChannel, String complete) {
-        try {
-            if (filtered.equals("0")) {
-                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_URL = \"N/A\" WHERE CHANNEL_ID = ?",
-                        Arrays.asList(filtered, targetChannel));
-            } else {
-                DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
-                        Arrays.asList(filtered, targetChannel));
-            }
-            complete = complete.concat("<#" + targetChannel + "> ");
-        } catch (Exception ex) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
-        }
-        return complete;
     }
 }
