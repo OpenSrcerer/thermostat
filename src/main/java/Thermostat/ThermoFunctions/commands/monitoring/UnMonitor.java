@@ -15,6 +15,8 @@ import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
+import thermostat.thermoFunctions.entities.CommandType;
+import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -34,19 +36,42 @@ public class UnMonitor implements CommandEvent {
 
     private static final Logger lgr = LoggerFactory.getLogger(UnMonitor.class);
 
-    public UnMonitor(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+    private final Guild eventGuild;
+    private final TextChannel eventChannel;
+    private final Member eventMember;
+    private final String eventPrefix;
+    private ArrayList<String> args;
 
+    private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
+
+    public UnMonitor(Guild eg, TextChannel tc, Member em, String px, ArrayList<String> ag) {
+        eventGuild = eg;
+        eventChannel = tc;
+        eventMember = em;
+        eventPrefix = px;
+        args = ag;
+
+        checkPermissions();
+        if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
+            execute();
+        } else {
+            lgr.info("Missing permissions on (" + eventGuild.getName() + "/" + eventGuild.getId() + "):" +
+                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
+        }
     }
 
     @Override
     public void checkPermissions() {
+        eventGuild
+                .retrieveMember(thermostat.thermo.getSelfUser())
+                .map(thermostat -> {
+                    missingThermostatPerms = findMissingPermissions(CommandType.UNMONITOR.getThermoPerms(), thermostat.getPermissions());
+                    return thermostat;
+                })
+                .queue();
 
-    }
-
-    @NotNull
-    @Override
-    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
-        return null;
+        missingMemberPerms = findMissingPermissions(CommandType.UNMONITOR.getMemberPerms(), eventMember.getPermissions());
     }
 
     @Override

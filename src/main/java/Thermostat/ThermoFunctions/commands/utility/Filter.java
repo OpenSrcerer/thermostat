@@ -6,11 +6,16 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
+import thermostat.thermoFunctions.commands.monitoring.SetBounds;
+import thermostat.thermoFunctions.entities.CommandType;
+import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -24,19 +29,44 @@ import static thermostat.thermoFunctions.Functions.parseMention;
 
 public class Filter implements CommandEvent {
 
-    public Filter(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
+    private static final Logger lgr = LoggerFactory.getLogger(SetBounds.class);
 
+    private final Guild eventGuild;
+    private final TextChannel eventChannel;
+    private final Member eventMember;
+    private final String eventPrefix;
+    private ArrayList<String> args;
+
+    private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
+
+    public Filter(Guild eg, TextChannel tc, Member em, String px, ArrayList<String> ag) {
+        eventGuild = eg;
+        eventChannel = tc;
+        eventMember = em;
+        eventPrefix = px;
+        args = ag;
+
+        checkPermissions();
+        if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
+            execute();
+        } else {
+            lgr.info("Missing permissions on (" + eventGuild.getName() + "/" + eventGuild.getId() + "):" +
+                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
+        }
     }
 
     @Override
     public void checkPermissions() {
+        eventGuild
+                .retrieveMember(thermostat.thermo.getSelfUser())
+                .map(thermostat -> {
+                    missingThermostatPerms = findMissingPermissions(CommandType.FILTER.getThermoPerms(), thermostat.getPermissions());
+                    return thermostat;
+                })
+                .queue();
 
-    }
-
-    @NotNull
-    @Override
-    public EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions) {
-        return null;
+        missingMemberPerms = findMissingPermissions(CommandType.FILTER.getMemberPerms(), eventMember.getPermissions());
     }
 
     public static String setDatabase(String filtered, String targetChannel, TextChannel eventChannel, String complete) {

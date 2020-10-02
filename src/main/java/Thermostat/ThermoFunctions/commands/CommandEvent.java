@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -17,10 +18,17 @@ public interface CommandEvent {
 
     void checkPermissions();
 
-    @Nonnull
-    EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> givenPermissions);
-
     void execute();
+
+    /**
+     * @param permissionsToSeek Permissions required by the command.
+     * @param memberPermsList Permissions that the Member has.
+     * @return Permissions that are needed but not assigned to a Member.
+     */
+    default @NotNull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
+        memberPermsList.forEach(permissionsToSeek::remove);
+        return permissionsToSeek;
+    }
 
     @Nonnull
     default List<?> parseChannelArgument(Guild eventGuild, ArrayList<String> args) {

@@ -21,7 +21,6 @@ import static thermostat.thermoFunctions.Functions.parseSlowmode;
 
 public class SetBounds implements CommandEvent {
 
-    // Logging Device
     private static final Logger lgr = LoggerFactory.getLogger(SetBounds.class);
 
     private final Guild eventGuild;
@@ -64,16 +63,6 @@ public class SetBounds implements CommandEvent {
                 .queue();
 
         missingMemberPerms = findMissingPermissions(CommandType.SETBOUNDS.getMemberPerms(), eventMember.getPermissions());
-    }
-
-    /**
-     * @param permissionsToSeek Permissions required by the command.
-     * @param memberPermsList Permissions that the Member has.
-     * @return Permissions that are needed but not assigned to a Member.
-     */
-    public @NotNull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
-        memberPermsList.forEach(permissionsToSeek::remove);
-        return permissionsToSeek;
     }
 
     // Suppressing is okay because type for
