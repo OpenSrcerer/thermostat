@@ -6,7 +6,8 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -25,7 +26,7 @@ public class Filter {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL, Permission.MANAGE_WEBHOOKS)) {
-            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL, MANAGE_WEBHOOKS"));
+            Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL, MANAGE_WEBHOOKS"));
             return;
         }
 
@@ -132,7 +133,7 @@ public class Filter {
             }
             complete = complete.concat("<#" + targetChannel + "> ");
         } catch (Exception ex) {
-            Messages.sendMessage(eventChannel, Embeds.fatalError());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
         }
         return complete;
     }

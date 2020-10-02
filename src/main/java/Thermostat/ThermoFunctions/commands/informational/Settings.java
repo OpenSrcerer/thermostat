@@ -6,8 +6,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -27,7 +27,7 @@ public class Settings {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.specifyChannels());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
             return;
         }
 
@@ -43,7 +43,7 @@ public class Settings {
 
             // if channel doesn't exist, show error msg
             if (args.get(0).isBlank() || eventGuild.getTextChannelById(args.get(0)) == null) {
-                Messages.sendMessage(eventChannel, Embeds.channelNotFound());
+                Messages.sendMessage(eventChannel, ErrorEmbeds.channelNotFound());
                 return;
             }
             // if only th!s is sent
@@ -56,7 +56,7 @@ public class Settings {
             int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId);
 
             if (max == -1) {
-                Messages.sendMessage(eventChannel, Embeds.channelNeverMonitored());
+                Messages.sendMessage(eventChannel, GenericEmbeds.channelNeverMonitored());
                 return;
             }
 
@@ -64,7 +64,7 @@ public class Settings {
 
             if (settingsChannel != null) {
                 Messages.sendMessage(eventChannel,
-                        Embeds.channelSettings(settingsChannel.getName(),
+                        GenericEmbeds.channelSettings(settingsChannel.getName(),
                                 eventMember.getUser().getAsTag(),
                                 eventMember.getUser().getAvatarUrl(),
                                 max,
@@ -78,7 +78,7 @@ public class Settings {
 
         } catch (Exception ex) {
             lgr.error(ex.getMessage(), ex);
-            Messages.sendMessage(eventChannel, Embeds.fatalError());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
         }
     }
 }

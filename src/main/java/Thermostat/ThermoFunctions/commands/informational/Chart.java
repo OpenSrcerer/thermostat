@@ -8,8 +8,10 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.style.Styler;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
@@ -29,13 +31,13 @@ public class Chart {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL"));
+            Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL"));
             return;
         }
 
         // chart (sends info message)
         if (args.size() == 1) {
-            Messages.sendMessage(eventChannel, Embeds.helpChart(prefix));
+            Messages.sendMessage(eventChannel, HelpEmbeds.helpChart(prefix));
         }
 
         // chart <charttype>
@@ -68,7 +70,7 @@ public class Chart {
                         + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5", eventGuild.getId());
 
         if (top5slowmode == null) {
-            Messages.sendMessage(eventChannel, Embeds.noChannelsEverSlowmoded());
+            Messages.sendMessage(eventChannel, GenericEmbeds.noChannelsEverSlowmoded());
             return;
         }
 
@@ -142,9 +144,9 @@ public class Chart {
             ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", baos);
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
-            Messages.sendMessage(eventChannel, Embeds.ioError());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errIo());
         }
 
-        Messages.sendMessage(eventChannel, inputStream, Embeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()));
+        Messages.sendMessage(eventChannel, inputStream, GenericEmbeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()));
     }
 }

@@ -1,43 +1,14 @@
-package thermostat;
+package thermostat.preparedStatements;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
+import thermostat.thermostat;
 
 import java.time.Instant;
-import java.util.EnumSet;
 
 /**
  * Class for all static embeds.
  */
-public abstract class Embeds {
-
-    public static EmbedBuilder permissionError(EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("❌ Error encountered! Details:");
-
-        if (!thermoPermissions.isEmpty()) {
-            StringBuilder missingPerms = new StringBuilder();
-            thermoPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
-            eb.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
-        }
-        if (!memberPermissions.isEmpty()) {
-            StringBuilder missingPerms = new StringBuilder();
-            memberPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
-            eb.addField("You lack these permissions:", missingPerms.toString(), false);
-        }
-
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder helpFilter(String prefix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n ```" + prefix + "filter [channel(s)] <true/false>```");
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xff0000);
-        return eb;
-    }
+public abstract class GenericEmbeds {
 
     public static EmbedBuilder chartHolder(String authorID, String authorAvatarURL, String serverName) {
         EmbedBuilder eb = new EmbedBuilder();
@@ -46,15 +17,6 @@ public abstract class Embeds {
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, authorAvatarURL);
         eb.setColor(0x00ff00);
-        return eb;
-    }
-
-    public static EmbedBuilder ioError() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("An I/O Error occurred when trying to fetch the chart, please try again.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xff0000);
         return eb;
     }
 
@@ -67,43 +29,9 @@ public abstract class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder helpChart(String prefix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n `" + prefix + "chart [channel(s)] <charttype>`");
-        eb.addField("Chart Types (Name - CmdName): ", "★ Slowmode Frequency - (slowfreq)", false);
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder invalidSensitivity() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please enter a valid sensitivity value.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
-    public static EmbedBuilder helpSensitivity(String prefix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity [channel(s)] <sensitivity>\n -10 <= Sensitivity <= 10```");
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
     public static EmbedBuilder samePrefix(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("My prefix is already `" + prefix + "` !");
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder incorrectPrefix() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("The prefix you have inserted is not valid.");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
@@ -114,14 +42,6 @@ public abstract class Embeds {
         eb.setTitle("Thermostat's prefix has been reset to `" + thermostat.prefix + "` .");
         eb.setTimestamp(Instant.now());
         eb.setColor(0x00aeff);
-        return eb;
-    }
-
-    public static EmbedBuilder insertPrefix() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please insert a prefix.");
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xffff00);
         return eb;
     }
 
@@ -207,24 +127,6 @@ public abstract class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder invalidSlowmode() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please enter a valid slowmode value.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
-    public static EmbedBuilder bothChannelAndSlow() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please specify the channels and then the slowmode.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
     public static EmbedBuilder allRemoved(String authorID, String authorAvatarURL) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("All channels are no longer being monitored.");
@@ -252,24 +154,6 @@ public abstract class Embeds {
         return eb;
     }
 
-    public static EmbedBuilder fatalError(String errFix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("If you are seeing this message, a fatal error has occurred. " + errFix + " If that does not fix your issue, please join our support server: https://discord.gg/FnPb4nM");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0x36393f);
-        return eb;
-    }
-
-    public static EmbedBuilder fatalError() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("If you are seeing this message, a fatal error has occurred. Try unmonitoring your channels and monitoring them again. If that does not fix your issue, please join our support server: https://discord.gg/FnPb4nM");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0x36393f);
-        return eb;
-    }
-
     public static EmbedBuilder noChannels() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("No channels are currently being monitored!");
@@ -282,24 +166,6 @@ public abstract class Embeds {
     public static EmbedBuilder channelNeverMonitored() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("That channel has never been monitored before!");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
-    public static EmbedBuilder specifyChannels() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please specify the channels you want to configure.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
-    public static EmbedBuilder channelNotFound() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("That channel was not found in this guild.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);

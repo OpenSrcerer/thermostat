@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermostat;
-import thermostat.Embeds;
+import thermostat.preparedStatements.GenericEmbeds;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -59,14 +59,14 @@ public class WordFilterEvent {
             if (!thermostatMember.hasPermission(Permission.MANAGE_WEBHOOKS)) {
                 lgr.debug("Thermostat lacks permission MANAGE_WEBHOOKS. Guild: "
                         + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                Messages.sendMessage(eventChannel, Embeds.simpleInsufficientPerm("MANAGE_WEBHOOKS"));
+                Messages.sendMessage(eventChannel, GenericEmbeds.simpleInsufficientPerm("MANAGE_WEBHOOKS"));
                 return;
             }
 
             if (!thermostatMember.hasPermission(Permission.MESSAGE_MANAGE)) {
                 lgr.debug("Thermostat lacks permission MANAGE_MESSAGES. Guild: "
                         + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                Messages.sendMessage(eventChannel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(eventChannel, GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
                 return;
             }
 

@@ -2,14 +2,13 @@ package thermostat.thermoFunctions;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.IPermissionHolder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
-import thermostat.Embeds;
+import thermostat.preparedStatements.GenericEmbeds;
 
 import java.io.InputStream;
 import java.util.List;
@@ -35,7 +34,7 @@ public abstract class Messages {
     public static void sendMessage(TextChannel channel, EmbedBuilder eb, Consumer<Message> success) {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             }
         };
 
@@ -58,7 +57,7 @@ public abstract class Messages {
     public static void sendMessage(TextChannel channel, EmbedBuilder eb) {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             }
         };
 
@@ -82,7 +81,7 @@ public abstract class Messages {
     public static void sendMessage(TextChannel channel, String msg) {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             }
         };
 
@@ -105,7 +104,7 @@ public abstract class Messages {
     public static void sendMessage(TextChannel channel, InputStream inputStream, EmbedBuilder embed) {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             }
         };
 
@@ -124,7 +123,7 @@ public abstract class Messages {
             } catch (InsufficientPermissionException ignored) {
             }
         } else {
-            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ && ATTACH_FILES"));
+            Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ && ATTACH_FILES"));
         }
     }
 
@@ -145,9 +144,9 @@ public abstract class Messages {
 
         Consumer<Throwable> retrieveMessageConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
             }
         };
 
@@ -156,7 +155,7 @@ public abstract class Messages {
         try {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, retrieveMessageConsumer);
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
+            Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
         }
     }
 
@@ -168,17 +167,17 @@ public abstract class Messages {
     public static void deleteMessage(TextChannel channel, String msgId) {
         Consumer<Throwable> throwableRetrieveConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
             }
         };
 
         Consumer<Throwable> throwableDeleteConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
             }
         };
 
@@ -186,14 +185,14 @@ public abstract class Messages {
             try {
                 message.delete().queueAfter(500, TimeUnit.MILLISECONDS, null, throwableDeleteConsumer);
             } catch (InsufficientPermissionException ex) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
             }
         };
 
         try {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrieveConsumer);
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
+            Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
         }
     }
 
@@ -205,16 +204,16 @@ public abstract class Messages {
     public static void deleteMessage(Message msg) {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
             }
         };
 
         try {
             msg.delete().queue(null, throwableConsumer);
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+            Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
         }
     }
 
@@ -229,9 +228,9 @@ public abstract class Messages {
     public static ScheduledFuture<?> deleteMessage(Message msg, long delay, TimeUnit timeUnit) {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
             }
         };
 
@@ -239,7 +238,7 @@ public abstract class Messages {
         try {
             msgFuture = msg.delete().queueAfter(delay, timeUnit, null, throwableConsumer);
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+            Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
         }
         return msgFuture;
     }
@@ -254,15 +253,15 @@ public abstract class Messages {
     public static void addReactions(TextChannel channel, String msgId, List<String> unicode) {
         Consumer<Throwable> throwableRetrievalConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
             }
         };
 
         Consumer<Throwable> throwableReactionConsumer = throwable -> {
             if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("ADD_REACTIONS"));
             }
         };
 
@@ -275,9 +274,9 @@ public abstract class Messages {
                 }
             } catch (InsufficientPermissionException ex) {
                 if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
-                    Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+                    Messages.sendMessage(message.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("ADD_REACTIONS"));
                 } else if (ex.toString().contains("MESSAGE_HISTORY")) {
-                    Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                    Messages.sendMessage(message.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
                 }
                 Messages.deleteMessage(message);
                 throw new PermissionException("Missing Permissions to add Reaction.");
@@ -288,7 +287,7 @@ public abstract class Messages {
         try {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
+            Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
         }
     }
 
@@ -301,7 +300,7 @@ public abstract class Messages {
     public static void addReactions(Message message, List<String> unicode) {
         Consumer<Throwable> throwableReactionConsumer = throwable -> {
             if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+                Messages.sendMessage(message.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("ADD_REACTIONS"));
             }
         };
 
@@ -313,9 +312,9 @@ public abstract class Messages {
             }
         } catch (InsufficientPermissionException ex) {
             if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
-                Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+                Messages.sendMessage(message.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("ADD_REACTIONS"));
             } else if (ex.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(message.getTextChannel(), Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                Messages.sendMessage(message.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
             }
             Messages.deleteMessage(message);
             throw new PermissionException("Missing Permissions to add Reaction.");
@@ -333,7 +332,7 @@ public abstract class Messages {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
                 Messages.deleteMessage(msg);
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("ADD_REACTIONS"));
             }
         };
 
@@ -341,9 +340,9 @@ public abstract class Messages {
             msg.addReaction(unicode).queue(null, throwableConsumer);
         } catch (InsufficientPermissionException ex) {
             if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("ADD_REACTIONS"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("ADD_REACTIONS"));
             } else if (ex.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(msg.getTextChannel(), Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                Messages.sendMessage(msg.getTextChannel(), GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
             }
             Messages.deleteMessage(msg);
             throw new PermissionException("Missing Permissions to add Reaction.");
@@ -360,15 +359,15 @@ public abstract class Messages {
     public static void clearReactions(TextChannel channel, String msgId) {
         Consumer<Throwable> throwableClearConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
             }
         };
 
         Consumer<Throwable> throwableRetrievalConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ"));
             } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("READ_MESSAGE_HISTORY"));
             }
         };
 
@@ -376,7 +375,7 @@ public abstract class Messages {
             try {
                 message.clearReactions().queue(null, throwableClearConsumer);
             } catch (InsufficientPermissionException ex) {
-                Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
+                Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
                 Messages.deleteMessage(channel, msgId);
             } catch (ErrorResponseException ignored) {
             }
@@ -385,7 +384,7 @@ public abstract class Messages {
         try {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
         } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
+            Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("MESSAGE_READ and READ_MESSAGE_HISTORY"));
         }
     }
 }

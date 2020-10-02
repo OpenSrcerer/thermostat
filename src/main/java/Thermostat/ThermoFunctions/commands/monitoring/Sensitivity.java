@@ -6,9 +6,9 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
@@ -26,13 +26,13 @@ public class Sensitivity {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.specifyChannels());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
             return;
         }
 
         // wrong command format
         if (args.size() < 2) {
-            Messages.sendMessage(eventChannel, Embeds.helpSensitivity(prefix));
+            Messages.sendMessage(eventChannel, HelpEmbeds.helpSensitivity(prefix));
             return;
         }
 
@@ -43,10 +43,10 @@ public class Sensitivity {
                 noText = "",
                 complete = "",
                 badSensitivity = "";
+
         // shows if there were arguments before
         // but were removed due to channel not being found
         boolean removed = false;
-
         // parses arguments into usable IDs, checks if channels exist
         // up to args.size() - 1 because the last argument is the slowmode
         for (int index = 0; index < args.size() - 1; ++index) {
@@ -96,7 +96,7 @@ public class Sensitivity {
         try {
             offset = Float.parseFloat(args.get(args.size() - 1));
         } catch (NumberFormatException ex) {
-            Messages.sendMessage(eventChannel, Embeds.invalidSensitivity());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.invalidSensitivity());
             return;
         }
 
@@ -125,7 +125,7 @@ public class Sensitivity {
                     badSensitivity = badSensitivity.concat("<#" + eventChannel.getId() + "> ");
                 }
             } catch (Exception ex) {
-                Messages.sendMessage(eventChannel, Embeds.fatalError());
+                Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
                 return;
             }
         }

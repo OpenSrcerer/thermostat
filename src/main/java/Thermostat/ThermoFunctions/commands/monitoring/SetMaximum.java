@@ -6,7 +6,8 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -29,7 +30,7 @@ public class SetMaximum {
     public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
 
         if (args.size() < 2) {
-            Messages.sendMessage(eventChannel, Embeds.bothChannelAndSlow());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.bothChannelAndSlow());
             return;
         }
 
@@ -38,7 +39,7 @@ public class SetMaximum {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL"));
+            Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL"));
             return;
         }
 
@@ -100,7 +101,7 @@ public class SetMaximum {
         try {
             argumentSlow = parseSlowmode(args.get(args.size() - 1));
         } catch (NumberFormatException ex) {
-            Messages.sendMessage(eventChannel, Embeds.invalidSlowmode());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.invalidSlowmode());
             return;
         }
 
@@ -143,7 +144,7 @@ public class SetMaximum {
                     badSlowmode = badSlowmode.concat("<#" + eventChannel.getId() + "> ");
                 }
             } catch (Exception ex) {
-                Messages.sendMessage(eventChannel, Embeds.fatalError());
+                Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
                 return;
             }
         }

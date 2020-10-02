@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
@@ -16,7 +16,6 @@ import thermostat.thermostat;
 import java.time.Instant;
 import java.util.*;
 
-import static thermostat.thermoFunctions.Functions.parseMention;
 import static thermostat.thermoFunctions.Functions.parseSlowmode;
 
 public class SetBounds implements CommandEvent {
@@ -27,7 +26,7 @@ public class SetBounds implements CommandEvent {
     private final Guild eventGuild;
     private final TextChannel eventChannel;
     private final Member eventMember;
-    private final ArrayList<String> args;
+    private ArrayList<String> args;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
@@ -44,7 +43,7 @@ public class SetBounds implements CommandEvent {
         if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
             execute();
         } else {
-            Messages.sendMessage(eventChannel, Embeds.permissionError(missingThermostatPerms, missingMemberPerms));
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
         }
     }
 
@@ -70,67 +69,32 @@ public class SetBounds implements CommandEvent {
         return permissionsToSeek;
     }
 
+    // Suppressing is okay because type for
+    // results.get(3) is always ArrayList<String>
+    @SuppressWarnings("unchecked")
     @Override
     public void execute() {
-        if (args.size() < 2) {
-            Messages.sendMessage(eventChannel, Embeds.bothChannelAndSlow());
+        if (args.size() < 3) {
+            Messages.sendMessage(eventChannel, ErrorEmbeds.bothChannelAndSlow());
             return;
         }
 
         // command initiation with prefix removal
         args.remove(0);
 
-        StringBuilder nonValid = new StringBuilder(),
-                noText = new StringBuilder(),
+        StringBuilder nonValid,
+                noText,
                 complete = new StringBuilder(),
                 badSlowmode = new StringBuilder();
 
-        // shows if there were arguments before
-        // but were removed due to channel not being found
-        boolean removed = false;
+        boolean removed;
+        {
+            List<?> results = parseChannelArgument(eventGuild, args);
 
-        // parses channel arguments into usable IDs, checks if channels exist
-        // up to args.size() - 1 because the last argument is the slowmode
-        for (int index = 0; index < args.size() - 1; ++index) {
-
-            // The argument gets parsed. If it's a mention, it gets formatted
-            // into an ID through the parseMention() function.
-            // OriginalArgument = what the user typed before getting parsed
-            String originalArgument = args.get(index);
-            args.set(index, parseMention(args.get(index), "#"));
-
-            // Category holder for null checking
-            Category channelContainer = eventGuild.getCategoryById(args.get(index));
-
-            if (args.get(index).isBlank()) {
-                nonValid.append("\"").append(originalArgument).append("\" ");
-                args.remove(index);
-                removed = true;
-                --index;
-
-            } else if (channelContainer != null) {
-                // firstly creates an immutable list of the channels in the category
-                List<TextChannel> TextChannels = channelContainer.getTextChannels();
-                // if list is empty add that it is in msg
-                if (TextChannels.isEmpty()) {
-                    noText.append("<#").append(originalArgument).append("> ");
-                }
-                // removes category ID from argument ArrayList
-                args.remove(index);
-                // iterates through every channel and adds its' id to the arg list
-                for (TextChannel it : TextChannels) {
-                    args.add(0, it.getId());
-                }
-                --index;
-            }
-
-            // removes element from arguments if it's not a valid channel ID
-            else if (eventGuild.getTextChannelById(args.get(index)) == null) {
-                nonValid.append("\"").append(originalArgument).append("\" ");
-                args.remove(index);
-                removed = true;
-                --index;
-            }
+            nonValid = (StringBuilder) results.get(0);
+            noText = (StringBuilder) results.get(1);
+            removed = (boolean) results.get(2);
+            args = (ArrayList<String>) results.get(3);
         }
 
         // Parsing the slowmode argument
@@ -138,7 +102,7 @@ public class SetBounds implements CommandEvent {
         try {
             argumentSlow = parseSlowmode(args.get(args.size() - 1));
         } catch (NumberFormatException ex) {
-            Messages.sendMessage(eventChannel, Embeds.invalidSlowmode());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.invalidSlowmode());
             return;
         }
 
@@ -181,7 +145,7 @@ public class SetBounds implements CommandEvent {
                     badSlowmode.append("<#").append(eventChannel.getId()).append("> ");
                 }
             } catch (Exception ex) {
-                Messages.sendMessage(eventChannel, Embeds.fatalError());
+                Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
                 return;
             }
         }

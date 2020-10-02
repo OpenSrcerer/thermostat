@@ -2,7 +2,7 @@ package thermostat.thermoFunctions.commands.other;
 
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.Embeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 
 import javax.annotation.Nonnull;
@@ -13,6 +13,6 @@ import javax.annotation.Nonnull;
  */
 public class Vote {
     public static void execute(@Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
-        Messages.sendMessage(eventChannel, Embeds.getVote(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl()));
+        Messages.sendMessage(eventChannel, GenericEmbeds.getVote(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl()));
     }
 }

@@ -7,8 +7,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds;
-import thermostat.mySQL.Create;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -32,7 +31,7 @@ public class GetMonitorList {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.specifyChannels());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
             return;
         }
 
@@ -80,7 +79,7 @@ public class GetMonitorList {
             }
 
         } catch (Exception ex) {
-            Messages.sendMessage(eventChannel, Embeds.fatalError());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
             lgr.error(ex.getMessage(), ex);
         }
 

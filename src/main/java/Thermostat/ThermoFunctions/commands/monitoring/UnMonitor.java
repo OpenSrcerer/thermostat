@@ -8,7 +8,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
@@ -33,7 +34,7 @@ public class UnMonitor {
     public static void execute(ArrayList<String> args, @Nonnull Guild eventGuild, @Nonnull TextChannel eventChannel, @Nonnull Member eventMember) {
 
         if (args.size() == 1) {
-            Messages.sendMessage(eventChannel, Embeds.specifyChannels());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
             return;
         }
 
@@ -42,7 +43,7 @@ public class UnMonitor {
 
         // checks if event member has permission
         if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, Embeds.userNoPermission("MANAGE_CHANNEL"));
+            Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL"));
             return;
         }
 
@@ -106,7 +107,7 @@ public class UnMonitor {
                 }
             } catch (Exception ex) {
                 lgr.error(ex.getMessage(), ex);
-                Messages.sendMessage(eventChannel, Embeds.fatalError());
+                Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
             }
         }
 

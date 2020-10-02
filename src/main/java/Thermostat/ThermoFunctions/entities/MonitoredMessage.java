@@ -1,7 +1,7 @@
 package thermostat.thermoFunctions.entities;
 
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.Embeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class MonitoredMessage {
             Messages.deleteMessage(channel, this.messageId);
             monitoredMessages.remove(this);
             if (this.getMenuType() == MenuType.UNMONITORALL) {
-                Messages.sendMessage(channel, Embeds.missedPrompt());
+                Messages.sendMessage(channel, GenericEmbeds.missedPrompt());
             }
         }, 100, TimeUnit.SECONDS);
     }

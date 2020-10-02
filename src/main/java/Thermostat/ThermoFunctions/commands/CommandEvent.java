@@ -22,7 +22,7 @@ public interface CommandEvent {
 
     void execute();
 
-    default List<StringBuilder> parseChannelArgument(Guild eventGuild, ArrayList<String> args) {
+    default List<?> parseChannelArgument(Guild eventGuild, ArrayList<String> args) {
 
         StringBuilder
                 // Channels that could not be found
@@ -78,7 +78,6 @@ public interface CommandEvent {
             }
         }
 
-        return Arrays.asList(nonValid, noText);
+        return Arrays.asList(nonValid, noText, removed, args);
     }
-
 }

@@ -6,7 +6,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
@@ -54,7 +55,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         // Monitored Functions Menu
                         if (monitoredMessage.getMenuType() == MenuType.SELECTION) {
                             monitoredMessage.resetDestructionTimer(ev.getChannel());
-                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getMonitorInfo(prefix).build());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), GenericEmbeds.getMonitorInfo(prefix).build());
                             monitoredMessage.setMenuType(MenuType.MONITOR);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
@@ -67,7 +68,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         // Informational Menu
                         if (monitoredMessage.getMenuType() == MenuType.SELECTION) {
                             monitoredMessage.resetDestructionTimer(ev.getChannel());
-                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getUtilityInfo(prefix).build());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), GenericEmbeds.getUtilityInfo(prefix).build());
                             monitoredMessage.setMenuType(MenuType.UTILITY);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
@@ -80,7 +81,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         // Informational Menu
                         if (monitoredMessage.getMenuType() == MenuType.SELECTION) {
                             monitoredMessage.resetDestructionTimer(ev.getChannel());
-                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getOtherInfo(prefix).build());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), GenericEmbeds.getOtherInfo(prefix).build());
                             monitoredMessage.setMenuType(MenuType.OTHER);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
@@ -93,7 +94,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         // Exit Menu Function
                         if (monitoredMessage.getMenuType() != MenuType.SELECTION) {
                             monitoredMessage.resetDestructionTimer(ev.getChannel());
-                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), Embeds.getInfoSelection().build());
+                            Messages.editMessage(ev.getChannel(), monitoredMessage.getMessageId(), GenericEmbeds.getInfoSelection().build());
                             monitoredMessage.setMenuType(MenuType.SELECTION);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
@@ -136,17 +137,17 @@ public class ReactionAddEvent extends ListenerAdapter {
                         for (String jt : channelsToUnMonitor) {
                             Create.ChannelMonitor(ev.getGuild().getId(), jt, 0);
                         }
-                        Messages.sendMessage(ev.getChannel(), Embeds.allRemoved(ev.getUser().getAsTag(), ev.getUser().getAvatarUrl()));
+                        Messages.sendMessage(ev.getChannel(), GenericEmbeds.allRemoved(ev.getUser().getAsTag(), ev.getUser().getAvatarUrl()));
                     }
                     // if not, do not do anything
                     else {
-                        Messages.sendMessage(ev.getChannel(), Embeds.noChannels());
+                        Messages.sendMessage(ev.getChannel(), GenericEmbeds.noChannels());
                     }
 
                 } catch (Exception ex) {
                     Logger lgr = LoggerFactory.getLogger(DataSource.class);
                     lgr.error(ex.getMessage(), ex);
-                    Messages.sendMessage(ev.getChannel(), Embeds.fatalError());
+                    Messages.sendMessage(ev.getChannel(), ErrorEmbeds.errFatal());
                 }
                 monitoredMessage.invalidate();
                 Messages.deleteMessage(ev.getChannel(), monitoredMessage.getMessageId());

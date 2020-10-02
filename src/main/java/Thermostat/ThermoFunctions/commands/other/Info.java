@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
-import thermostat.Embeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
@@ -38,6 +38,6 @@ public class Info {
             } catch (PermissionException ignored) {
             }
         };
-        Messages.sendMessage(eventChannel, Embeds.getInfoSelection(), consumer);
+        Messages.sendMessage(eventChannel, GenericEmbeds.getInfoSelection(), consumer);
     }
 }

@@ -4,7 +4,8 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.Embeds;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -23,7 +24,7 @@ public class Prefix {
             try {
                 prefixAction(args, eventChannel, eventMember, eventGuild.getId(), prefix);
             } catch (SQLException ex) {
-                Messages.sendMessage(eventChannel, Embeds.fatalError("Try setting the prefix again."));
+                Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("Try setting the prefix again."));
             }
             return;
         }
@@ -38,7 +39,7 @@ public class Prefix {
         try {
             prefixAction(args, eventChannel, eventMember, eventGuild.getId(), prefix);
         } catch (SQLException ex) {
-            Messages.sendMessage(eventChannel, Embeds.fatalError("Try setting the prefix again."));
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("Try setting the prefix again."));
         }
     }
 
@@ -54,27 +55,27 @@ public class Prefix {
     public static void prefixAction(ArrayList<String> args, TextChannel channel, Member member, String guildId, String currentPrefix) throws SQLException {
         // if member isn't server admin, don't continue!
         if (!member.getPermissions().contains(Permission.ADMINISTRATOR)) {
-            Messages.sendMessage(channel, Embeds.simpleInsufficientPerm("ADMINISTRATOR"));
+            Messages.sendMessage(channel, GenericEmbeds.simpleInsufficientPerm("ADMINISTRATOR"));
             return;
         }
 
         if (args.size() > 1 && args.get(0).equalsIgnoreCase("set")) {
             if (Pattern.matches("[!-~]*", args.get(1)) && args.get(1).length() <= 10 && !args.get(1).equalsIgnoreCase(currentPrefix)) {
-                Messages.sendMessage(channel, Embeds.setPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), args.get(1)));
+                Messages.sendMessage(channel, GenericEmbeds.setPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), args.get(1)));
                 DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = '?' WHERE GUILD_ID = ?",
                         Arrays.asList(args.get(1), guildId));
             } else if (args.get(1).equalsIgnoreCase(currentPrefix)) {
-                Messages.sendMessage(channel, Embeds.samePrefix(currentPrefix));
+                Messages.sendMessage(channel, GenericEmbeds.samePrefix(currentPrefix));
             } else {
-                Messages.sendMessage(channel, Embeds.incorrectPrefix());
+                Messages.sendMessage(channel, ErrorEmbeds.incorrectPrefix());
             }
         } else if (args.size() == 1 && args.get(0).equalsIgnoreCase("set")) {
-            Messages.sendMessage(channel, Embeds.insertPrefix());
+            Messages.sendMessage(channel, ErrorEmbeds.insertPrefix());
         } else if (args.size() >= 1 && args.get(0).equalsIgnoreCase("reset")) {
             DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = ?", guildId);
-            Messages.sendMessage(channel, Embeds.resetPrefix());
+            Messages.sendMessage(channel, GenericEmbeds.resetPrefix());
         } else {
-            Messages.sendMessage(channel, Embeds.getPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), currentPrefix));
+            Messages.sendMessage(channel, GenericEmbeds.getPrefix(member.getUser().getAsTag(), member.getUser().getAvatarUrl(), currentPrefix));
         }
     }
 }

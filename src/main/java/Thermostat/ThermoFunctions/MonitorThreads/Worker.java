@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
 
@@ -156,7 +156,7 @@ public class Worker {
      * @param channel The channel to be removed.
      */
     public void removeChannel(TextChannel channel) {
-        Messages.sendMessage(channel, Embeds.insufficientPerm());
+        Messages.sendMessage(channel, GenericEmbeds.insufficientPerm());
         for (int index = 0; index < channelsToMonitor.size(); ++index) {
             if (channelsToMonitor.get(index).getChannelId().equals(channel.getId())) {
                 channelsToMonitor.remove(channelsToMonitor.get(index));
