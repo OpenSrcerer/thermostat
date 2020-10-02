@@ -1,11 +1,11 @@
 package thermostat.thermoFunctions.commands.monitoring;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.HelpEmbeds;
@@ -15,7 +15,6 @@ import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
 
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.*;
 
 import static thermostat.thermoFunctions.Functions.parseSlowmode;
@@ -32,8 +31,6 @@ public class SetBounds implements CommandEvent {
     private ArrayList<String> args;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
-
-    private static final EmbedBuilder embed = new EmbedBuilder();
 
     private enum ActionType {
         INVALID, MINIMUM, MAXIMUM
@@ -147,26 +144,43 @@ public class SetBounds implements CommandEvent {
                         maximumSlow = channelSlowmodes.get(1);
                     }
 
+                    // if slowmode is over 6 hour limit, invalid
                     if (argumentSlow > 21600) {
                         badSlowmode.append("<#").append(arg).append("> ");
-                    } else if (argumentSlow < minimumSlow && type == ActionType.MAXIMUM) {
+                    }
+                    // -- Setting a Maximum Slowmode --
+                    // if the argument < the minimum (cannot happen)
+                    // update both so they're equal
+                    else if (argumentSlow < minimumSlow && type == ActionType.MAXIMUM) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
                                 Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), arg));
                         maxComplete.append("<#").append(arg).append("> ");
-                    } else if (argumentSlow >= minimumSlow && type == ActionType.MAXIMUM) {
+                    }
+                    // if the argument >= the minimum
+                    // set maximum normally
+                    else if (argumentSlow >= minimumSlow && type == ActionType.MAXIMUM) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
                                 Arrays.asList(Integer.toString(argumentSlow), arg));
                         maxComplete.append("<#").append(arg).append("> ");
-                    } else if (argumentSlow > maximumSlow) {
+                    }
+                    // -- Setting a Minimum Slowmode --
+                    // if the argument > the maximum (cannot happen)
+                    // update both so they're equal
+                    else if (argumentSlow > maximumSlow) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = ?, MAX_SLOW = ? WHERE CHANNEL_ID = ?",
                                 Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), arg));
                         minComplete.append("<#").append(arg).append("> ");
-                    } else if (argumentSlow <= maximumSlow) {
+                    }
+                    // if the argument <= the maximum
+                    // set minimum normally
+                    else if (argumentSlow <= maximumSlow) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = ? WHERE CHANNEL_ID = ?",
                                 Arrays.asList(Integer.toString(argumentSlow), arg));
                         minComplete.append("<#").append(arg).append("> ");
                     }
 
+                // when errors happen pass it as an invalid slowmode
+                // to the user so they retry
                 } catch (SQLException ex) {
                     nonValid.append("\"").append(arg).append("\" ");
                 }
@@ -177,28 +191,21 @@ public class SetBounds implements CommandEvent {
         }
 
         // #7 - Send the results embed
-        embed.setColor(0xffff00);
-        if (!(complete.length() == 0)) {
-            embed.addField("Channels given a maximum slowmode of " + argumentSlow + ":", complete.toString(), false);
-            embed.setColor(0x00ff00);
-        }
 
-        if (!(badSlowmode.length() == 0)) {
-            embed.addField("Channels for which the given slowmode value was not appropriate:", badSlowmode.toString(), false);
-        }
-
-        if (!(nonValid.length() == 0)) {
-            embed.addField("Channels that were not valid or found:", nonValid.toString(), false);
-        }
-
-        if (!(noText.length() == 0)) {
-            embed.addField("Categories with no Text Channels:", noText.toString(), false);
-        }
-
-        embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
-        Messages.sendMessage(eventChannel, embed);
-
-        embed.clear();
+        Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
+                Arrays.asList(
+                        "Channels given a maximum slowmode of " + argumentSlow + ":",
+                        maxComplete.toString(),
+                        "Channels given a minimum slowmode of " + argumentSlow + ":",
+                        minComplete.toString(),
+                        "Channels for which the given slowmode value was not appropriate:",
+                        badSlowmode.toString(),
+                        "Channels that were not valid or found:",
+                        nonValid.toString(),
+                        "Categories with no Text Channels:",
+                        noText.toString()
+                ),
+                eventMember.getUser()
+        ));
     }
 }
