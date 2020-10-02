@@ -217,6 +217,33 @@ public class DataSource {
     }
 
     /**
+     * Same as above.
+     */
+    public static List<Integer> queryInts(String Query, String argument) {
+        List<Integer> retVal = new ArrayList<>();
+
+        try (
+                Connection conn = DataSource.getConnection();
+                PreparedStatement pst = conn.prepareStatement(
+                        Query,
+                        ResultSet.TYPE_SCROLL_SENSITIVE,
+                        ResultSet.CONCUR_UPDATABLE
+                )
+        ) {
+            pst.setString(1, argument);
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+                retVal.add(rs.getInt(1));
+            }
+
+        } catch (SQLException ex) {
+            lgr.error(ex.getMessage(), ex);
+        }
+        return retVal;
+    }
+
+    /**
      * Same as above, returns single String value.
      */
     @Nullable
