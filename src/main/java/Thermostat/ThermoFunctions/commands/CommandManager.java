@@ -28,6 +28,7 @@ import java.util.Arrays;
  * based on the GuildMessageReactionEvent event.
  */
 public class CommandManager extends ListenerAdapter {
+
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent ev) {
 
@@ -60,74 +61,116 @@ public class CommandManager extends ListenerAdapter {
         if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias2())
-        ) Chart.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+        ) {
+            args.remove(0);
+            Chart.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.FILTER.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.FILTER.getAlias2())
-        ) Filter.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            Filter.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias2())
-        ) GetMonitorList.execute(ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            GetMonitorList.execute(ev.getGuild(), ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.SETTINGS.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.SETTINGS.getAlias2())
-        ) Settings.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            Settings.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.MONITOR.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.MONITOR.getAlias2())
-        ) Monitor.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            Monitor.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.SENSITIVITY.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.SENSITIVITY.getAlias2())
-        ) Sensitivity.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+        ) {
+            args.remove(0);
+            Sensitivity.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias2())
-        ) new SetBounds(ev.getGuild(), ev.getChannel(), ev.getMember(), args);
+        ) {
+            args.remove(0);
+            new SetBounds(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args);
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITOR.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITOR.getAlias2())
-        ) UnMonitor.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            UnMonitor.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITORALL.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITORALL.getAlias2())
-        ) UnMonitorAll.execute(ev.getGuild(), ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            UnMonitorAll.execute(ev.getGuild(), ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.INFO.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.INFO.getAlias2()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.HELP.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.HELP.getAlias2())
-        ) Info.execute(ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            Info.execute(ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.INVITE.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.INVITE.getAlias2())
-        ) Invite.execute(ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            Invite.execute(ev.getChannel(), ev.getMember());
+        }
 
         else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias2())
-        ) Prefix.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, false);
+        ) {
+            args.remove(0);
+            Prefix.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, false);
+        }
 
         else if (
                 (args.get(0).equalsIgnoreCase("<@!" + thermostat.thermo.getSelfUser().getId() + ">"))
         ) {
             if (args.size() > 1)
-                if (args.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias1()) || args.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias2()))
+                if (args.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias1()) ||
+                        args.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias2())) {
+                    args.remove(0);
                     Prefix.execute(args, ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, true);
+                }
         } else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias2())
-        ) Vote.execute(ev.getChannel(), ev.getMember());
+        ) {
+            args.remove(0);
+            Vote.execute(ev.getChannel(), ev.getMember());
+        }
     }
 }
