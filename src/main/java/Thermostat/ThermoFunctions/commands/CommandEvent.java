@@ -22,6 +22,7 @@ public interface CommandEvent {
 
     void execute();
 
+    @Nonnull
     default List<?> parseChannelArgument(Guild eventGuild, ArrayList<String> args) {
 
         StringBuilder
