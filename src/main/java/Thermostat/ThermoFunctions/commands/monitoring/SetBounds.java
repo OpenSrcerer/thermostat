@@ -66,9 +66,7 @@ public class SetBounds implements CommandEvent {
      * @return Permissions that are needed but not assigned to a Member.
      */
     public @NotNull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
-
         memberPermsList.forEach(permissionsToSeek::remove);
-
         return permissionsToSeek;
     }
 
@@ -79,25 +77,25 @@ public class SetBounds implements CommandEvent {
             return;
         }
 
-        // catch to remove command initiation with prefix
+        // command initiation with prefix removal
         args.remove(0);
 
         StringBuilder nonValid = new StringBuilder(),
                 noText = new StringBuilder(),
                 complete = new StringBuilder(),
                 badSlowmode = new StringBuilder();
-        // shows us if there were arguments before
+
+        // shows if there were arguments before
         // but were removed due to channel not being found
         boolean removed = false;
 
-        // parses arguments into usable IDs, checks if channels exist
+        // parses channel arguments into usable IDs, checks if channels exist
         // up to args.size() - 1 because the last argument is the slowmode
         for (int index = 0; index < args.size() - 1; ++index) {
 
             // The argument gets parsed. If it's a mention, it gets formatted
             // into an ID through the parseMention() function.
-            // All letters are removed, thus the usage of the
-            // originalArgument string.
+            // OriginalArgument = what the user typed before getting parsed
             String originalArgument = args.get(index);
             args.set(index, parseMention(args.get(index), "#"));
 
