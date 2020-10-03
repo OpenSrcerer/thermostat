@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
@@ -15,13 +14,13 @@ import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.commands.monitoring.SetBounds;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
 
-import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.ByteArrayInputStream;
@@ -41,7 +40,7 @@ public class Chart implements CommandEvent {
     private final TextChannel eventChannel;
     private final Member eventMember;
     private final String eventPrefix;
-    private ArrayList<String> args;
+    private final ArrayList<String> args;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
@@ -77,36 +76,30 @@ public class Chart implements CommandEvent {
 
     @Override
     public void execute() {
-        // checks if event member has permission
-        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL"));
-            return;
+        // prefix removed (sends info msg)
+        if (args.isEmpty()) {
+            Messages.sendMessage(eventChannel, HelpEmbeds.helpChart(eventPrefix));
         }
 
-        // chart (sends info message)
-        if (args.size() == 1) {
-            Messages.sendMessage(eventChannel, HelpEmbeds.helpChart(prefix));
-        }
-
-        // chart <charttype>
-        else if (args.size() == 2) {
-            // removes command
-            args.remove(0);
-
+        // <charttype>
+        else if (args.size() == 1) {
             // freq chart
             if (args.get(0).equalsIgnoreCase("slowfreq")) {
                 frequencyChart(eventGuild, eventChannel, eventMember);
             }
+            args.remove(0);
         }
 
-        // chart [channel] <charttype>
+        // chart <charttype> [channel]
         else {
-            args.remove(0);
+            TextChannel argumentChannel = eventGuild.getTextChannelById(Functions.parseMention(args.get(1), "#"));
 
-            TextChannel argumentChannel = eventGuild.getTextChannelById(args.get(0));
-
-            if ((args.get(1).equalsIgnoreCase("slowfreq"))) {
+            if (argumentChannel == null) {
+                Messages.sendMessage(eventChannel, ErrorEmbeds.channelNotFound(args.get(1)));
+            } else if ((args.get(1).equalsIgnoreCase("slowfreq"))) {
                 frequencyChart(eventGuild, argumentChannel, eventMember);
+            } else {
+                Messages.sendMessage(eventChannel, HelpEmbeds.helpChart(eventPrefix));
             }
         }
     }
@@ -192,9 +185,11 @@ public class Chart implements CommandEvent {
             ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", baos);
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errIo());
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
+            lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
         }
 
         Messages.sendMessage(eventChannel, inputStream, GenericEmbeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()));
+        lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
     }
 }
