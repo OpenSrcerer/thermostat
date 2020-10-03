@@ -2,7 +2,7 @@ package thermostat.thermoFunctions.threaded;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.thermoFunctions.listeners.WordFilterEvent;
+import thermostat.thermoFunctions.commands.utility.WordFilterEvent;
 import thermostat.thermostat;
 
 import java.io.IOException;
