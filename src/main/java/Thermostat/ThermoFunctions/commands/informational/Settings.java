@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.preparedStatements.ErrorEmbeds;
@@ -15,7 +14,6 @@ import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
@@ -69,61 +67,46 @@ public class Settings implements CommandEvent {
 
     @Override
     public void execute() {
-
-        // checks if event member has permission
-        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
-            return;
-        }
-
         // to contain channel id for modification
         String channelId;
 
-        // if there are more than two arguments
-        // (command init + channel)
-        if (args.size() >= 2) {
-            args.remove(0);
-            args.set(0, parseMention(args.get(0), "#"));
-            channelId = args.get(0);
+        // th!settings [channel]
+        if (args.size() >= 1) {
+            channelId = parseMention(args.get(0), "#");
 
             // if channel doesn't exist, show error msg
-            if (args.get(0).isBlank() || eventGuild.getTextChannelById(args.get(0)) == null) {
-                Messages.sendMessage(eventChannel, ErrorEmbeds.channelNotFound());
+            if (channelId.isEmpty() || eventGuild.getTextChannelById(channelId) == null) {
+                Messages.sendMessage(eventChannel, ErrorEmbeds.channelNotFound(args.get(0)));
                 return;
             }
-            // if only th!s is sent
-        } else {
+        }
+        // th!settings
+        else {
             channelId = eventChannel.getId();
         }
 
         // connects to database and creates channel
-        try {
-            int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId);
+        int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId);
 
-            if (max == -1) {
-                Messages.sendMessage(eventChannel, GenericEmbeds.channelNeverMonitored());
-                return;
-            }
+        if (max == -1) {
+            Messages.sendMessage(eventChannel, GenericEmbeds.channelNeverMonitored());
+            return;
+        }
 
-            TextChannel settingsChannel = eventGuild.getTextChannelById(channelId);
+        TextChannel settingsChannel = eventGuild.getTextChannelById(channelId);
 
-            if (settingsChannel != null) {
-                Messages.sendMessage(eventChannel,
-                        GenericEmbeds.channelSettings(settingsChannel.getName(),
-                                eventMember.getUser().getAsTag(),
-                                eventMember.getUser().getAvatarUrl(),
-                                max,
-                                DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
-                                DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
-                                DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
-                                DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId)
-                        )
-                );
-            }
-
-        } catch (Exception ex) {
-            lgr.error(ex.getMessage(), ex);
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
+        if (settingsChannel != null) {
+            Messages.sendMessage(eventChannel,
+                    GenericEmbeds.channelSettings(settingsChannel.getName(),
+                            eventMember.getUser().getAsTag(),
+                            eventMember.getUser().getAvatarUrl(),
+                            max,
+                            DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
+                            DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
+                            DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
+                            DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId)
+                    )
+            );
         }
     }
 }
