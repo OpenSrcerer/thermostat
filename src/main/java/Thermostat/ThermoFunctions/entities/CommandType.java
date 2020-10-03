@@ -130,6 +130,16 @@ public enum CommandType {
             EnumSet.of(
                     Permission.ADMINISTRATOR
             )),
+    WORDFILTEREVENT("wordfilter", "wf",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_MANAGE,
+                    Permission.MANAGE_WEBHOOKS
+            ),
+            EnumSet.noneOf(
+                    Permission.class
+            )),
     VOTE("vote", "vo",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
