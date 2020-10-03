@@ -12,7 +12,7 @@ public abstract class DynamicEmbeds {
 
         EmbedBuilder builder = new EmbedBuilder();
 
-        builder.setColor(0xffff00);
+        builder.setColor(0x00aeff);
 
         // Elements are grouped two by two:
         // index = Description; index + i = dynamic slowmode value
