@@ -1,4 +1,4 @@
-package thermostat.thermoFunctions.listeners;
+package thermostat.thermoFunctions.commands.utility;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.WebhookClientBuilder;
@@ -10,9 +10,11 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.commands.CommandEvent;
+import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
-import thermostat.preparedStatements.GenericEmbeds;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -28,7 +30,7 @@ import java.util.*;
  * Principle: All "prohibited" words in a message get changed to the "nice" words.
  * Used to filter out slurs.
  */
-public class WordFilterEvent {
+public class WordFilterEvent implements CommandEvent {
 
     private static final Logger lgr = LoggerFactory.getLogger(WordFilterEvent.class);
     private static List<String>
@@ -40,42 +42,37 @@ public class WordFilterEvent {
     private final Message eventMessage;
     private final List<String> message;
 
+    private EnumSet<Permission> missingThermostatPerms;
+
     public WordFilterEvent(@NotNull TextChannel eventChannel, @NotNull Message eventMessage, @Nonnull List<String> message) {
         this.eventChannel = eventChannel;
         this.eventMessage = eventMessage;
         this.message = message;
-        this.filter();
+
+        checkPermissions();
+        if (missingThermostatPerms.isEmpty()) {
+            execute();
+        } else {
+            lgr.info("Missing permissions on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + "):" +
+                    " [" + missingThermostatPerms.toString() + "]");
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, EnumSet.noneOf(Permission.class)));
+        }
+    }
+
+    public void checkPermissions() {
+        eventChannel.getGuild()
+                .retrieveMember(thermostat.thermo.getSelfUser())
+                .map(thermostat -> {
+                    missingThermostatPerms = findMissingPermissions(CommandType.WORDFILTEREVENT.getThermoPerms(), thermostat.getPermissions());
+                    return thermostat;
+                })
+                .queue();
     }
 
     /**
      * Initiate the WFEvent.
      */
-    public void filter() {
-        Member thermostatMember = eventChannel.getGuild().getMember(thermostat.thermo.getSelfUser());
-
-        // first catch conditions to not initiate event if permissions are lacked
-
-        if (thermostatMember != null) {
-            if (!thermostatMember.hasPermission(Permission.MANAGE_WEBHOOKS)) {
-                lgr.debug("Thermostat lacks permission MANAGE_WEBHOOKS. Guild: "
-                        + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                Messages.sendMessage(eventChannel, GenericEmbeds.simpleInsufficientPerm("MANAGE_WEBHOOKS"));
-                return;
-            }
-
-            if (!thermostatMember.hasPermission(Permission.MESSAGE_MANAGE)) {
-                lgr.debug("Thermostat lacks permission MANAGE_MESSAGES. Guild: "
-                        + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-                Messages.sendMessage(eventChannel, GenericEmbeds.simpleInsufficientPerm("MANAGE_MESSAGES"));
-                return;
-            }
-
-        } else {
-            lgr.debug("Thermostat member is null, cancelled filter job. Guild: "
-                    + eventChannel.getGuild().getId() + " // Channel: " + eventChannel.getId());
-            return;
-        }
-
+    public void execute() {
         boolean messageWasChanged = false;
         for (int index = 0; index < message.size(); ++index) {
             String string = message.get(index);
@@ -107,6 +104,7 @@ public class WordFilterEvent {
                 }).queue();
             }
         }
+        lgr.info("Successfully filtered on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + ").");
     }
 
     /**
@@ -203,7 +201,8 @@ public class WordFilterEvent {
                                                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
                                         Arrays.asList(webhook.getId(), webhook.getToken(), eventChannel.getId()));
                             } catch (SQLException ex) {
-                                lgr.error("Something went wrong while setting Webhook Params!", ex);
+                                Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
+                                lgr.warn("(" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + ") - " + ex.toString());
                             }
                             return webhook;
                         }
