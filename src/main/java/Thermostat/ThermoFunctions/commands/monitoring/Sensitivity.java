@@ -78,7 +78,7 @@ public class Sensitivity implements CommandEvent {
 
         // wrong command format
         if (args.size() < 2) {
-            Messages.sendMessage(eventChannel, HelpEmbeds.helpSensitivity(prefix));
+            Messages.sendMessage(eventChannel, HelpEmbeds.helpSensitivity(eventPrefix));
             return;
         }
 

@@ -100,12 +100,12 @@ public abstract class ErrorEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder channelNotFound() {
+    public static EmbedBuilder channelNotFound(String channel) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("That channel was not found in this guild.");
+        eb.setTitle("Channel " + channel + " was not found in this guild.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
+        eb.setColor(0xff0000);
         return eb;
     }
 }
