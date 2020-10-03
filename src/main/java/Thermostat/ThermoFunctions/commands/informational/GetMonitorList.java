@@ -1,13 +1,12 @@
 package thermostat.thermoFunctions.commands.informational;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Messages;
@@ -15,9 +14,7 @@ import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
 
-import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -68,73 +65,55 @@ public class GetMonitorList implements CommandEvent {
 
     @Override
     public void execute() {
-        String embedString = "";
-        String filteredString = "";
+        String monitoredString = "None.", filteredString = "None.";
 
-        // checks if event member has permission
-        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
-            return;
-        }
+        List<String> monitoredList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                        "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                        "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
+                eventGuild.getId());
 
-        try {
-            List<String> guildList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
-                            "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                            "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
-                    eventGuild.getId());
+        List<String> filteredList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                        "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                        "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1",
+                eventGuild.getId());
 
-            List<String> filteredList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
-                            "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                            "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1",
-                    eventGuild.getId());
-
-            if (guildList == null) {
-                embed.addField("Channels currently being monitored:", "None.", false);
-            } else if (guildList.isEmpty()) {
-                embed.addField("Channels currently being monitored:", "None.", false);
-            } else {
-                // iterate through retrieved array, adding
-                // every monitored guild to the ending embed
-                for (String it : guildList) {
-                    TextChannel monitoredChannel = eventGuild.getTextChannelById(it);
-
-                    if (monitoredChannel != null)
-                        embedString = embedString.concat("<#" + monitoredChannel.getId() + "> ");
-                    else
-                        embedString = embedString.concat(it + " ");
-                }
+        {
+            if (monitoredList != null && !monitoredList.isEmpty()) {
+                monitoredString = getEmbedString(monitoredList);
             }
 
-            if (filteredList == null || filteredList.isEmpty()) {
-                embed.addField("Channels currently being filtered:", "None.", false);
-            } else {
-                // iterate through retrieved array, adding
-                // every monitored guild to the ending embed
-                for (String it : filteredList) {
-                    TextChannel filteredChannel = eventGuild.getTextChannelById(it);
-
-                    if (filteredChannel != null)
-                        filteredString = filteredString.concat("<#" + filteredChannel.getId() + "> ");
-                    else
-                        filteredString = filteredString.concat(it + " ");
-                }
+            if (filteredList != null && !filteredList.isEmpty()) {
+                filteredString = getEmbedString(filteredList);
             }
-
-        } catch (Exception ex) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal());
-            lgr.error(ex.getMessage(), ex);
         }
 
-        if (!embedString.isEmpty())
-            embed.addField("Channels currently being monitored:", embedString, false);
-        if (!filteredString.isEmpty())
-            embed.addField("Channels currently being filtered:", filteredString, false);
+        Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
+                Arrays.asList(
+                        "Channels currently being monitored:",
+                        monitoredString,
+                        "Channels currently being filtered:",
+                        filteredString
+                ),
+                eventMember.getUser()
+        ));
+        lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
+    }
 
-        embed.setColor(0x00aeff);
-        embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
-        Messages.sendMessage(eventChannel, embed);
+    private String getEmbedString(List<String> list) {
 
-        embed.clear();
+        StringBuilder string = new StringBuilder();
+
+        // iterate through retrieved array, adding
+        // every monitored/filtered guild to the ending embed
+        for (String it : list) {
+            TextChannel filteredChannel = eventGuild.getTextChannelById(it);
+
+            if (filteredChannel != null)
+                string.append("<#").append(filteredChannel.getId()).append("> ");
+            else
+                string.append(it).append(" ");
+        }
+
+        return string.toString();
     }
 }
