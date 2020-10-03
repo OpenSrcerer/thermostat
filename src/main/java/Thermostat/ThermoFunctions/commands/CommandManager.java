@@ -2,8 +2,6 @@ package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.informational.Chart;
@@ -16,7 +14,7 @@ import thermostat.thermoFunctions.commands.other.Prefix;
 import thermostat.thermoFunctions.commands.other.Vote;
 import thermostat.thermoFunctions.commands.utility.Filter;
 import thermostat.thermoFunctions.entities.CommandType;
-import thermostat.thermoFunctions.listeners.WordFilterEvent;
+import thermostat.thermoFunctions.commands.utility.WordFilterEvent;
 import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
