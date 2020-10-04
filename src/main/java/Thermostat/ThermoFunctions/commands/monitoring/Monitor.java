@@ -1,30 +1,34 @@
 package thermostat.thermoFunctions.commands.monitoring;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.GenericEmbeds;
+import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
+import thermostat.thermoFunctions.entities.MenuType;
+import thermostat.thermoFunctions.entities.MonitoredMessage;
 import thermostat.thermostat;
 
-import javax.annotation.Nonnull;
-import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Consumer;
 
-import static thermostat.thermoFunctions.Functions.parseMention;
+import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMessages;
 
 /**
  * Adds channels to the database provided in
@@ -73,113 +77,84 @@ public class Monitor implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.MONITOR.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!monitor <true/false> [channel]
+     */
     @Override
     public void execute() {
-        if (args.size() == 1) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.specifyChannels());
+        if (args.isEmpty()) {
+            Messages.sendMessage(eventChannel, HelpEmbeds.helpMonitor(eventPrefix));
             return;
-        }
-
-        // catch to remove command initiation with prefix
-        args.remove(0);
-
-        // checks if event member has permission
-        if (!eventMember.hasPermission(Permission.MANAGE_CHANNEL)) {
-            Messages.sendMessage(eventChannel, GenericEmbeds.userNoPermission("MANAGE_CHANNEL"));
-            return;
-        }
-
-        // Strings to store information for the embed.
-        // (Just got monitored, already monitored, not valid
-        // to be monitored, category has no text channels
-        String nonValid = "",
-                noText = "",
-                complete = "",
-                monitored = "";
-
-        // parses arguments into usable IDs, checks if channels exist
-        for (int index = 0; index < args.size(); ++index) {
-
-            // The argument gets parsed. If it's a mention, it gets formatted
-            // into an ID through the parseMention() function.
-            // All letters are removed, thus the usage of the
-            // originalArgument string.
-            String originalArgument = args.get(index);
-            args.set(index, parseMention(args.get(index), "#"));
-
-            // Category holder for null checking
-            Category channelContainer = eventGuild.getCategoryById(args.get(index));
-
-            if (args.get(index).isBlank()) {
-                nonValid = nonValid.concat("\"" + originalArgument + "\" ");
-                args.remove(index);
-                --index;
-            }
-
-            // If ID isn't a channel (above) but is a category (below) proceed
-            else if (channelContainer != null) {
-                // firstly creates an immutable list of the channels in the category
-                List<TextChannel> TextChannels = channelContainer.getTextChannels();
-                // if list is empty add that it is in msg
-                if (TextChannels.isEmpty()) {
-                    noText = noText.concat("<#" + args.get(index) + "> ");
-                }
-                // removes category ID from argument ArrayList
-                args.remove(index);
-                // iterates through every channel and adds its' id to the arg list
-                for (TextChannel it : TextChannels) {
-                    args.add(it.getId());
-                }
-                --index;
-            }
-
-            // removes element from arguments if it's not a valid channel ID
-            else if (eventGuild.getTextChannelById(args.get(index)) == null) {
-                nonValid = nonValid.concat("\"" + args.get(index) + "\" ");
-                args.remove(index);
-                --index;
+        } else if (args.size() >= 2) {
+            if (args.get(1).equalsIgnoreCase("all")) {
+                unMonitorAll();
             }
         }
 
-        // connects to database and creates channel
+        int monitor = Functions.convertToBooleanInteger(args.get(0));
+        StringBuilder nonValid,
+                noText,
+                complete = new StringBuilder(),
+                monitored = new StringBuilder();
+
+        // #1 - Retrieve target channels
+        {
+            List<?> results = parseChannelArgument(eventChannel, args);
+
+            nonValid = (StringBuilder) results.get(0);
+            noText = (StringBuilder) results.get(1);
+            // Suppressing is okay because type for
+            // results.get(3) is always ArrayList<String>
+            //noinspection unchecked
+            args = (ArrayList<String>) results.get(2);
+        }
+
+        // #2 - Monitor target channels
         for (String it : args) {
-            try {
-                // checks whether the channel has the monitor
-                // value on the database set to 1
-                if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", it)) {
-                    monitored = monitored.concat("<#" + it + "> ");
-                } else {
-                    Create.ChannelMonitor(eventGuild.getId(), it, 1);
-                    complete = complete.concat("<#" + it + "> ");
-                }
-            } catch (Exception ex) {
-                nonValid = nonValid.concat("\"" + it + "\" ");
+            // checks whether the channel has the monitor
+            // value on the database set to 1
+            if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", it)) {
+                monitored.append("<#").append(it).append("> ");
+            } else {
+                Create.ChannelMonitor(eventGuild.getId(), it, monitor);
+                complete.append("<#").append(it).append("> ");
             }
         }
 
-        embed.setColor(0xffff00);
-        if (!complete.isEmpty()) {
-            embed.addField("Successfully monitored:", complete, false);
-            embed.setColor(0x00ff00);
-        }
+        // #6 - Send the results embed to user
+        Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
+                Arrays.asList(
+                        "Successfully monitored:",
+                        complete.toString(),
+                        "Channels that were already being monitored:",
+                        monitored.toString(),
+                        "Channels that were not valid or found:",
+                        nonValid.toString(),
+                        "Categories with no Text Channels:",
+                        noText.toString()
+                ),
+                eventMember.getUser()
+        ));
+        lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
+    }
 
-        if (!monitored.isEmpty()) {
-            embed.addField("Already being monitored:", monitored, false);
-            embed.setColor(0x00ff00);
-        }
+    private void unMonitorAll() {
+        // add reaction & start message listener
+        Consumer<Message> consumer = message -> {
+            try {
+                Messages.addReaction(message, "☑");
+                MonitoredMessage unMonitorAllMessage = new MonitoredMessage(
+                        message.getId(),
+                        eventMember.getId(),
+                        MenuType.UNMONITORALL
+                );
+                unMonitorAllMessage.resetDestructionTimer(eventChannel);
+                // adds the object to the list
+                monitoredMessages.add(unMonitorAllMessage);
+            } catch (PermissionException ignored) {
+            }
+        };
 
-        if (!nonValid.isEmpty()) {
-            embed.addField("Channels that were not valid or found:", nonValid, false);
-        }
-
-        if (!noText.isEmpty()) {
-            embed.addField("Categories with no Text Channels:", noText, false);
-        }
-
-        embed.setTimestamp(Instant.now());
-        embed.setFooter("Requested by " + eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl());
-        Messages.sendMessage(eventChannel, embed);
-
-        embed.clear();
+        Messages.sendMessage(eventChannel, GenericEmbeds.promptEmbed(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl()), consumer);
     }
 }
