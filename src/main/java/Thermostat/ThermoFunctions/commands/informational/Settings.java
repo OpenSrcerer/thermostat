@@ -14,8 +14,10 @@ import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 import static thermostat.thermoFunctions.Functions.parseMention;
 
@@ -31,7 +33,7 @@ public class Settings implements CommandEvent {
     private final TextChannel eventChannel;
     private final Member eventMember;
     private final String eventPrefix;
-    private ArrayList<String> args;
+    private final ArrayList<String> args;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
@@ -70,8 +72,13 @@ public class Settings implements CommandEvent {
         // to contain channel id for modification
         String channelId;
 
+        // #1 - find the number of arguments provided
+        // th!settings
+        if (args.isEmpty()) {
+            channelId = eventChannel.getId();
+        }
         // th!settings [channel]
-        if (args.size() >= 1) {
+        else {
             channelId = parseMention(args.get(0), "#");
 
             // if channel doesn't exist, show error msg
@@ -80,16 +87,25 @@ public class Settings implements CommandEvent {
                 return;
             }
         }
-        // th!settings
-        else {
-            channelId = eventChannel.getId();
-        }
 
-        // connects to database and creates channel
-        int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId);
+        // #2 - Check if channel has been monitored before.
+        int min = 0, max = 0;
+        float sens = 1;
+        boolean monitored = false, filtered = false;
 
-        if (max == -1) {
-            Messages.sendMessage(eventChannel, GenericEmbeds.channelNeverMonitored());
+        try {
+            if (DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId)) {
+                List<Object> objects = DataSource.getSettingsPackage(channelId);
+
+                min = (int) objects.get(0);
+                max = (int) objects.get(1);
+                sens = (float) objects.get(2);
+                monitored = (boolean) objects.get(3);
+                filtered = (boolean) objects.get(4);
+            }
+        } catch (SQLException ex) {
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
+            lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
             return;
         }
 
@@ -100,13 +116,14 @@ public class Settings implements CommandEvent {
                     GenericEmbeds.channelSettings(settingsChannel.getName(),
                             eventMember.getUser().getAsTag(),
                             eventMember.getUser().getAvatarUrl(),
+                            min,
                             max,
-                            DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
-                            DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
-                            DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId),
-                            DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId)
+                            sens,
+                            monitored,
+                            filtered
                     )
             );
+            lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
         }
     }
 }
