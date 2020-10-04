@@ -111,14 +111,6 @@ public class CommandManager extends ListenerAdapter {
         }
 
         else if (
-                args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITOR.getAlias1()) ||
-                        args.get(0).equalsIgnoreCase(prefix + CommandType.UNMONITOR.getAlias2())
-        ) {
-            args.remove(0);
-            new UnMonitor(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args);
-        }
-
-        else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.INFO.getAlias1()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.INFO.getAlias2()) ||
                         args.get(0).equalsIgnoreCase(prefix + CommandType.HELP.getAlias1()) ||
@@ -141,7 +133,7 @@ public class CommandManager extends ListenerAdapter {
                         args.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias2())
         ) {
             args.remove(0);
-            new Prefix(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args, false);
+            new Prefix(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args);
         }
 
         else if (
@@ -150,8 +142,8 @@ public class CommandManager extends ListenerAdapter {
             if (args.size() > 1)
                 if (args.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias1()) ||
                         args.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias2())) {
-                    args.remove(0);
-                    new Prefix(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args, true);
+                    args.subList(0, 1).clear();
+                    new Prefix(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args);
                 }
         } else if (
                 args.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias1()) ||
