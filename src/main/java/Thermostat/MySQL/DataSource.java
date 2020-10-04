@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.CommunicationException;
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -270,6 +270,48 @@ public class DataSource {
             lgr.error(ex.getMessage(), ex);
         }
         return retString;
+    }
+
+    /**
+     * @param channelId Channel ID for elements of the Settings command
+     *              information package.
+     * @return A String Array that contains the information
+     * for the Settings command. Returns an empty List
+     * if the provided query did not return any results.
+     */
+    @Nonnull
+    public static List<Object> getSettingsPackage(String channelId) throws SQLException {
+        List<Object> resultArray;
+
+        Connection conn = DataSource.getConnection();
+        PreparedStatement pst = conn.prepareStatement(
+                "SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET, MONITORED, FILTERED " +
+                        "FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?",
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE
+        );
+
+            pst.setString(1, channelId);
+            ResultSet rs = pst.executeQuery();
+
+            resultArray = new ArrayList<>();
+            // Min
+            rs.next();
+            resultArray.add(rs.getInt(1));
+            // Max
+            rs.next();
+            resultArray.add(rs.getInt(1));
+            // Sens
+            rs.next();
+            resultArray.add(rs.getFloat(1));
+            // Monitored
+            rs.next();
+            resultArray.add(rs.getBoolean(1));
+            // Filtered
+            rs.next();
+            resultArray.add(rs.getBoolean(1));
+
+        return resultArray;
     }
 
     /**
