@@ -46,6 +46,7 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_HISTORY,
                     Permission.MANAGE_CHANNEL
             ),
             EnumSet.of(
@@ -64,16 +65,6 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
-                    Permission.MANAGE_CHANNEL
-            ),
-            EnumSet.of(
-                    Permission.MANAGE_CHANNEL
-            )),
-    UNMONITOR("unmonitor", "um",
-            EnumSet.of(
-                    Permission.MESSAGE_WRITE,
-                    Permission.MESSAGE_EMBED_LINKS,
-                    Permission.MESSAGE_HISTORY,
                     Permission.MANAGE_CHANNEL
             ),
             EnumSet.of(
