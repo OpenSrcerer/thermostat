@@ -67,6 +67,7 @@ public class GetMonitorList implements CommandEvent {
     public void execute() {
         String monitoredString = "None.", filteredString = "None.";
 
+        // #1 - Grab monitored and filtered channels from the DB
         List<String> monitoredList = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                         "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                         "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1",
@@ -77,6 +78,7 @@ public class GetMonitorList implements CommandEvent {
                         "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1",
                 eventGuild.getId());
 
+        // #2 - Converts channel ids to mentions
         {
             if (monitoredList != null && !monitoredList.isEmpty()) {
                 monitoredString = getEmbedString(monitoredList);
@@ -87,6 +89,7 @@ public class GetMonitorList implements CommandEvent {
             }
         }
 
+        // #3 - Sends embed with information.
         Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
                 Arrays.asList(
                         "Channels currently being monitored:",
