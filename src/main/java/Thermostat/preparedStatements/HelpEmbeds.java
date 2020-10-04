@@ -55,6 +55,14 @@ public abstract class HelpEmbeds {
         return eb;
     }
 
+    public static EmbedBuilder helpPrefix(String prefix) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Command Usage:\n ```" + prefix + "prefix <newprefix>```");
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder helpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "filter <true/false> [channel(s)]```");

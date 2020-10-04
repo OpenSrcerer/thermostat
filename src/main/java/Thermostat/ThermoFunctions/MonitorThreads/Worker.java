@@ -5,12 +5,12 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.preparedStatements.GenericEmbeds;
+import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.Messages;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -27,14 +27,13 @@ import static thermostat.thermostat.thermo;
  * Manager class for each instance of a Guild.
  */
 public class Worker {
+
+    private static final Logger lgr = LoggerFactory.getLogger(Worker.class);
+
     private ScheduledFuture<?> scheduledFuture;
     private String assignedGuild;
-    private static Logger lgr;
     protected final List<WorkerChannel> channelsToMonitor = new ArrayList<>();
 
-    static {
-        lgr = LoggerFactory.getLogger(Worker.class);
-    }
 
     /**
      * Creates an instance of the ChannelWorker, representing
@@ -156,17 +155,18 @@ public class Worker {
      * @param channel The channel to be removed.
      */
     public void removeChannel(TextChannel channel) {
-        Messages.sendMessage(channel, GenericEmbeds.insufficientPerm());
+
+        // add failed to monitor msg here
+
+        Messages.sendMessage(channel, ErrorEmbeds.errFatal("I am missing the necessary permissions to monitor this channel."));
+
         for (int index = 0; index < channelsToMonitor.size(); ++index) {
             if (channelsToMonitor.get(index).getChannelId().equals(channel.getId())) {
                 channelsToMonitor.remove(channelsToMonitor.get(index));
             }
         }
-        try {
-            DataSource.update("UPDATE CHANNEL_SETTINGS SET MONITORED = 0 WHERE CHANNEL_ID = ?", channel.getId());
-        } catch (SQLException ex) {
-            lgr.error("SQL Exception thrown!", ex);
-        }
+
+        Create.ChannelMonitor(channel.getGuild().getId(), channel.getId(), 0);
     }
 
     /**
