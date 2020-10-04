@@ -77,6 +77,24 @@ public abstract class Functions {
     }
 
     /**
+     * Converts a string to an int value.
+     * @param value Value to convert.
+     * @return Converted boolean.
+     */
+    public static int convertToBooleanInteger(String value) {
+        boolean returnValue = false;
+        if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) ||
+                "true".equalsIgnoreCase(value))
+            returnValue = true;
+
+        if (returnValue) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
      * Converts a string to a boolean value.
      * @param value Value to convert.
      * @return Converted boolean.
