@@ -64,9 +64,6 @@ public class SetBounds implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.SETBOUNDS.getMemberPerms(), eventMember.getPermissions());
     }
 
-    // Suppressing is okay because type for
-    // results.get(3) is always ArrayList<String>
-    @SuppressWarnings("unchecked")
     @Override
     public void execute() {
         if (args.size() < 2) {
@@ -74,8 +71,8 @@ public class SetBounds implements CommandEvent {
             return;
         }
 
-        StringBuilder nonValid = new StringBuilder(),
-                noText = new StringBuilder(),
+        StringBuilder nonValid,
+                noText,
                 minComplete = new StringBuilder(),
                 maxComplete = new StringBuilder(),
                 badSlowmode = new StringBuilder();
@@ -104,23 +101,19 @@ public class SetBounds implements CommandEvent {
         args.subList(0, 1).clear();
 
         // #4 - Parse the optional <channels/categories> argument
-        if (!args.isEmpty())
         {
-            List<?> results = parseChannelArgument(eventGuild, args);
+            List<?> results = parseChannelArgument(eventChannel, args);
 
             nonValid = (StringBuilder) results.get(0);
             noText = (StringBuilder) results.get(1);
+            // Suppressing is okay because type for
+            // results.get(3) is always ArrayList<String>
+            //noinspection unchecked
             args = (ArrayList<String>) results.get(2);
-        }
-
-        // #5 - If no channel arguments were provided, add
-        // event channel as the target channel.
-        else {
-            args.add(eventChannel.getId());
         }
         // args now remains as a list of target channel(s).
 
-        // #6 - Perform the appropriate actions
+        // #5 - Perform the appropriate actions
         int minimumSlow, maximumSlow;
         
         if (type != ActionType.INVALID) {
@@ -167,18 +160,17 @@ public class SetBounds implements CommandEvent {
                         minComplete.append("<#").append(arg).append("> ");
                     }
 
-                // when errors happen pass it as an invalid slowmode
-                // to the user so they retry
                 } catch (SQLException ex) {
-                    nonValid.append("\"").append(arg).append("\" ");
+                    Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
                     lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
+                    return;
                 }
             }
         } else {
             Messages.sendMessage(eventChannel, HelpEmbeds.helpSetBounds(eventPrefix));
         }
 
-        // #7 - Send the results embed
+        // #6 - Send the results embed
         Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
                 Arrays.asList(
                         "Channels given a maximum slowmode of " + argumentSlow + ":",
