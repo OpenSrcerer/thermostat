@@ -33,7 +33,7 @@ public abstract class HelpEmbeds {
 
     public static EmbedBuilder helpMonitor(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n `" + prefix + "monitor [channel(s)/category(ies)]`");
+        eb.setTitle("Command Usage:\n `" + prefix + "monitor <true/false> [channel(s)/category(ies)]`");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
@@ -50,14 +50,6 @@ public abstract class HelpEmbeds {
     public static EmbedBuilder helpSetBounds(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)]```");
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder helpUnMonitor(String prefix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n `" + prefix + "unmonitor [channel(s)/category(ies)]`");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
