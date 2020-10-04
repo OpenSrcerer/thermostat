@@ -3,7 +3,6 @@ package thermostat.thermoFunctions.commands.other;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.preparedStatements.ErrorEmbeds;
@@ -58,5 +57,6 @@ public class Invite implements CommandEvent {
     @Override
     public void execute() {
         Messages.sendMessage(eventChannel, GenericEmbeds.inviteServer(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl()));
+        lgr.info("Successfully executed on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + ").");
     }
 }
