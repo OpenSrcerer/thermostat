@@ -1,26 +1,22 @@
 package thermostat.thermoFunctions.commands.other;
 
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
-import thermostat.thermoFunctions.commands.monitoring.SetBounds;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
 import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.function.Consumer;
@@ -87,5 +83,6 @@ public class Info implements CommandEvent {
             }
         };
         Messages.sendMessage(eventChannel, GenericEmbeds.getInfoSelection(), consumer);
+        lgr.info("Successfully executed on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + ").");
     }
 }
