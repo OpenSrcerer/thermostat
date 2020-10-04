@@ -44,6 +44,21 @@ public class Chart implements CommandEvent {
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
+    // Stylizing for Charts
+    private static final Color
+            discordGray = new Color(54, 57, 63),
+            discordGrayer = new Color(47, 49, 54);
+
+    private static final Color[] chartTheme = new Color[]{
+            new Color(0, 63, 92),
+            new Color(88, 80, 141),
+            new Color(188, 80, 144),
+            new Color(255, 99, 97),
+            new Color(255, 166, 0)
+    };
+
+    private static final Font titleFont = new Font("Arial", Font.BOLD, 16);
+
     public Chart(Guild eg, TextChannel tc, Member em, String px, ArrayList<String> ag) {
         eventGuild = eg;
         eventChannel = tc;
@@ -106,15 +121,19 @@ public class Chart implements CommandEvent {
 
     public static void frequencyChart(Guild eventGuild, TextChannel eventChannel, Member eventMember) {
 
+        // #1 - Retrieve data through the database relevant to the chart.
         Map<String, Integer> top5slowmode =
                 DataSource.queryMap("SELECT CHANNEL_ID, MANIPULATED  FROM CHANNELS WHERE GUILD_ID = ?"
                         + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5", eventGuild.getId());
 
+        // #2 - If not enough data on the chart, channels were never slowmoded
+        // in this guild.
         if (top5slowmode == null) {
             Messages.sendMessage(eventChannel, GenericEmbeds.noChannelsEverSlowmoded());
             return;
         }
 
+        // #3 - Create chart and put data in it.
         CategoryChart chart =
                 new CategoryChartBuilder()
                         .width(800)
@@ -134,20 +153,9 @@ public class Chart implements CommandEvent {
                 .setShowTotalAnnotations(true)
                 .setAnnotationsPosition(0.5f)
                 .setAntiAlias(true);
-
+        
+        // Customize Chart Colors
         {
-            Color discordGray = new Color(54, 57, 63);
-            Color discordGrayer = new Color(47, 49, 54);
-            Color[] chartTheme = new Color[]{
-                    new Color(0, 63, 92),
-                    new Color(88, 80, 141),
-                    new Color(188, 80, 144),
-                    new Color(255, 99, 97),
-                    new Color(255, 166, 0)
-            };
-            Font titleFont = new Font("Arial", Font.BOLD, 16);
-
-            // Customize Chart Colors
             chart.getStyler()
                     .setAnnotationsFont(new Font("Verdana", Font.BOLD, 18))
                     .setAnnotationsFontColor(Color.WHITE)
@@ -161,6 +169,7 @@ public class Chart implements CommandEvent {
                     .setSeriesColors(chartTheme);
         }
 
+        // Add values to chart series
         for (Map.Entry<String, Integer> entry : top5slowmode.entrySet()) {
             String channelName = entry.getKey();
             TextChannel channel = eventGuild.getTextChannelById(entry.getKey());
@@ -178,8 +187,8 @@ public class Chart implements CommandEvent {
             );
         }
 
-        InputStream inputStream = null;
-
+        // Send message through an inputStream of bits
+        InputStream inputStream;
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", baos);
@@ -187,8 +196,8 @@ public class Chart implements CommandEvent {
         } catch (IOException ex) {
             Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
             lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
+            return;
         }
-
         Messages.sendMessage(eventChannel, inputStream, GenericEmbeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()));
         lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
     }
