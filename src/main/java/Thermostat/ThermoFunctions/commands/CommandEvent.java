@@ -2,7 +2,6 @@ package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +17,8 @@ public interface CommandEvent {
 
     void checkPermissions();
 
+    // boolean checkFormat();
+
     void execute();
 
     /**
@@ -30,8 +31,14 @@ public interface CommandEvent {
         return permissionsToSeek;
     }
 
+    /**
+     * @param eventChannel Target guild
+     * @param args List of arguments
+     * @return a list of target channel IDs, along with
+     * two stringbuilders with arguments that were invalid.
+     */
     @Nonnull
-    default List<?> parseChannelArgument(Guild eventGuild, ArrayList<String> args) {
+    default List<?> parseChannelArgument(TextChannel eventChannel, ArrayList<String> args) {
 
         StringBuilder
                 // Channels that could not be found
@@ -51,7 +58,7 @@ public interface CommandEvent {
             args.set(index, parseMention(args.get(index), "#"));
 
             // Category holder for null checking
-            Category channelContainer = eventGuild.getCategoryById(args.get(index));
+            Category channelContainer = eventChannel.getGuild().getCategoryById(args.get(index));
 
             if (args.get(index).isBlank()) {
                 nonValid.append("\"").append(originalArgument).append("\" ");
@@ -75,11 +82,17 @@ public interface CommandEvent {
             }
 
             // removes element from arguments if it's not a valid channel ID
-            else if (eventGuild.getTextChannelById(args.get(index)) == null) {
+            else if (eventChannel.getGuild().getTextChannelById(args.get(index)) == null) {
                 nonValid.append("\"").append(originalArgument).append("\" ");
                 args.remove(index);
                 --index;
             }
+        }
+
+        // if no arguments were valid just add the event channel
+        // as the target channel
+        if (args.isEmpty()) {
+            args.add(eventChannel.getId());
         }
 
         return Arrays.asList(nonValid, noText, args);
