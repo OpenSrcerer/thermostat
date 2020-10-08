@@ -60,8 +60,15 @@ public abstract class Create {
      * @param monitor    Whether the channel should be initialized as
      *                   monitored (inits with 1 or 0).
      */
-    public static void ChannelMonitor(String GUILD_ID, String CHANNEL_ID, int monitor) {
+    public static void Monitor(String GUILD_ID, String CHANNEL_ID, int monitor) {
         try {
+            if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN GUILDS ON " +
+                    "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", CHANNEL_ID))
+            {
+                Create.Channel(GUILD_ID, CHANNEL_ID, monitor);
+                return;
+            }
+
             DataSource.update("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
                     "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
                     "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
@@ -74,11 +81,18 @@ public abstract class Create {
     }
 
     public static StringBuilder setFilter(String filtered, List<String> args, TextChannel eventChannel) {
+
         StringBuilder builder = new StringBuilder();
         try {
             for (String arg : args) {
+                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN GUILDS ON " +
+                        "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", arg))
+                {
+                    Create.Channel(eventChannel.getGuild().getId(), arg, 0);
+                }
+
                 if (filtered.equals("0")) {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_URL = \"N/A\" WHERE CHANNEL_ID = ?",
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_ID = 0, WEBHOOK_TOKEN = 0 WHERE CHANNEL_ID = ?",
                             Arrays.asList(filtered, arg));
                 } else {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
