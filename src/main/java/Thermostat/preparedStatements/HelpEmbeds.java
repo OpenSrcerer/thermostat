@@ -8,7 +8,7 @@ public abstract class HelpEmbeds {
 
     public static EmbedBuilder helpChart(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n `" + prefix + "chart [channel(s)] <charttype>`");
+        eb.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
         eb.addField("Chart Types (Name - CmdName): ", "★ Slowmode Frequency - (slowfreq)", false);
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
@@ -41,7 +41,7 @@ public abstract class HelpEmbeds {
 
     public static EmbedBuilder helpSensitivity(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity [channel(s)] <sensitivity>\n -10 <= Sensitivity <= 10```");
+        eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity <sensitivity> [channel(s)/category(ies)]\n -10 <= Sensitivity <= 10```");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
@@ -65,7 +65,7 @@ public abstract class HelpEmbeds {
 
     public static EmbedBuilder helpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n ```" + prefix + "filter <true/false> [channel(s)]```");
+        eb.setTitle("Command Usage:\n ```" + prefix + "filter <true/false> [channel(s)/category(ies)]```");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
