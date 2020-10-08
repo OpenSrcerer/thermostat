@@ -15,10 +15,10 @@ public abstract class DynamicEmbeds {
         builder.setColor(0x00aeff);
 
         // Elements are grouped two by two:
-        // index = Description; index + i = dynamic slowmode value
+        // index = Description; index + 1 = dynamic slowmode value
         for (int index = 0; index < options.size(); index += 2) {
-            if (!options.get(1).isEmpty()) {
-                builder.addField(options.get(0), options.get(1), false);
+            if (!options.get(index + 1).isEmpty()) {
+                builder.addField(options.get(index), options.get(index + 1), false);
             }
         }
 
