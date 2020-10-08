@@ -103,8 +103,8 @@ public class WordFilterEvent implements CommandEvent {
                     return unused;
                 }).queue();
             }
+            lgr.info("Successfully filtered on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + ").");
         }
-        lgr.info("Successfully filtered on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + ").");
     }
 
     /**
