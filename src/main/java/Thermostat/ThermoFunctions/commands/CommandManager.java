@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.informational.Chart;
-import thermostat.thermoFunctions.commands.informational.GetMonitorList;
+import thermostat.thermoFunctions.commands.informational.GetMonitor;
 import thermostat.thermoFunctions.commands.informational.Settings;
 import thermostat.thermoFunctions.commands.monitoring.*;
 import thermostat.thermoFunctions.commands.other.Info;
@@ -75,7 +75,7 @@ public class CommandManager extends ListenerAdapter {
                         args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias2())
         ) {
             args.remove(0);
-            new GetMonitorList(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+            new GetMonitor(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
         }
 
         else if (
