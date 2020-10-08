@@ -101,7 +101,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                             monitoredMessage.setMenuType(MenuType.SELECTION);
                             try {
                                 Messages.clearReactions(ev.getChannel(), monitoredMessage.getMessageId());
-                                Messages.addReactions(ev.getChannel(), monitoredMessage.getMessageId(), Arrays.asList("🌡", "ℹ", "❌"));
+                                Messages.addReactions(ev.getChannel(), monitoredMessage.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                             } catch (PermissionException ignored) {
                             }
                         }
