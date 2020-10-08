@@ -15,12 +15,15 @@ import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
 import thermostat.thermostat;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
 import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMessages;
 
 public class ReactionAddEvent extends ListenerAdapter {
+    private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
+
     public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent ev) {
         for (MonitoredMessage it : monitoredMessages) {
             matchInfoReaction(it, ev);
@@ -144,10 +147,9 @@ public class ReactionAddEvent extends ListenerAdapter {
                         Messages.sendMessage(ev.getChannel(), GenericEmbeds.noChannels());
                     }
 
-                } catch (Exception ex) {
-                    Logger lgr = LoggerFactory.getLogger(DataSource.class);
+                } catch (SQLException ex) {
                     lgr.error(ex.getMessage(), ex);
-                    Messages.sendMessage(ev.getChannel(), ErrorEmbeds.errFatal());
+                    Messages.sendMessage(ev.getChannel(), ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
                 }
                 monitoredMessage.invalidate();
                 Messages.deleteMessage(ev.getChannel(), monitoredMessage.getMessageId());
