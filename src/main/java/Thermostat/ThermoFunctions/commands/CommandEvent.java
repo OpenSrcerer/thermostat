@@ -4,8 +4,11 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
+import thermostat.mySQL.Create;
+import thermostat.mySQL.DataSource;
 
 import javax.annotation.Nonnull;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -20,6 +23,30 @@ public interface CommandEvent {
     // boolean checkFormat();
 
     void execute();
+
+    /**
+     * Adds channel to database if it's not found.
+     * @param guildId Id of guild.
+     * @param channelId Id of channel.
+     * @throws SQLException If something goes wrong
+     * in the SQL transaction.
+     */
+    default void addIfNotInDb(String guildId, String channelId) throws SQLException {
+        if (!DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNELS JOIN GUILDS ON " +
+                "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", channelId)) {
+            Create.Channel(guildId, channelId, 0);
+        }
+    }
+
+    default void addIfNotInDb(String guildId, List<String> channelIds) throws SQLException {
+        for (String channelId : channelIds) {
+            if (!DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNELS JOIN GUILDS ON " +
+                    "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", channelId)) {
+                Create.Channel(guildId, channelId, 0);
+            }
+        }
+
+    }
 
     /**
      * @param permissionsToSeek Permissions required by the command.
