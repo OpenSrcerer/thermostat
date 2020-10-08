@@ -115,29 +115,6 @@ public class DataSource {
         return resultArray;
     }
 
-    /**
-     * Same as above, returns single boolean value.
-     */
-    public static boolean queryBool(String Query, String argument) {
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            pst.setString(1, argument);
-            ResultSet rs = pst.executeQuery();
-            rs.next();
-
-            return rs.getBoolean(1);
-        } catch (SQLException ex) {
-            lgr.error(ex.getMessage(), ex);
-        }
-        return false;
-    }
-
     public static boolean queryBool(String Query, List<String> args) {
         try (
                 Connection conn = DataSource.getConnection();
@@ -299,17 +276,13 @@ public class DataSource {
             rs.next();
             resultArray.add(rs.getInt(1));
             // Max
-            rs.next();
-            resultArray.add(rs.getInt(1));
+            resultArray.add(rs.getInt(2));
             // Sens
-            rs.next();
-            resultArray.add(rs.getFloat(1));
+            resultArray.add(rs.getFloat(3));
             // Monitored
-            rs.next();
-            resultArray.add(rs.getBoolean(1));
+            resultArray.add(rs.getBoolean(4));
             // Filtered
-            rs.next();
-            resultArray.add(rs.getBoolean(1));
+            resultArray.add(rs.getBoolean(5));
 
         return resultArray;
     }
