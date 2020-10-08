@@ -166,7 +166,7 @@ public class Worker {
             }
         }
 
-        Create.ChannelMonitor(channel.getGuild().getId(), channel.getId(), 0);
+        Create.Monitor(channel.getGuild().getId(), channel.getId(), 0);
     }
 
     /**

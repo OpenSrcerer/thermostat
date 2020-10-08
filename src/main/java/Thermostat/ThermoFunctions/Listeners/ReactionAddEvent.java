@@ -138,7 +138,7 @@ public class ReactionAddEvent extends ListenerAdapter {
                         if (channelsToUnMonitor == null) { return; }
 
                         for (String jt : channelsToUnMonitor) {
-                            Create.ChannelMonitor(ev.getGuild().getId(), jt, 0);
+                            Create.Monitor(ev.getGuild().getId(), jt, 0);
                         }
                         Messages.sendMessage(ev.getChannel(), GenericEmbeds.allRemoved(ev.getUser().getAsTag(), ev.getUser().getAvatarUrl()));
                     }
