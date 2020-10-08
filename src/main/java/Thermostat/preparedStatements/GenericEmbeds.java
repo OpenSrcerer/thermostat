@@ -64,7 +64,7 @@ public abstract class GenericEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder channelSettings(String channelName, String authorID, String authorAvatarURL, int max, int min, float sensitivity, boolean monitor, boolean filter) {
+    public static EmbedBuilder channelSettings(String channelName, String authorID, String authorAvatarURL, int min, int max, float sensitivity, boolean monitor, boolean filter) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Settings for #" + channelName + ":");
         if (min == 0) {
@@ -179,9 +179,9 @@ public abstract class GenericEmbeds {
         eb.setTitle("🌡┇Monitoring Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
         eb.addField(prefix + "monitor┇Adds/Removes text channels to the slowmode monitoring database.", "Syntax: `" + prefix + "monitor <true/false> [channel(s)/category(ies)].`", false);
-        eb.addField(prefix + "getmonitorlist┇Shows which channels are currently being monitored or filtered in your server.", "Syntax: `" + prefix + "getmonitor/gm.`", false);
+        eb.addField(prefix + "getmonitor┇Shows which channels are currently being monitored or filtered in your server.", "Syntax: `" + prefix + "getmonitor/gm.`", false);
         eb.addField(prefix + "setbounds┇Sets the upper and lower bounds for the slowmode of the channel.", "Syntax: `" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)].`", false);
-        eb.addField(prefix + "settings┇Shows details about the configuration of the given channel.", "Syntax: `" + prefix + "settings/st <channel>.`", false);
+        eb.addField(prefix + "settings┇Shows details about the configuration of the given channel.", "Syntax: `" + prefix + "settings/st [channel].`", false);
         eb.addField(prefix + "sensitivity┇Sets the sensitivity level for the channel. Requires a value between -10 and 10, you may use decimal numbers. The higher the sensitivity, the easier for Thermostat to initiate slowmode.", "Syntax: `" + prefix + "sensitivity <sensitivity> [channel(s)].`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
