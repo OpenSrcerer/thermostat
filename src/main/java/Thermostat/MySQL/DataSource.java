@@ -210,9 +210,10 @@ public class DataSource {
             pst.setString(1, argument);
             ResultSet rs = pst.executeQuery();
 
-            while (rs.next()) {
-                retVal.add(rs.getInt(1));
-            }
+            rs.next();
+            retVal.add(rs.getInt(1));
+            retVal.add(rs.getInt(2));
+
 
         } catch (SQLException ex) {
             lgr.error(ex.getMessage(), ex);
