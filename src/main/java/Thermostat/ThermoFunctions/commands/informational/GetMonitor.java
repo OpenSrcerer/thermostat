@@ -23,9 +23,9 @@ import java.util.List;
  * and sends them as a single embed in the channel
  * where the command was called.
  */
-public class GetMonitorList implements CommandEvent {
+public class GetMonitor implements CommandEvent {
 
-    private static final Logger lgr = LoggerFactory.getLogger(GetMonitorList.class);
+    private static final Logger lgr = LoggerFactory.getLogger(GetMonitor.class);
 
     private final Guild eventGuild;
     private final TextChannel eventChannel;
@@ -34,7 +34,7 @@ public class GetMonitorList implements CommandEvent {
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
-    public GetMonitorList(Guild eg, TextChannel tc, Member em, String px) {
+    public GetMonitor(Guild eg, TextChannel tc, Member em, String px) {
         eventGuild = eg;
         eventChannel = tc;
         eventMember = em;
