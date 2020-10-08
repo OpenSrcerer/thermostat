@@ -15,7 +15,7 @@ public abstract class HelpEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder helpGetMonitorList(String prefix) {
+    public static EmbedBuilder helpGetMonitor(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n `" + prefix + "getmonitor`");
         eb.setTimestamp(Instant.now());
@@ -41,7 +41,7 @@ public abstract class HelpEmbeds {
 
     public static EmbedBuilder helpSensitivity(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity <sensitivity> [channel(s)/category(ies)]\n -10 <= Sensitivity <= 10```");
+        eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity <sensitivity> [channel(s)/category(ies)]```\n ```-10 <= Sensitivity <= 10```");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
