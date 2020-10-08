@@ -89,12 +89,12 @@ public class Settings implements CommandEvent {
         }
 
         // #2 - Check if channel has been monitored before.
-        int min = 0, max = 0;
-        float sens = 1;
-        boolean monitored = false, filtered = false;
+        final int min, max;
+        final float sens;
+        final boolean monitored, filtered;
 
         try {
-            if (DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channelId)) {
+                addIfNotInDb(eventGuild.getId(), channelId);
                 List<Object> objects = DataSource.getSettingsPackage(channelId);
 
                 min = (int) objects.get(0);
@@ -102,7 +102,6 @@ public class Settings implements CommandEvent {
                 sens = (float) objects.get(2);
                 monitored = (boolean) objects.get(3);
                 filtered = (boolean) objects.get(4);
-            }
         } catch (SQLException ex) {
             Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
             lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());

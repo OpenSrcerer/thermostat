@@ -100,6 +100,7 @@ public class Sensitivity implements CommandEvent {
         // #3 - Perform appropriate action
         for (String arg : args) {
             try {
+                addIfNotInDb(eventGuild.getId(), arg);
                 if (offset >= -10 && offset <= 10) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?",
                             Arrays.asList(Float.toString(1f + offset / 20f), arg));

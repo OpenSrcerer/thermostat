@@ -67,7 +67,7 @@ public class SetBounds implements CommandEvent {
     @Override
     public void execute() {
         if (args.size() < 2) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.bothChannelAndSlow());
+            Messages.sendMessage(eventChannel, HelpEmbeds.helpSetBounds(eventPrefix));
             return;
         }
 
@@ -76,6 +76,7 @@ public class SetBounds implements CommandEvent {
                 minComplete = new StringBuilder(),
                 maxComplete = new StringBuilder(),
                 badSlowmode = new StringBuilder();
+
         // type represents the action being taken
         // setMaximum or setMinimum
         ActionType type = ActionType.INVALID;
@@ -98,7 +99,7 @@ public class SetBounds implements CommandEvent {
         }
 
         // #3 - Remove the [min/max] and [slowmode] arguments
-        args.subList(0, 1).clear();
+        args.subList(0, 2).clear();
 
         // #4 - Parse the optional <channels/categories> argument
         {
@@ -119,6 +120,7 @@ public class SetBounds implements CommandEvent {
         if (type != ActionType.INVALID) {
             for (String arg : args) {
                 try {{
+                        addIfNotInDb(eventGuild.getId(), arg);
                         List<Integer> channelSlowmodes = DataSource.queryInts("SELECT MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", arg);
 
                         minimumSlow = channelSlowmodes.get(0);
