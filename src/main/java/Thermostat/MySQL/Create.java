@@ -1,10 +1,14 @@
 package thermostat.mySQL;
 
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.thermoFunctions.Messages;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Contains functions used to
@@ -67,5 +71,24 @@ public abstract class Create {
         } catch (SQLException ex) {
             lgr.error(ex.getMessage(), ex);
         }
+    }
+
+    public static StringBuilder setFilter(String filtered, List<String> args, TextChannel eventChannel) {
+        StringBuilder builder = new StringBuilder();
+        try {
+            for (String arg : args) {
+                if (filtered.equals("0")) {
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_URL = \"N/A\" WHERE CHANNEL_ID = ?",
+                            Arrays.asList(filtered, arg));
+                } else {
+                    DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
+                            Arrays.asList(filtered, arg));
+                }
+                builder.append("<#").append(arg).append("> ");
+            }
+        } catch (SQLException ex) {
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
+        }
+        return builder;
     }
 }
