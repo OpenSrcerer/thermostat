@@ -79,6 +79,7 @@ public class Sensitivity implements CommandEvent {
         // #1 - Parse sensitivity argument
         try {
             offset = Float.parseFloat(args.get(0));
+            args.remove(0);
         } catch (NumberFormatException ex) {
             Messages.sendMessage(eventChannel, ErrorEmbeds.invalidSensitivity());
             return;
