@@ -15,6 +15,8 @@ import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.commands.monitoring.SetBounds;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -93,7 +95,15 @@ public class Filter implements CommandEvent {
         // args now remains as a list of target channel(s).
 
         // individually enable filtering in every channel
-        complete = Create.setFilter(Integer.toString(filtered), args, eventChannel);
+        // after checking whether the channel exists in the db
+        try {
+            addIfNotInDb(eventGuild.getId(), args);
+            complete = Create.setFilter(Integer.toString(filtered), args, eventChannel);
+        } catch (SQLException ex) {
+            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
+            lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
+            return;
+        }
 
         // switch message depending on user action
         if (filtered == 1) {

@@ -80,17 +80,10 @@ public abstract class Create {
         }
     }
 
-    public static StringBuilder setFilter(String filtered, List<String> args, TextChannel eventChannel) {
+    public static StringBuilder setFilter(String filtered, List<String> args, TextChannel eventChannel) throws SQLException {
 
         StringBuilder builder = new StringBuilder();
-        try {
             for (String arg : args) {
-                if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS JOIN GUILDS ON " +
-                        "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", arg))
-                {
-                    Create.Channel(eventChannel.getGuild().getId(), arg, 0);
-                }
-
                 if (filtered.equals("0")) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_ID = 0, WEBHOOK_TOKEN = 0 WHERE CHANNEL_ID = ?",
                             Arrays.asList(filtered, arg));
@@ -100,9 +93,7 @@ public abstract class Create {
                 }
                 builder.append("<#").append(arg).append("> ");
             }
-        } catch (SQLException ex) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
-        }
+
         return builder;
     }
 }
