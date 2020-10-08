@@ -28,6 +28,19 @@ public abstract class ErrorEmbeds {
         return eb;
     }
 
+    public static EmbedBuilder errPermission(EnumSet<Permission> thermoPermissions) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ Error encountered! Details:");
+
+        StringBuilder missingPerms = new StringBuilder();
+        thermoPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
+        eb.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
+
+        eb.setTimestamp(Instant.now());
+        eb.setColor(0xff0000);
+        return eb;
+    }
+
     public static EmbedBuilder errFatal(String errFix, String error) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("If you are seeing this message, an error has occurred. Try " + errFix + ". If the problem persists, please join my support server: https://discord.gg/FnPb4nM");
