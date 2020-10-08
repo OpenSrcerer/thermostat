@@ -67,7 +67,7 @@ public class Info implements CommandEvent {
     public void execute() {
         Consumer<Message> consumer = message -> {
             try {
-                Messages.addReactions(message, Arrays.asList("🌡", "ℹ", "🔧", "❌"));
+                Messages.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 // create the information message object
                 // to be added to the monitored message
                 // ArrayList
