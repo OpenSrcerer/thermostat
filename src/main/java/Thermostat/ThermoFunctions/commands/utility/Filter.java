@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-import static thermostat.thermoFunctions.Functions.convertToBooleanString;
+import static thermostat.thermoFunctions.Functions.convertToBooleanInteger;
 
 
 public class Filter implements CommandEvent {
@@ -72,7 +72,9 @@ public class Filter implements CommandEvent {
             return;
         }
 
-        String filtered = convertToBooleanString(args.get(0)), message;
+        int filtered = convertToBooleanInteger(args.get(0));
+        String message;
+
         args.remove(0);
         StringBuilder nonValid,
                 noText,
@@ -91,10 +93,10 @@ public class Filter implements CommandEvent {
         // args now remains as a list of target channel(s).
 
         // individually enable filtering in every channel
-        complete = Create.setFilter(filtered, args, eventChannel);
+        complete = Create.setFilter(Integer.toString(filtered), args, eventChannel);
 
         // switch message depending on user action
-        if (filtered.equals("1")) {
+        if (filtered == 1) {
             message = "Enabled filtering on:";
         } else {
             message = "Disabled filtering on:";

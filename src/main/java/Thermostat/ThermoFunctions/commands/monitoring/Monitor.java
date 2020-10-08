@@ -87,11 +87,16 @@ public class Monitor implements CommandEvent {
             return;
         } else if (args.size() >= 2) {
             if (args.get(1).equalsIgnoreCase("all")) {
+                args.subList(0, 1).clear();
                 unMonitorAll();
+                return;
             }
         }
 
         int monitor = Functions.convertToBooleanInteger(args.get(0));
+        String message1, message2;
+        args.remove(0);
+
         StringBuilder nonValid,
                 noText,
                 complete = new StringBuilder(),
@@ -110,23 +115,30 @@ public class Monitor implements CommandEvent {
         }
 
         // #2 - Monitor target channels
-        for (String it : args) {
-            // checks whether the channel has the monitor
-            // value on the database set to 1
-            if (DataSource.queryBool("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", it)) {
-                monitored.append("<#").append(it).append("> ");
+        for (String arg : args) {
+            if (DataSource.queryInt("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", arg) == monitor) {
+                monitored.append("<#").append(arg).append("> ");
             } else {
-                Create.ChannelMonitor(eventGuild.getId(), it, monitor);
-                complete.append("<#").append(it).append("> ");
+                Create.Monitor(eventGuild.getId(), arg, monitor);
+                complete.append("<#").append(arg).append("> ");
             }
+        }
+
+        // switch message depending on user action
+        if (monitor == 1) {
+            message1 = "Successfully monitored:";
+            message2 = "Channels that were already being monitored:";
+        } else {
+            message1 = "Successfully unmonitored:";
+            message2 = "Channels that were already not being monitored:";
         }
 
         // #6 - Send the results embed to user
         Messages.sendMessage(eventChannel, DynamicEmbeds.dynamicEmbed(
                 Arrays.asList(
-                        "Successfully monitored:",
+                        message1,
                         complete.toString(),
-                        "Channels that were already being monitored:",
+                        message2,
                         monitored.toString(),
                         "Channels that were not valid or found:",
                         nonValid.toString(),
