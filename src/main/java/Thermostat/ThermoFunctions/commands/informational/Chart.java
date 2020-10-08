@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class Chart implements CommandEvent {
 
-    private static final Logger lgr = LoggerFactory.getLogger(SetBounds.class);
+    private static final Logger lgr = LoggerFactory.getLogger(Chart.class);
 
     private final Guild eventGuild;
     private final TextChannel eventChannel;
