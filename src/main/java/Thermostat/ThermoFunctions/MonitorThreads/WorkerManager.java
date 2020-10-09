@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @see Worker
  */
 public class WorkerManager {
+    private static final Logger lgr = LoggerFactory.getLogger(WorkerManager.class);
     private static WorkerManager WMInstance;
     protected static ScheduledExecutorService scheduledExecutorService;
     // ActiveWorkers array used for maintaining threads working on monitoring
@@ -52,12 +53,12 @@ public class WorkerManager {
         activeWorkers = workers;
     }
 
-    @SuppressWarnings("ForLoopReplaceableByForEach")
+    
     @Nullable
     public static Worker getActiveWorkerById(String guildId) {
-        for (int it = 0; it < activeWorkers.size(); ++it) {
-            if (activeWorkers.get(it).getAssignedGuild().equals(guildId)) {
-                return activeWorkers.get(it);
+        for (Worker activeWorker : activeWorkers) {
+            if (activeWorker.getAssignedGuild().equals(guildId)) {
+                return activeWorker;
             }
         }
         return null;
@@ -108,7 +109,7 @@ public class WorkerManager {
                         }
                     }
 
-                    // if a match is not found, create new worker thread for guild
+                    // if a match is not found, create new worker for guild
                     if (!found) {
                         // adds worker to active worker array with assigned guild
                         Worker worker = new Worker();
@@ -120,7 +121,7 @@ public class WorkerManager {
                 activeWorkers.addAll(workerArrayList);
             }
             // case 2: when the guilds array is smaller than the current active workers,
-            // it means that there were guilds recently expunged from the database
+            // there were guilds recently expunged from the database
             else if (guildArray.size() < activeWorkers.size()) {
                 // only one list modification is allowed
                 // in order to not throw a java.util.concurrentModificationException
@@ -151,7 +152,6 @@ public class WorkerManager {
             }
 
         } catch (Exception ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
             lgr.error(ex.getMessage(), ex);
         }
     }
