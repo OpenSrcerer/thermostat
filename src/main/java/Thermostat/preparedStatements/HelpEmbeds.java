@@ -56,8 +56,8 @@ public abstract class HelpEmbeds {
     public static EmbedBuilder expandedHelpSettings(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n `" + prefix + "settings [channel]`");
-        eb.setDescription("**Alias: " + prefix + "st** ╹ Shows details about the configuration of the given channel." +
-                "like if it's currently being monitored or filtered, the bounds you have provided, etc.");
+        eb.setDescription("**Alias: " + prefix + "st** ╹ Shows details about the configuration of the given channel, " +
+                "such as if it's currently being monitored or filtered, the bounds you have provided, etc.");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
         return eb;
@@ -78,7 +78,7 @@ public abstract class HelpEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "sensitivity <sensitivity> [channel(s)/category(ies)]```");
         eb.setDescription("**Alias: " + prefix + "ss** ╹ Sets the sensitivity level for the channel. " +
-                "Requires a value between -10 and 10, you may use decimal numbers. " +
+                "**Requires a value between -10 and 10, you may use decimal numbers.** " +
                 "The higher the sensitivity, the easier for Thermostat to initiate slowmode.");
         eb.setTimestamp(Instant.now());
         eb.setColor(0xff0000);
