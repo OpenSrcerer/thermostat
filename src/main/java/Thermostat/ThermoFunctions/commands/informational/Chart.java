@@ -17,7 +17,6 @@ import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
-import thermostat.thermoFunctions.commands.monitoring.SetBounds;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
 
