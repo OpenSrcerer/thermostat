@@ -79,7 +79,6 @@ public abstract class GenericEmbeds {
             eb.addField("Max Slowmode:", "**" + max + "**", true);
         }
 
-
         if (monitor) {
             eb.addField("Monitored:", "**Yes**", false);
         } else {
@@ -178,11 +177,11 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("🌡┇Monitoring Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "monitor┇Adds/Removes text channels to the slowmode monitoring database.", "Syntax: `" + prefix + "monitor <true/false> [channel(s)/category(ies)].`", false);
-        eb.addField(prefix + "getmonitor┇Shows which channels are currently being monitored or filtered in your server.", "Syntax: `" + prefix + "getmonitor/gm.`", false);
-        eb.addField(prefix + "setbounds┇Sets the upper and lower bounds for the slowmode of the channel.", "Syntax: `" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)].`", false);
-        eb.addField(prefix + "settings┇Shows details about the configuration of the given channel.", "Syntax: `" + prefix + "settings/st [channel].`", false);
-        eb.addField(prefix + "sensitivity┇Sets the sensitivity level for the channel. Requires a value between -10 and 10, you may use decimal numbers. The higher the sensitivity, the easier for Thermostat to initiate slowmode.", "Syntax: `" + prefix + "sensitivity <sensitivity> [channel(s)].`", false);
+        eb.addField(prefix + "monitor", "Syntax: `" + prefix + "monitor <true/false> [channel(s)/category(ies)].`", false);
+        eb.addField(prefix + "getmonitor", "Syntax: `" + prefix + "getmonitor.`", false);
+        eb.addField(prefix + "setbounds", "Syntax: `" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)].`", false);
+        eb.addField(prefix + "settings", "Syntax: `" + prefix + "settings[channel].`", false);
+        eb.addField(prefix + "sensitivity", "Syntax: `" + prefix + "sensitivity <sensitivity> [channel(s)].`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
         return eb;
@@ -192,7 +191,7 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("🔧┇Utility Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "filter┇[EXPERIMENTAL] Enables/Disables curse-word filtering for a channel.", "Syntax: `" + prefix + "filter/ft <charttype>.`", false);
+        eb.addField(prefix + "filter", "Syntax: `" + prefix + "filter <charttype>.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
         return eb;
@@ -202,11 +201,11 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ┇Other Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "info┇Brings up the main help menu.", "`Syntax:" + prefix + "info/io/help/hp.`", false);
-        eb.addField("@Thermostat prefix┇Manages Thermostat's prefix.", "Syntax: <@!" + thermostat.thermo.getSelfUser().getId() + "> `prefix/px.`", false);
-        eb.addField(prefix + "chart┇Command that gives informational data about Thermostat's operation in chart form.", "Syntax: `" + prefix + "chart/ch <charttype>.`", false);
-        eb.addField(prefix + "vote┇Shows a link to vote for Thermostat on top.gg.", "Syntax: `" + prefix + "vote/vo.`", false);
-        eb.addField(prefix + "invite┇Provides an invite link to Thermostat's support server, and the top.gg website.", "Syntax: `" + prefix + "invite/iv.`", false);
+        eb.addField(prefix + "info", "`Syntax:" + prefix + "info.`", false);
+        eb.addField("@Thermostat prefix", "Syntax: <@!" + thermostat.thermo.getSelfUser().getId() + "> `prefix.`", false);
+        eb.addField(prefix + "chart", "Syntax: `" + prefix + "chart <charttype>.`", false);
+        eb.addField(prefix + "vote", "Syntax: `" + prefix + "vote.`", false);
+        eb.addField(prefix + "invite", "Syntax: `" + prefix + "invite.`", false);
         eb.addField("❌ Exit", "Exit the info menu.", false);
         eb.setColor(0x00aeff);
         return eb;
