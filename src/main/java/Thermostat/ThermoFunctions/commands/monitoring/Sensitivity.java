@@ -63,6 +63,9 @@ public class Sensitivity implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.SENSITIVITY.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!sensitivity <sensitivity> [channel(s)/category(ies)]
+     */
     @Override
     public void execute() {
         if (args.isEmpty()) {

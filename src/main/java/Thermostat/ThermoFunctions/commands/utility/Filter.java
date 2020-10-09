@@ -67,6 +67,9 @@ public class Filter implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.FILTER.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!filter <true/false> [channel(s)/category(ies)]
+     */
     @Override
     public void execute() {
         if (args.isEmpty()) {
@@ -98,7 +101,7 @@ public class Filter implements CommandEvent {
         // after checking whether the channel exists in the db
         try {
             addIfNotInDb(eventGuild.getId(), args);
-            complete = Create.setFilter(Integer.toString(filtered), args, eventChannel);
+            complete = Create.setFilter(Integer.toString(filtered), args);
         } catch (SQLException ex) {
             Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
             lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());

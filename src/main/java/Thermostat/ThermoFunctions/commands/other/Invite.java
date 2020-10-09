@@ -54,6 +54,9 @@ public class Invite implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.INVITE.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!invite
+     */
     @Override
     public void execute() {
         Messages.sendMessage(eventChannel, GenericEmbeds.inviteServer(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl()));

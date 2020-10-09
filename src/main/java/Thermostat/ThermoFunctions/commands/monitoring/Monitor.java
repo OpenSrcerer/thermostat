@@ -78,7 +78,7 @@ public class Monitor implements CommandEvent {
     }
 
     /**
-     * Command form: th!monitor <true/false> [channel]
+     * Command form: th!monitor <true/false> [channel(s)/category(ies)]
      */
     @Override
     public void execute() {

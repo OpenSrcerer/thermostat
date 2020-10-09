@@ -64,6 +64,9 @@ public class SetBounds implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.SETBOUNDS.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!setbounds <min/max> <slowmode> [channel(s)/category(ies)]
+     */
     @Override
     public void execute() {
         if (args.size() < 2) {

@@ -32,16 +32,14 @@ public class Settings implements CommandEvent {
     private final Guild eventGuild;
     private final TextChannel eventChannel;
     private final Member eventMember;
-    private final String eventPrefix;
     private final ArrayList<String> args;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
-    public Settings(Guild eg, TextChannel tc, Member em, String px, ArrayList<String> ag) {
+    public Settings(Guild eg, TextChannel tc, Member em, ArrayList<String> ag) {
         eventGuild = eg;
         eventChannel = tc;
         eventMember = em;
-        eventPrefix = px;
         args = ag;
 
         checkPermissions();
@@ -67,6 +65,9 @@ public class Settings implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.SETTINGS.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!settings [channel]
+     */
     @Override
     public void execute() {
         // to contain channel id for modification

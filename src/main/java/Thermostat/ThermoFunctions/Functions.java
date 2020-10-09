@@ -46,7 +46,10 @@ public abstract class Functions {
         try {
             Long.parseUnsignedLong(retString);
         } catch (NumberFormatException ex) {
-            retString = "";
+            // Returns 0 if arguments is empty due to being
+            // parsed so when return value is used directly
+            // in functions, they won't throw an exception
+            retString = "0";
         }
 
         return retString;
@@ -91,24 +94,6 @@ public abstract class Functions {
             return 1;
         } else {
             return 0;
-        }
-    }
-
-    /**
-     * Converts a string to a boolean value.
-     * @param value Value to convert.
-     * @return Converted boolean.
-     */
-    public static String convertToBooleanString(String value) {
-        boolean returnValue = false;
-        if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) ||
-                "true".equalsIgnoreCase(value))
-            returnValue = true;
-
-        if (returnValue) {
-            return "1";
-        } else {
-            return "0";
         }
     }
 

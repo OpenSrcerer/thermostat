@@ -89,6 +89,7 @@ public class DataSource {
      * for the specified query. Returns an empty ResultSet
      * if the provided query did not return any results.
      */
+    @Nullable
     public static ArrayList<String> queryStringArray(String Query, String argument) {
         ArrayList<String> resultArray = null;
 

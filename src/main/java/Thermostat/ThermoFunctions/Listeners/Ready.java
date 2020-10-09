@@ -1,6 +1,5 @@
 package thermostat.thermoFunctions.listeners;
 
-import com.zaxxer.hikari.HikariDataSource;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
@@ -31,7 +30,7 @@ public class Ready extends ListenerAdapter {
 
     public void onReady(@Nonnull ReadyEvent event) {
 
-        HikariDataSource dataSource = DataSource.getDataSource();
+        DataSource.getDataSource();
 
         if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
             DataSource.killDataSource();

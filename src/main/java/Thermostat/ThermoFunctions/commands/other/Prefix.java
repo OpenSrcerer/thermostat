@@ -63,6 +63,9 @@ public class Prefix implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.PREFIX.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!prefix <prefix>
+     */
     @Override
     public void execute() {
         if (args.isEmpty()) {

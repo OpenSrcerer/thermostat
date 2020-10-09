@@ -55,14 +55,17 @@ public class GetMonitor implements CommandEvent {
         eventGuild
                 .retrieveMember(thermostat.thermo.getSelfUser())
                 .map(thermostat -> {
-                    missingThermostatPerms = findMissingPermissions(CommandType.GETMONITORLIST.getThermoPerms(), thermostat.getPermissions());
+                    missingThermostatPerms = findMissingPermissions(CommandType.GETMONITOR.getThermoPerms(), thermostat.getPermissions());
                     return thermostat;
                 })
                 .queue();
 
-        missingMemberPerms = findMissingPermissions(CommandType.GETMONITORLIST.getMemberPerms(), eventMember.getPermissions());
+        missingMemberPerms = findMissingPermissions(CommandType.GETMONITOR.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!getmonitor
+     */
     @Override
     public void execute() {
         String monitoredString = "None.", filteredString = "None.";

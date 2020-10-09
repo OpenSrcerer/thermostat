@@ -66,6 +66,7 @@ public class Chart implements CommandEvent {
         eventPrefix = px;
         args = ag;
 
+
         checkPermissions();
         if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
             execute();
@@ -89,6 +90,9 @@ public class Chart implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.CHART.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!chart <charttype> [channel]
+     */
     @Override
     public void execute() {
         // prefix removed (sends info msg)
@@ -101,11 +105,13 @@ public class Chart implements CommandEvent {
             // freq chart
             if (args.get(0).equalsIgnoreCase("slowfreq")) {
                 frequencyChart(eventGuild, eventChannel, eventMember);
+            } else {
+                Messages.sendMessage(eventChannel, HelpEmbeds.helpChart(eventPrefix));
             }
             args.remove(0);
         }
 
-        // chart <charttype> [channel]
+        // <charttype> [channel]
         else {
             TextChannel argumentChannel = eventGuild.getTextChannelById(Functions.parseMention(args.get(1), "#"));
 

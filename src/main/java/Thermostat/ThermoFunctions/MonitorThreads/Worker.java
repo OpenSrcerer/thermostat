@@ -136,7 +136,7 @@ public class Worker {
 
             channel.getManager().setSlowmode(slowmodeToSet).queue(null, slowmodeFailureConsumer);
 
-            // Adds +1 to slowmode turning on for charting purposes.
+            // Adds +1 when slowmode turns on for the first time. (Charting)
             if (slow == min && slowmodeToSet > min) {
                 DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?",
                         Arrays.asList(channel.getId(), channel.getGuild().getId()));
@@ -151,7 +151,7 @@ public class Worker {
 
     /**
      * Removes channels from monitoring.
-     *
+     * That means from the active channelsToMonitor array.
      * @param channel The channel to be removed.
      */
     public void removeChannel(TextChannel channel) {
@@ -263,7 +263,10 @@ public class Worker {
                 "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1", guild.getId());
 
-        if (databaseMonitoredChannels == null) { return; }
+        if (databaseMonitoredChannels == null) {
+            lgr.warn("Cancelling worker run, databaseMonitoredChannels is null. Worker Guild: " + this.getAssignedGuild());
+            return;
+        }
 
         // keeps monitored channels list up to date
         // by adding newly monitored channels

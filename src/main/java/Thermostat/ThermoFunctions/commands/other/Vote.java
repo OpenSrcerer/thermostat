@@ -55,6 +55,9 @@ public class Vote implements CommandEvent {
         missingMemberPerms = findMissingPermissions(CommandType.VOTE.getMemberPerms(), eventMember.getPermissions());
     }
 
+    /**
+     * Command form: th!vote
+     */
     @Override
     public void execute() {
         Messages.sendMessage(eventChannel, GenericEmbeds.getVote(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl()));

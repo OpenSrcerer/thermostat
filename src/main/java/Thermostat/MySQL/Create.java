@@ -1,10 +1,7 @@
 package thermostat.mySQL;
 
-import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.thermoFunctions.Messages;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -28,7 +25,7 @@ public abstract class Create {
         try {
             DataSource.update("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (?, 0);", GUILD_ID);
         } catch (SQLException ex) {
-            lgr.error(ex.getMessage(), ex);
+            lgr.warn(ex.getMessage(), ex);
         }
     }
 
@@ -48,7 +45,7 @@ public abstract class Create {
             DataSource.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES (?, 0, 0, ?);",
                     Arrays.asList(CHANNEL_ID, Integer.toString(monitor)));
         } catch (SQLException ex) {
-            lgr.error(ex.getMessage(), ex);
+            lgr.warn(ex.getMessage(), ex);
         }
     }
 
@@ -76,11 +73,11 @@ public abstract class Create {
                     " AND GUILDS.GUILD_ID = ?",
                     Arrays.asList(Integer.toString(monitor), CHANNEL_ID, GUILD_ID));
         } catch (SQLException ex) {
-            lgr.error(ex.getMessage(), ex);
+            lgr.warn(ex.getMessage(), ex);
         }
     }
 
-    public static StringBuilder setFilter(String filtered, List<String> args, TextChannel eventChannel) throws SQLException {
+    public static StringBuilder setFilter(String filtered, List<String> args) throws SQLException {
 
         StringBuilder builder = new StringBuilder();
             for (String arg : args) {

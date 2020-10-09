@@ -24,7 +24,7 @@ public enum CommandType {
                     Permission.MANAGE_SERVER
             )
     ),
-    GETMONITORLIST("getmonitor", "gm",
+    GETMONITOR("getmonitor", "gm",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS
