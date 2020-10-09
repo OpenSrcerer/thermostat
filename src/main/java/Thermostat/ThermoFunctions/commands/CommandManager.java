@@ -71,11 +71,11 @@ public class CommandManager extends ListenerAdapter {
         }
 
         else if (
-                args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias1()) ||
-                        args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITORLIST.getAlias2())
+                args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITOR.getAlias1()) ||
+                        args.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITOR.getAlias2())
         ) {
             args.remove(0);
-            new GetMonitor(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix);
+            new GetMonitor(ev.getGuild(), ev.getChannel(), ev.getMember());
         }
 
         else if (
@@ -83,7 +83,7 @@ public class CommandManager extends ListenerAdapter {
                         args.get(0).equalsIgnoreCase(prefix + CommandType.SETTINGS.getAlias2())
         ) {
             args.remove(0);
-            new Settings(ev.getGuild(), ev.getChannel(), ev.getMember(), prefix, args);
+            new Settings(ev.getGuild(), ev.getChannel(), ev.getMember(), args);
         }
 
         else if (
@@ -117,7 +117,7 @@ public class CommandManager extends ListenerAdapter {
                         args.get(0).equalsIgnoreCase(prefix + CommandType.HELP.getAlias2())
         ) {
             args.remove(0);
-            new Info(ev.getChannel(), ev.getMember());
+            new Info(ev.getChannel(), ev.getMember(), prefix, args);
         }
 
         else if (

@@ -30,15 +30,13 @@ public class GetMonitor implements CommandEvent {
     private final Guild eventGuild;
     private final TextChannel eventChannel;
     private final Member eventMember;
-    private final String eventPrefix;
 
     private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
-    public GetMonitor(Guild eg, TextChannel tc, Member em, String px) {
+    public GetMonitor(Guild eg, TextChannel tc, Member em) {
         eventGuild = eg;
         eventChannel = tc;
         eventMember = em;
-        eventPrefix = px;
 
         checkPermissions();
         if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
