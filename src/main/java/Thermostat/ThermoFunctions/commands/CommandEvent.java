@@ -54,7 +54,9 @@ public interface CommandEvent {
      * @return Permissions that are needed but not assigned to a Member.
      */
     default @NotNull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
-        memberPermsList.forEach(permissionsToSeek::remove);
+        for (Permission memberPerm : memberPermsList) {
+            permissionsToSeek.removeIf(memberPerm::equals);
+        }
         return permissionsToSeek;
     }
 
