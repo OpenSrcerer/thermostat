@@ -20,7 +20,7 @@ import java.util.Map;
  * Class that creates a single Hikari
  * data source for our Thermostat application.
  */
-public class DataSource {
+public abstract class DataSource {
 
     private static HikariDataSource ds;
     private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
