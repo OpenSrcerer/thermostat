@@ -1,7 +1,3 @@
-<a href="https://bots.rovelstars.ga/bots/700341788136833065">
-  <img src="https://bots.rovelstars.ga/api/v1/bots/700341788136833065/widget?size=large" alt="View on RBL">
-</a>   
-
 [![CodeFactor](https://www.codefactor.io/repository/github/opensrcerer/thermostat/badge)](https://www.codefactor.io/repository/github/opensrcerer/thermostat)
 [![GitHub forks](https://img.shields.io/github/forks/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/network)
 [![GitHub issues](https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/issues)
@@ -11,13 +7,18 @@
 
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/status/700341788136833065.svg" alt="Thermostat" />
-</a>  
+</a>
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/servers/700341788136833065.svg" alt="Thermostat" />
 </a>
 <a href="https://top.gg/bot/700341788136833065" >
   <img src="https://top.gg/api/widget/upvotes/700341788136833065.svg" alt="Thermostat" />
 </a>
+<br><br>
+<a href="https://bots.rovelstars.ga/bots/700341788136833065">
+  <img src="https://bots.rovelstars.ga/api/v1/bots/700341788136833065/widget?size=large" alt="View on RBL">
+</a>   
+
 
 # Thermostat
 Thermostat is a bot created for Discord servers, in order to help out server owners who do not have the time or simply want their channel slowmode to be adjusted automatically. Staff teams should be focused on moderating the server and the people in it. By getting Thermostat in your server, you get rid of all of the stress that keeping an adequate slowmode might bring.
