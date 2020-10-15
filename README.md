@@ -1,3 +1,7 @@
+<a href="https://bots.rovelstars.ga/bots/700341788136833065">
+  <img src="https://bots.rovelstars.ga/api/v1/bots/700341788136833065/widget?size=large" alt="View on RBL">
+</a>   
+
 [![CodeFactor](https://www.codefactor.io/repository/github/opensrcerer/thermostat/badge)](https://www.codefactor.io/repository/github/opensrcerer/thermostat)
 [![GitHub forks](https://img.shields.io/github/forks/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/network)
 [![GitHub issues](https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/issues)
