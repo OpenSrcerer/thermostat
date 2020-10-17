@@ -1,21 +1,17 @@
 package thermostat.thermoFunctions.commands.informational;
 
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.preparedStatements.DynamicEmbeds;
-import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
-import thermostat.thermostat;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -31,34 +27,12 @@ public class GetMonitor implements CommandEvent {
     private final TextChannel eventChannel;
     private final Member eventMember;
 
-    private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
-
     public GetMonitor(Guild eg, TextChannel tc, Member em) {
         eventGuild = eg;
         eventChannel = tc;
         eventMember = em;
 
-        checkPermissions();
-        if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
-            execute();
-        } else {
-            lgr.info("Missing permissions on (" + eventGuild.getName() + "/" + eventGuild.getId() + "):" +
-                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
-        }
-    }
-
-    @Override
-    public void checkPermissions() {
-        eventGuild
-                .retrieveMember(thermostat.thermo.getSelfUser())
-                .map(thermostat -> {
-                    missingThermostatPerms = findMissingPermissions(CommandType.GETMONITOR.getThermoPerms(), thermostat.getPermissions());
-                    return thermostat;
-                })
-                .queue();
-
-        missingMemberPerms = findMissingPermissions(CommandType.GETMONITOR.getMemberPerms(), eventMember.getPermissions());
+        checkPermissionsAndExecute(CommandType.GETMONITOR, eventMember, eventChannel, lgr);
     }
 
     /**

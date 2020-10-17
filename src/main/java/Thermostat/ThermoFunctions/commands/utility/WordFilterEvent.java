@@ -3,7 +3,6 @@ package thermostat.thermoFunctions.commands.utility;
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.WebhookClientBuilder;
 import club.minnced.discord.webhook.send.AllowedMentions;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.NotNull;
@@ -42,36 +41,18 @@ public class WordFilterEvent implements CommandEvent {
     private final Message eventMessage;
     private final List<String> message;
 
-    private EnumSet<Permission> missingThermostatPerms;
-
     public WordFilterEvent(@NotNull TextChannel eventChannel, @NotNull Message eventMessage, @Nonnull List<String> message) {
         this.eventChannel = eventChannel;
         this.eventMessage = eventMessage;
         this.message = message;
 
-        checkPermissions();
-        if (missingThermostatPerms.isEmpty()) {
-            execute();
-        } else {
-            lgr.info("Missing permissions on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + "):" +
-                    " [" + missingThermostatPerms.toString() + "]");
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, EnumSet.noneOf(Permission.class)));
-        }
-    }
-
-    public void checkPermissions() {
-        eventChannel.getGuild()
-                .retrieveMember(thermostat.thermo.getSelfUser())
-                .map(thermostat -> {
-                    missingThermostatPerms = findMissingPermissions(CommandType.WORDFILTEREVENT.getThermoPerms(), thermostat.getPermissions());
-                    return thermostat;
-                })
-                .queue();
+        checkPermissionsAndExecute(CommandType.FILTER, eventChannel, lgr);
     }
 
     /**
      * Initiate the WFEvent.
      */
+    @Override
     public void execute() {
         boolean messageWasChanged = false;
         for (int index = 0; index < message.size(); ++index) {

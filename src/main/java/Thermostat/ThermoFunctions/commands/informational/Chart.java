@@ -1,6 +1,5 @@
 package thermostat.thermoFunctions.commands.informational;
 
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -10,15 +9,14 @@ import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.style.Styler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
-import thermostat.thermostat;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -28,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Map;
 
 public class Chart implements CommandEvent {
@@ -40,8 +37,6 @@ public class Chart implements CommandEvent {
     private final Member eventMember;
     private final String eventPrefix;
     private final ArrayList<String> args;
-
-    private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
 
     // Stylizing for Charts
     private static final Color
@@ -66,27 +61,7 @@ public class Chart implements CommandEvent {
         args = ag;
 
 
-        checkPermissions();
-        if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
-            execute();
-        } else {
-            lgr.info("Missing permissions on (" + eventGuild.getName() + "/" + eventGuild.getId() + "):" +
-                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
-        }
-    }
-
-    @Override
-    public void checkPermissions() {
-        eventGuild
-                .retrieveMember(thermostat.thermo.getSelfUser())
-                .map(thermostat -> {
-                    missingThermostatPerms = findMissingPermissions(CommandType.CHART.getThermoPerms(), thermostat.getPermissions());
-                    return thermostat;
-                })
-                .queue();
-
-        missingMemberPerms = findMissingPermissions(CommandType.CHART.getMemberPerms(), eventMember.getPermissions());
+        checkPermissionsAndExecute(CommandType.CHART, eventMember, eventChannel, lgr);
     }
 
     /**

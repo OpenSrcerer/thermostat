@@ -2,10 +2,17 @@ package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.entities.CommandType;
+import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
@@ -17,8 +24,6 @@ import java.util.List;
 import static thermostat.thermoFunctions.Functions.parseMention;
 
 public interface CommandEvent {
-
-    void checkPermissions();
 
     // boolean checkFormat();
 
@@ -49,11 +54,58 @@ public interface CommandEvent {
     }
 
     /**
+     * Executes a given CommandEvent if permission conditions are met.
+     * @param eventMember Member that initiated the command.
+     * @param eventChannel Channel where command was initiated.
+     * @param lgr Logger for every command ran.
+     */
+    default void checkPermissionsAndExecute(@Nonnull CommandType commandType, @Nonnull Member eventMember, @Nonnull TextChannel eventChannel, @Nonnull Logger lgr) {
+
+        eventChannel.getGuild()
+                .retrieveMember(thermostat.thermo.getSelfUser())
+                .queue(
+                        thermostat -> {
+                            // Get member and thermostat missing permissions
+                            EnumSet<Permission>
+                                    missingMemberPerms = findMissingPermissions(commandType.getMemberPerms(), eventMember.getPermissions()),
+                                    missingThermostatPerms = findMissingPermissions(commandType.getThermoPerms(), thermostat.getPermissions());
+
+                            if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
+                                execute();
+                            } else {
+                                lgr.info("Missing permissions on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + "):" +
+                                        " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
+                                Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
+                            }
+                        }
+                );
+    }
+
+    default void checkPermissionsAndExecute(@Nonnull CommandType commandType, @Nonnull TextChannel eventChannel, @Nonnull Logger lgr) {
+        eventChannel.getGuild()
+                .retrieveMember(thermostat.thermo.getSelfUser())
+                .queue(
+                        thermostat -> {
+                            // Get Thermostat's missing permissions
+                            EnumSet<Permission> missingThermostatPerms = findMissingPermissions(commandType.getThermoPerms(), thermostat.getPermissions());
+
+                            if (missingThermostatPerms.isEmpty()) {
+                                execute();
+                            } else {
+                                lgr.info("Missing permissions on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + "):" +
+                                        " [" + missingThermostatPerms.toString() + "]");
+                                Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms));
+                            }
+                        }
+                );
+    }
+
+    /**
      * @param permissionsToSeek Permissions required by the command.
      * @param memberPermsList Permissions that the Member has.
      * @return Permissions that are needed but not assigned to a Member.
      */
-    default @NotNull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
+    private static @Nonnull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
         for (Permission memberPerm : memberPermsList) {
             permissionsToSeek.removeIf(memberPerm::equals);
         }
@@ -66,8 +118,7 @@ public interface CommandEvent {
      * @return a list of target channel IDs, along with
      * two stringbuilders with arguments that were invalid.
      */
-    @Nonnull
-    default List<?> parseChannelArgument(TextChannel eventChannel, ArrayList<String> args) {
+    @Nonnull default List<?> parseChannelArgument(TextChannel eventChannel, ArrayList<String> args) {
 
         StringBuilder
                 // Channels that could not be found

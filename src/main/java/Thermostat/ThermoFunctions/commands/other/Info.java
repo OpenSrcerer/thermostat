@@ -1,13 +1,11 @@
 package thermostat.thermoFunctions.commands.other;
 
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
@@ -15,11 +13,9 @@ import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
-import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -37,8 +33,6 @@ public class Info implements CommandEvent {
     private final Member eventMember;
     private final String eventArgument, eventPrefix;
 
-    private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
-
     public Info(@Nonnull TextChannel tc, @Nonnull Member em, String px, List<String> args) {
         eventChannel = tc;
         eventMember = em;
@@ -49,27 +43,7 @@ public class Info implements CommandEvent {
         }
         eventPrefix = px;
 
-        checkPermissions();
-        if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
-            execute();
-        } else {
-            lgr.info("Missing permissions on (" + eventChannel.getGuild().getName() + "/" + eventChannel.getGuild().getId() + "):" +
-                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
-        }
-    }
-
-    @Override
-    public void checkPermissions() {
-        eventChannel.getGuild()
-                .retrieveMember(thermostat.thermo.getSelfUser())
-                .map(thermostat -> {
-                    missingThermostatPerms = findMissingPermissions(CommandType.INFO.getThermoPerms(), thermostat.getPermissions());
-                    return thermostat;
-                })
-                .queue();
-
-        missingMemberPerms = findMissingPermissions(CommandType.INFO.getMemberPerms(), eventMember.getPermissions());
+        checkPermissionsAndExecute(CommandType.INFO, eventMember, eventChannel, lgr);
     }
 
     /**

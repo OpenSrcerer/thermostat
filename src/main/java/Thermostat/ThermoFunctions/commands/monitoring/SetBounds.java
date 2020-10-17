@@ -1,20 +1,22 @@
 package thermostat.thermoFunctions.commands.monitoring;
 
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.CommandEvent;
 import thermostat.thermoFunctions.entities.CommandType;
-import thermostat.thermostat;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static thermostat.thermoFunctions.Functions.parseSlowmode;
 
@@ -28,40 +30,18 @@ public class SetBounds implements CommandEvent {
     private final String eventPrefix;
     private ArrayList<String> args;
 
-    private EnumSet<Permission> missingThermostatPerms, missingMemberPerms;
-
     private enum ActionType {
         INVALID, MINIMUM, MAXIMUM
     }
 
-    public SetBounds(Guild eg, TextChannel tc, Member em, String px, ArrayList<String> ag)
-    {
+    public SetBounds(Guild eg, TextChannel tc, Member em, String px, ArrayList<String> ag) {
         eventGuild = eg;
         eventChannel = tc;
         eventMember = em;
         eventPrefix = px;
         args = ag;
 
-        checkPermissions();
-        if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
-            execute();
-        } else {
-            lgr.info("Missing permissions on (" + eventGuild.getName() + "/" + eventGuild.getId() + "):" +
-                    " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
-        }
-    }
-
-    public void checkPermissions() {
-        eventGuild
-                .retrieveMember(thermostat.thermo.getSelfUser())
-                .map(thermostat -> {
-                    missingThermostatPerms = findMissingPermissions(CommandType.SETBOUNDS.getThermoPerms(), thermostat.getPermissions());
-                    return thermostat;
-                })
-                .queue();
-
-        missingMemberPerms = findMissingPermissions(CommandType.SETBOUNDS.getMemberPerms(), eventMember.getPermissions());
+        checkPermissionsAndExecute(CommandType.SETBOUNDS, eventMember, eventChannel, lgr);
     }
 
     /**
