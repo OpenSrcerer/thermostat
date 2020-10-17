@@ -24,15 +24,16 @@ import java.util.EnumSet;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 0.9.0
+ * @version 0.9.1
  * @since 2020-04-17
  */
 
 public class thermostat {
-    // Bot Initialization Variables
+    // JDA instance, default bot prefix, API instances, logger
     public static JDA thermo;
+    public static String prefix;
     public static DiscordBotListAPI thermoAPI;
-    private static final Logger logger = LoggerFactory.getLogger(thermostat.class);
+    private static final Logger lgr = LoggerFactory.getLogger(thermostat.class);
 
     // Intents to using the Discord Gateway
     private static final EnumSet<GatewayIntent> intents = EnumSet.of(
@@ -40,7 +41,6 @@ public class thermostat {
             GatewayIntent.GUILD_MESSAGE_REACTIONS
     );
 
-    public static String prefix;
 
     /**
      * Main run function for the bot. Event listeners
@@ -66,15 +66,15 @@ public class thermostat {
                     .addEventListeners(new Ready())
                     .build();
         } catch (LoginException ex) {
-            logger.error("Error while logging in the Discord Gateway!", ex);
+            lgr.error("Error while logging in the Discord Gateway!", ex);
         }
 
         prefix = tokens[0];
 
-        thermoAPI = new DiscordBotListAPI.Builder()
+        /*thermoAPI = new DiscordBotListAPI.Builder()
                 .token(tokens[2])
                 .botId(thermo.getSelfUser().getId())
-                .build();
+                .build();*/
 
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading sounds..."));
     }
