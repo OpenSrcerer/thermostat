@@ -158,7 +158,10 @@ public enum CommandType {
         return alias2;
     }
 
-    public EnumSet<Permission> getThermoPerms() { return thermoPermissions; }
+    // Functions below must return clones, otherwise the originals will get modified by methods
+    // that process these EnumSets due to the abstraction EnumSet provides..
 
-    public EnumSet<Permission> getMemberPerms() { return memberPermissions; }
+    public EnumSet<Permission> getThermoPerms() { return thermoPermissions.clone(); }
+
+    public EnumSet<Permission> getMemberPerms() { return memberPermissions.clone(); }
 }
