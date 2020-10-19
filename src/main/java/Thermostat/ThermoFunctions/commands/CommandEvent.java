@@ -1,9 +1,7 @@
 package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Category;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -60,7 +58,7 @@ public interface CommandEvent {
      * @param lgr Logger for every command ran.
      */
     default void checkPermissionsAndExecute(@Nonnull CommandType commandType, @Nonnull Member eventMember, @Nonnull TextChannel eventChannel, @Nonnull Logger lgr) {
-
+        // check main permissions
         eventChannel.getGuild()
                 .retrieveMember(thermostat.thermo.getSelfUser())
                 .queue(
@@ -88,6 +86,7 @@ public interface CommandEvent {
                         thermostat -> {
                             // Get Thermostat's missing permissions
                             EnumSet<Permission> missingThermostatPerms = findMissingPermissions(commandType.getThermoPerms(), thermostat.getPermissions());
+                            missingThermostatPerms.addAll(checkThermostatOverrides(eventChannel, commandType.getThermoPerms()));
 
                             if (missingThermostatPerms.isEmpty()) {
                                 execute();
@@ -99,24 +98,49 @@ public interface CommandEvent {
                         }
                 );
     }
+    
+    private EnumSet<Permission> checkThermostatOverrides(@Nonnull TextChannel eventChannel, @Nonnull EnumSet<Permission> requiredCmdPerms) {
+        // check permission overrides for denies
+        Member thermo = eventChannel.getGuild().getSelfMember();
+        PermissionOverride override = eventChannel.getPermissionOverride(thermo);
+
+        return findDenyOverrides(requiredCmdPerms, override.getDenied();
+    }
 
     /**
-     * @param permissionsToSeek Permissions required by the command.
-     * @param memberPermsList Permissions that the Member has.
-     * @return Permissions that are needed but not assigned to a Member.
+     * @param permissionsRequired Permissions required by the command.
+     * @param permissionsGiven Permissions that the Member has.
+     * @return Permissions that are needed to execute a specific
+     * command but that the Member does not have.
      */
-    private static @Nonnull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsToSeek, EnumSet<Permission> memberPermsList) {
-        for (Permission memberPerm : memberPermsList) {
-            permissionsToSeek.removeIf(memberPerm::equals);
+    private static @Nonnull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsRequired, EnumSet<Permission> permissionsGiven) {
+        for (Permission permission : permissionsGiven) {
+            permissionsRequired.removeIf(permission::equals);
         }
-        return permissionsToSeek;
+        return permissionsRequired;
+    }
+
+    /**
+     * @param permissionsRequired List of permissions required by a given command.
+     * @param permissionsDenied Permissions denied by an override.
+     * @return Required permissions if they have been denied by the override.
+     */
+    private static @Nonnull EnumSet<Permission> findDenyOverrides(EnumSet<Permission> permissionsRequired, EnumSet<Permission> permissionsDenied) {
+        EnumSet<Permission> reqPermissionsDenied = EnumSet.noneOf(Permission.class);
+
+        for (Permission permission : permissionsDenied) {
+            if (permissionsRequired.contains(permission)) {
+                reqPermissionsDenied.add(permission);
+            }
+        }
+        return reqPermissionsDenied;
     }
 
     /**
      * @param eventChannel Target guild
      * @param args List of arguments
      * @return a list of target channel IDs, along with
-     * two stringbuilders with arguments that were invalid.
+     * two StringBuilders with arguments that were invalid.
      */
     @Nonnull default List<?> parseChannelArgument(TextChannel eventChannel, ArrayList<String> args) {
 
