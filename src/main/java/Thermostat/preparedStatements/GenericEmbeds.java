@@ -109,7 +109,7 @@ public abstract class GenericEmbeds {
     public static EmbedBuilder getVote(String authorID, String authorAvatarURL) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("🎉 Thank you for your continuous support! 🎉");
-        eb.setDescription("[Vote for Thermostat on top.gg](https://top.gg/bot/700341788136833065/vote)");
+        eb.setDescription("[@top.gg](https://top.gg/bot/700341788136833065/vote)\n[@Rovel Stars](https://bots.rovelstars.ga/bots/700341788136833065/vote)");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, authorAvatarURL);
         eb.setColor(0x00aeff);
