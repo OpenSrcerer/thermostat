@@ -2,8 +2,6 @@ package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
@@ -48,7 +46,6 @@ public interface CommandEvent {
                 Create.Channel(guildId, channelId, 0);
             }
         }
-
     }
 
     /**
@@ -63,10 +60,10 @@ public interface CommandEvent {
                 .retrieveMember(thermostat.thermo.getSelfUser())
                 .queue(
                         thermostat -> {
-                            // Get member and thermostat missing permissions
+                            // Get member and thermostat's missing permissions, if applicable
                             EnumSet<Permission>
-                                    missingMemberPerms = findMissingPermissions(commandType.getMemberPerms(), eventMember.getPermissions()),
-                                    missingThermostatPerms = findMissingPermissions(commandType.getThermoPerms(), thermostat.getPermissions());
+                                    missingMemberPerms = getMissingPermissions(eventMember, eventChannel, commandType.getMemberPerms()),
+                                    missingThermostatPerms = getMissingPermissions(thermostat, eventChannel, commandType.getThermoPerms());
 
                             if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
                                 execute();
@@ -79,14 +76,19 @@ public interface CommandEvent {
                 );
     }
 
+    /**
+     * Executes an event only initialized by Thermostat.
+     * @param commandType Type of event initialized.
+     * @param eventChannel Channel where event was initialized.
+     * @param lgr External command logger to use.
+     */
     default void checkPermissionsAndExecute(@Nonnull CommandType commandType, @Nonnull TextChannel eventChannel, @Nonnull Logger lgr) {
         eventChannel.getGuild()
                 .retrieveMember(thermostat.thermo.getSelfUser())
                 .queue(
                         thermostat -> {
-                            // Get Thermostat's missing permissions
-                            EnumSet<Permission> missingThermostatPerms = findMissingPermissions(commandType.getThermoPerms(), thermostat.getPermissions());
-                            missingThermostatPerms.addAll(checkThermostatOverrides(eventChannel, commandType.getThermoPerms()));
+                            // Get Thermostat's missing permissions, if applicable
+                            EnumSet<Permission> missingThermostatPerms = getMissingPermissions(thermostat, eventChannel, commandType.getThermoPerms());
 
                             if (missingThermostatPerms.isEmpty()) {
                                 execute();
@@ -98,42 +100,112 @@ public interface CommandEvent {
                         }
                 );
     }
-    
-    private EnumSet<Permission> checkThermostatOverrides(@Nonnull TextChannel eventChannel, @Nonnull EnumSet<Permission> requiredCmdPerms) {
-        // check permission overrides for denies
-        Member thermo = eventChannel.getGuild().getSelfMember();
-        PermissionOverride override = eventChannel.getPermissionOverride(thermo);
-
-        return findDenyOverrides(requiredCmdPerms, override.getDenied();
-    }
 
     /**
-     * @param permissionsRequired Permissions required by the command.
-     * @param permissionsGiven Permissions that the Member has.
-     * @return Permissions that are needed to execute a specific
-     * command but that the Member does not have.
+     * @param member Member to check permissions for
+     * @param eventChannel Channel to retrieve overrides from
+     * @param requiredPermissions List of permissions that will be checked if member has
+     * @return EnumSet of missing permissions
      */
-    private static @Nonnull EnumSet<Permission> findMissingPermissions(EnumSet<Permission> permissionsRequired, EnumSet<Permission> permissionsGiven) {
-        for (Permission permission : permissionsGiven) {
-            permissionsRequired.removeIf(permission::equals);
-        }
-        return permissionsRequired;
-    }
+    default @Nonnull EnumSet<Permission> getMissingPermissions(@Nonnull Member member, @Nonnull TextChannel eventChannel, @Nonnull EnumSet<Permission> requiredPermissions) {
+        EnumSet<Permission> missingPermissions = EnumSet.noneOf(Permission.class);
+        long memberPermissions = computePermissions(member, eventChannel);
 
-    /**
-     * @param permissionsRequired List of permissions required by a given command.
-     * @param permissionsDenied Permissions denied by an override.
-     * @return Required permissions if they have been denied by the override.
-     */
-    private static @Nonnull EnumSet<Permission> findDenyOverrides(EnumSet<Permission> permissionsRequired, EnumSet<Permission> permissionsDenied) {
-        EnumSet<Permission> reqPermissionsDenied = EnumSet.noneOf(Permission.class);
-
-        for (Permission permission : permissionsDenied) {
-            if (permissionsRequired.contains(permission)) {
-                reqPermissionsDenied.add(permission);
+        // check if each permission is contained in the permissions long
+        for (Permission permission : requiredPermissions) {
+            if ((memberPermissions & permission.getRawValue()) != permission.getRawValue()) {
+                missingPermissions.add(permission);
             }
         }
-        return reqPermissionsDenied;
+
+        return missingPermissions;
+    }
+
+    /**
+     * @param member Member to compute permissions for
+     * @param channel Channels to get overrides from
+     * @return Raw permissions long for given member
+     */
+    default long computePermissions(@Nonnull Member member, @Nonnull TextChannel channel) {
+        return computeOverrides(computeBasePermissions(member), member, channel);
+    }
+
+    /**
+     * @param member Calculates base permissions based on the
+     *               permissions given to @everyone and member's roles
+     * @return long with general permissions
+     */
+    default long computeBasePermissions(@Nonnull Member member) {
+
+        long everyonePermissions = member.getGuild().getPublicRole().getPermissionsRaw();
+
+        for (Role role : member.getRoles()) {
+            everyonePermissions |= role.getPermissionsRaw();
+        }
+
+        if ((everyonePermissions & Permission.ADMINISTRATOR.getRawValue()) == Permission.ADMINISTRATOR.getRawValue()) {
+            return Permission.ALL_PERMISSIONS;
+        }
+
+        return everyonePermissions;
+    }
+
+    /**
+     * @param basePermissions base permissions, see computeBasePermissions
+     * @param member Member to compute permissions for
+     * @param channel Channel to retrieve overrides from
+     * @return permissions long with computed base & channel specific overrides
+     */
+    default long computeOverrides(long basePermissions, @Nonnull Member member, @Nonnull TextChannel channel) {
+
+        // Administrator overrides everything, so just return that.
+        if ((basePermissions & Permission.ADMINISTRATOR.getRawValue()) == Permission.ADMINISTRATOR.getRawValue()) {
+            return Permission.ALL_PERMISSIONS;
+        }
+
+        long permissions = basePermissions;
+
+        // Everyone overrides
+        {
+            // Get the @everyone role override for the channel
+            PermissionOverride everyoneOverride = channel.getPermissionOverride(channel.getGuild().getPublicRole());
+
+            if (everyoneOverride != null) {
+                // pass permissions the given denied and allowed permissions
+                permissions &= ~everyoneOverride.getDeniedRaw();
+                permissions |= everyoneOverride.getAllowedRaw();
+            }
+        }
+
+        // Role Overrides
+        {
+            long allowed = 0, denied = 0;
+
+            // for every role add allowed and denied permissions
+            for (Role role : member.getRoles()) {
+                PermissionOverride roleOverride = channel.getPermissionOverride(role);
+
+                if (roleOverride != null) {
+                    allowed |= roleOverride.getAllowedRaw();
+                    denied |= roleOverride.getDeniedRaw();
+                }
+            }
+
+            permissions &= ~denied;
+            permissions |= allowed;
+        }
+
+        // Add member specific override
+        {
+            PermissionOverride memberOverride = channel.getPermissionOverride(member);
+
+            if (memberOverride != null) {
+                permissions &= ~memberOverride.getDeniedRaw();
+                permissions |= memberOverride.getAllowedRaw();
+            }
+        }
+
+        return permissions;
     }
 
     /**
