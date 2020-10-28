@@ -24,7 +24,7 @@ import java.util.EnumSet;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 0.9.1
+ * @version 0.9.2
  * @since 2020-04-17
  */
 
@@ -71,10 +71,10 @@ public class thermostat {
 
         prefix = tokens[0];
 
-        /*thermoAPI = new DiscordBotListAPI.Builder()
+        thermoAPI = new DiscordBotListAPI.Builder()
                 .token(tokens[2])
                 .botId(thermo.getSelfUser().getId())
-                .build();*/
+                .build();
 
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading sounds..."));
     }
