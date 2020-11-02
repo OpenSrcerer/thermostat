@@ -136,6 +136,7 @@ public interface CommandEvent {
      * @return long with general permissions
      */
     default long computeBasePermissions(@Nonnull Member member) {
+        if (member.isOwner()) return Permission.ALL_PERMISSIONS;
 
         long everyonePermissions = member.getGuild().getPublicRole().getPermissionsRaw();
 
