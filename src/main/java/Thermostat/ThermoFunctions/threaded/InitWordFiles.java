@@ -2,7 +2,7 @@ package thermostat.thermoFunctions.threaded;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.thermoFunctions.commands.utility.WordFilterEvent;
+import thermostat.thermoFunctions.commands.requestFactories.utility.WordFilterCommand;
 import thermostat.thermostat;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 
 /**
  * Initializes word arrays for WordFilterEvent.
- * @see WordFilterEvent
+ * @see WordFilterCommand
  */
 public class InitWordFiles implements Callable<Boolean> {
     private final String File1;
@@ -65,7 +65,7 @@ public class InitWordFiles implements Callable<Boolean> {
             lgr.error("Issue while loading files!", ex);
         }
 
-        WordFilterEvent.setWordArrays(niceWords, badWords);
+        WordFilterCommand.setWordArrays(niceWords, badWords);
         return complete;
     }
 }

@@ -78,7 +78,6 @@ public abstract class Create {
     }
 
     public static StringBuilder setFilter(String filtered, List<String> args) throws SQLException {
-
         StringBuilder builder = new StringBuilder();
             for (String arg : args) {
                 if (filtered.equals("0")) {

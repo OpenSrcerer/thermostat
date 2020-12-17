@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.thermoFunctions.listeners.Ready;
+import thermostat.thermoFunctions.jdaListeners.Ready;
 import thermostat.thermoFunctions.threaded.InitTokens;
 
 import javax.security.auth.login.LoginException;
