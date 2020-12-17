@@ -1,4 +1,11 @@
 package thermostat.managers;
 
-public class ResponseManager {
+public final class ResponseManager {
+    public static void commandSucceeded() {
+
+    }
+
+    public static void commandFailed() {
+
+    }
 }

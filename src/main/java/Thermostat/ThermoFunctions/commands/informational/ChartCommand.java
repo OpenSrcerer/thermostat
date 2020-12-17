@@ -1,9 +1,9 @@
-package thermostat.thermoFunctions.commands.requestFactories.informational;
+package thermostat.thermoFunctions.commands.informational;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
@@ -16,25 +16,27 @@ import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
-import thermostat.thermoFunctions.commands.CommandData;
-import thermostat.thermoFunctions.commands.requestFactories.Command;
-import thermostat.thermoFunctions.entities.RequestType;
+import thermostat.thermoFunctions.commands.Command;
+import thermostat.thermoFunctions.entities.CommandType;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.awt.*;
+import java.util.List;
 import java.util.Map;
 
 public class ChartCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(ChartCommand.class);
-    private final CommandData data;
+
+    private final GuildMessageReceivedEvent data;
+    private final List<String> arguments;
+    private final String prefix;
 
     // Stylizing for Charts
     private static final Color
@@ -51,44 +53,48 @@ public class ChartCommand implements Command {
 
     private static final Font titleFont = new Font("Arial", Font.BOLD, 16);
 
-    public ChartCommand(@Nonnull CommandData data) {
+    @SuppressWarnings("ConstantConditions")
+    public ChartCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
+        this.arguments = arguments;
+        this.prefix = prefix;
 
-        checkPermissionsAndExecute(RequestType.CHART, data.member(), data.channel(), lgr);
+        if (validateEvent(data)) {
+            checkPermissionsAndQueue(this);
+        }
     }
 
     /**
      * Command form: th!chart <charttype> [channel]
-     * @return
      */
     @Override
-    public MessageEmbed execute() {
+    public void run() {
         // prefix removed (sends info msg)
-        if (data.arguments().isEmpty()) {
-            Messages.sendMessage(data.channel(), HelpEmbeds.helpChart(data.prefix()));
+        if (arguments.isEmpty()) {
+            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpChart(prefix));
         }
 
         // <charttype>
-        else if (data.arguments().size() == 1) {
+        else if (arguments.size() == 1) {
             // freq chart
-            if (data.arguments().get(0).equalsIgnoreCase("slowfreq")) {
-                frequencyChart(data.guild(), data.channel(), data.member());
+            if (arguments.get(0).equalsIgnoreCase("slowfreq")) {
+                frequencyChart(data.getGuild(), data.getChannel(), data.getMember());
             } else {
-                Messages.sendMessage(data.channel(), HelpEmbeds.helpChart(data.prefix()));
+                Messages.sendMessage(data.getChannel(), HelpEmbeds.helpChart(prefix));
             }
-            data.arguments().remove(0);
+            arguments.remove(0);
         }
 
         // <charttype> [channel]
         else {
-            TextChannel argumentChannel = data.guild().getTextChannelById(Functions.parseMention(data.arguments().get(1), "#"));
+            TextChannel argumentChannel = data.getGuild().getTextChannelById(Functions.parseMention(arguments.get(1), "#"));
 
             if (argumentChannel == null) {
-                Messages.sendMessage(data.channel(), ErrorEmbeds.channelNotFound(data.arguments().get(1)));
-            } else if ((data.arguments().get(1).equalsIgnoreCase("slowfreq"))) {
-                frequencyChart(data.guild(), argumentChannel, data.member());
+                Messages.sendMessage(data.getChannel(), ErrorEmbeds.channelNotFound(arguments.get(1)));
+            } else if ((arguments.get(1).equalsIgnoreCase("slowfreq"))) {
+                frequencyChart(data.getGuild(), argumentChannel, data.getMember());
             } else {
-                Messages.sendMessage(data.channel(), HelpEmbeds.helpChart(data.prefix()));
+                Messages.sendMessage(data.getChannel(), HelpEmbeds.helpChart(prefix));
             }
         }
     }
@@ -177,7 +183,17 @@ public class ChartCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public GuildMessageReceivedEvent getEvent() {
         return data;
+    }
+
+    @Override
+    public CommandType getType() {
+        return CommandType.CHART;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return lgr;
     }
 }

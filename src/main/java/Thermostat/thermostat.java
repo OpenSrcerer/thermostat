@@ -41,7 +41,6 @@ public class thermostat {
             GatewayIntent.GUILD_MESSAGE_REACTIONS
     );
 
-
     /**
      * Main run function for the bot. Event listeners
      * are defined in {@link Ready}.

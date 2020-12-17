@@ -1,6 +1,7 @@
-package thermostat.thermoFunctions.commands.requestFactories.monitoring;
+package thermostat.thermoFunctions.commands.monitoring;
 
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +12,12 @@ import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
-import thermostat.thermoFunctions.commands.CommandData;
-import thermostat.thermoFunctions.commands.requestFactories.Command;
-import thermostat.thermoFunctions.entities.RequestType;
+import thermostat.thermoFunctions.commands.Command;
+import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,38 +30,43 @@ import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMess
  * db.properties, upon user running the
  * command.
  */
+@SuppressWarnings("ConstantConditions")
 public class MonitorCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(MonitorCommand.class);
 
-    private final CommandData data;
+    private final GuildMessageReceivedEvent data;
+    private List<String> arguments;
+    private final String prefix;
 
-    public MonitorCommand(CommandData data) {
+    public MonitorCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
+        this.arguments = arguments;
+        this.prefix = prefix;
 
-        checkPermissionsAndExecute(RequestType.MONITOR, data.member(), data.channel(), lgr);
+        if (validateEvent(data)) {
+            checkPermissionsAndQueue(this);
+        }
     }
 
     /**
      * Command form: th!monitor <true/false> [channel(s)/category(ies)]
-     * @return
      */
     @Override
-    public MessageEmbed execute() {
-        if (data.arguments().isEmpty()) {
-            Messages.sendMessage(data.channel(), HelpEmbeds.helpMonitor(data.prefix()));
+    public void run() {
+        if (arguments.isEmpty()) {
+            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpMonitor(prefix));
             return;
-        } else if (data.arguments().size() >= 2) {
-            if (data.arguments().get(1).equalsIgnoreCase("all")) {
-                data.arguments().subList(0, 1).clear();
+        } else if (arguments.size() >= 2) {
+            if (arguments.get(1).equalsIgnoreCase("all")) {
+                arguments.subList(0, 1).clear();
                 unMonitorAll();
                 return;
             }
         }
 
-        int monitor = Functions.convertToBooleanInteger(data.arguments().get(0));
+        int monitor = Functions.convertToBooleanInteger(arguments.get(0));
         String message1, message2;
-        data.arguments().remove(0);
+        arguments.remove(0);
 
         StringBuilder nonValid,
                 noText,
@@ -69,22 +75,22 @@ public class MonitorCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            List<?> results = parseChannelArgument(data.channel(), data.arguments());
+            List<?> results = parseChannelArgument(data.getChannel(), arguments);
 
             nonValid = (StringBuilder) results.get(0);
             noText = (StringBuilder) results.get(1);
             // Suppressing is okay because type for
             // results.get(3) is always ArrayList<String>
             //noinspection unchecked
-            data.replaceArguments((ArrayList<String>) results.get(2));
+            arguments = ((ArrayList<String>) results.get(2));
         }
 
         // #2 - Monitor target channels
-        for (String arg : data.arguments()) {
+        for (String arg : arguments) {
             if (DataSource.queryInt("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", arg) == monitor) {
                 monitored.append("<#").append(arg).append("> ");
             } else {
-                Create.Monitor(data.guild().getId(), arg, monitor);
+                Create.Monitor(data.getGuild().getId(), arg, monitor);
                 complete.append("<#").append(arg).append("> ");
             }
         }
@@ -99,7 +105,7 @@ public class MonitorCommand implements Command {
         }
 
         // #6 - Send the results embed to user
-        Messages.sendMessage(data.channel(), DynamicEmbeds.dynamicEmbed(
+        Messages.sendMessage(data.getChannel(), DynamicEmbeds.dynamicEmbed(
                 Arrays.asList(
                         message1,
                         complete.toString(),
@@ -110,9 +116,9 @@ public class MonitorCommand implements Command {
                         "Categories with no Text Channels:",
                         noText.toString()
                 ),
-                data.member().getUser()
+                data.getMember().getUser()
         ));
-        lgr.info("Successfully executed on (" + data.guild().getName() + "/" + data.guild().getId() + ").");
+        lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
     }
 
     private void unMonitorAll() {
@@ -122,21 +128,31 @@ public class MonitorCommand implements Command {
                 Messages.addReaction(message, "☑");
                 MonitoredMessage unMonitorAllMessage = new MonitoredMessage(
                         message.getId(),
-                        data.member().getId(),
+                        data.getMember().getId(),
                         MenuType.UNMONITORALL
                 );
-                unMonitorAllMessage.resetDestructionTimer(data.channel());
+                unMonitorAllMessage.resetDestructionTimer(data.getChannel());
                 // adds the object to the list
                 monitoredMessages.add(unMonitorAllMessage);
             } catch (PermissionException ignored) {
             }
         };
 
-        Messages.sendMessage(data.channel(), GenericEmbeds.promptEmbed(data.member().getUser().getAsTag(), data.member().getUser().getAvatarUrl()), consumer);
+        Messages.sendMessage(data.getChannel(), GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()), consumer);
     }
 
     @Override
-    public CommandData getData() {
+    public GuildMessageReceivedEvent getEvent() {
         return data;
+    }
+
+    @Override
+    public CommandType getType() {
+        return CommandType.MONITOR;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return lgr;
     }
 }

@@ -1,7 +1,7 @@
 package thermostat.thermoFunctions.entities;
 
 import net.dv8tion.jda.api.Permission;
-import thermostat.thermoFunctions.commands.requestFactories.CommandTrigger;
+import thermostat.thermoFunctions.commands.CommandTrigger;
 
 import java.util.EnumSet;
 
@@ -10,7 +10,7 @@ import java.util.EnumSet;
  *
  * @see CommandTrigger
  */
-public enum RequestType {
+public enum CommandType {
 
     // ---- Informational ----
     CHART(
@@ -143,7 +143,7 @@ public enum RequestType {
     private final String alias1, alias2;
     private final EnumSet<Permission> thermoPermissions, memberPermissions;
 
-    RequestType(String alias1, String alias2, EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
+    CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
         this.alias1 = alias1;
         this.alias2 = alias2;
         this.thermoPermissions = thermoPermissions;

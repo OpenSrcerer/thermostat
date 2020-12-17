@@ -17,15 +17,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class that creates a single Hikari
- * data source for our Thermostat application.
+ * A single Hikari data source for Thermostat.
  */
 public abstract class DataSource {
 
-    private static HikariDataSource ds;
     private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
 
-    public DataSource() { }
+    private static HikariDataSource ds;
+
+    public DataSource() {
+    }
 
     public static Connection getConnection() throws SQLException {
         return ds.getConnection();
@@ -42,7 +43,7 @@ public abstract class DataSource {
         return ds;
     }
 
-    public static void killDataSource() {
+    public static void closeDataSource() {
         ds.close();
     }
 
@@ -214,7 +215,6 @@ public abstract class DataSource {
             rs.next();
             retVal.add(rs.getInt(1));
             retVal.add(rs.getInt(2));
-
 
         } catch (SQLException ex) {
             lgr.error(ex.getMessage(), ex);

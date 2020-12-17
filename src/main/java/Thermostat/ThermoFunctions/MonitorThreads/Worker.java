@@ -316,7 +316,7 @@ public class Worker {
                 }
             }
         } catch (Exception ex) {
-            Logger lgr = LoggerFactory.getLogger(DataSource.class);
+            Logger lgr = LoggerFactory.getLogger(Worker.class);
             lgr.error(ex.getMessage(), ex);
         }
     }

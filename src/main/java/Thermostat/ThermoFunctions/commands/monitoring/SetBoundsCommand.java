@@ -1,6 +1,6 @@
-package thermostat.thermoFunctions.commands.requestFactories.monitoring;
+package thermostat.thermoFunctions.commands.monitoring;
 
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
@@ -8,10 +8,10 @@ import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Messages;
-import thermostat.thermoFunctions.commands.CommandData;
-import thermostat.thermoFunctions.commands.requestFactories.Command;
-import thermostat.thermoFunctions.entities.RequestType;
+import thermostat.thermoFunctions.commands.Command;
+import thermostat.thermoFunctions.entities.CommandType;
 
+import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,30 +19,35 @@ import java.util.List;
 
 import static thermostat.thermoFunctions.Functions.parseSlowmode;
 
+@SuppressWarnings("ConstantConditions")
 public class SetBoundsCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(SetBoundsCommand.class);
 
-    private final CommandData data;
+    private final GuildMessageReceivedEvent data;
+    private List<String> arguments;
+    private final String prefix;
 
     private enum ActionType {
         INVALID, MINIMUM, MAXIMUM
     }
 
-    public SetBoundsCommand(CommandData data) {
+    public SetBoundsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
+        this.arguments = arguments;
+        this.prefix = prefix;
 
-        checkPermissionsAndExecute(RequestType.SETBOUNDS, data.member(), data.channel(), lgr);
+        if (validateEvent(data)) {
+            checkPermissionsAndQueue(this);
+        }
     }
 
     /**
      * Command form: th!setbounds <min/max> <slowmode> [channel(s)/category(ies)]
-     * @return
      */
     @Override
-    public MessageEmbed execute() {
-        if (data.arguments().size() < 2) {
-            Messages.sendMessage(data.channel(), HelpEmbeds.helpSetBounds(data.prefix()));
+    public void run() {
+        if (arguments.size() < 2) {
+            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpSetBounds(prefix));
             return;
         }
 
@@ -59,33 +64,33 @@ public class SetBoundsCommand implements Command {
         int argumentSlow;
 
         // #1 - Check the [minimum/maximum] argument
-        if (data.arguments().get(0).contains("max")) {
+        if (arguments.get(0).contains("max")) {
             type = ActionType.MAXIMUM;
-        } else if (data.arguments().get(0).contains("min")) {
+        } else if (arguments.get(0).contains("min")) {
             type = ActionType.MINIMUM;
         }
 
         // #2 - Check the [slowmode] argument
         try {
-            argumentSlow = parseSlowmode(data.arguments().get(1));
+            argumentSlow = parseSlowmode(arguments.get(1));
         } catch (NumberFormatException ex) {
-            Messages.sendMessage(data.channel(), ErrorEmbeds.invalidSlowmode());
+            Messages.sendMessage(data.getChannel(), ErrorEmbeds.invalidSlowmode());
             return;
         }
 
         // #3 - Remove the [min/max] and [slowmode] arguments
-        data.arguments().subList(0, 2).clear();
+        arguments.subList(0, 2).clear();
 
         // #4 - Parse the optional <channels/categories> argument
         {
-            List<?> results = parseChannelArgument(data.channel(), data.arguments());
+            List<?> results = parseChannelArgument(data.getChannel(), arguments);
 
             nonValid = (StringBuilder) results.get(0);
             noText = (StringBuilder) results.get(1);
             // Suppressing is okay because type for
             // results.get(3) is always ArrayList<String>
             //noinspection unchecked
-            data.replaceArguments((ArrayList<String>) results.get(2));
+            arguments = ((ArrayList<String>) results.get(2));
         }
         // args now remains as a list of target channel(s).
 
@@ -93,9 +98,9 @@ public class SetBoundsCommand implements Command {
         int minimumSlow, maximumSlow;
         
         if (type != ActionType.INVALID) {
-            for (String arg : data.arguments()) {
+            for (String arg : arguments) {
                 try {{
-                        addIfNotInDb(data.guild().getId(), arg);
+                        addIfNotInDb(data.getGuild().getId(), arg);
                         List<Integer> channelSlowmodes = DataSource.queryInts("SELECT MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", arg);
 
                         minimumSlow = channelSlowmodes.get(0);
@@ -138,17 +143,17 @@ public class SetBoundsCommand implements Command {
                     }
 
                 } catch (SQLException ex) {
-                    Messages.sendMessage(data.channel(), ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
-                    lgr.warn("(" + data.guild().getName() + "/" + data.guild().getId() + ") - " + ex.toString());
+                    Messages.sendMessage(data.getChannel(), ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
+                    lgr.warn("(" + data.getGuild().getName() + "/" + data.getGuild().getId() + ") - " + ex.toString());
                     return;
                 }
             }
         } else {
-            Messages.sendMessage(data.channel(), HelpEmbeds.helpSetBounds(data.prefix()));
+            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpSetBounds(prefix));
         }
 
         // #6 - Send the results embed
-        Messages.sendMessage(data.channel(), DynamicEmbeds.dynamicEmbed(
+        Messages.sendMessage(data.getChannel(), DynamicEmbeds.dynamicEmbed(
                 Arrays.asList(
                         "Channels given a maximum slowmode of " + argumentSlow + ":",
                         maxComplete.toString(),
@@ -161,13 +166,23 @@ public class SetBoundsCommand implements Command {
                         "Categories with no Text Channels:",
                         noText.toString()
                 ),
-                data.member().getUser()
+                data.getMember().getUser()
         ));
-        lgr.info("Successfully executed on (" + data.guild().getName() + "/" + data.guild().getId() + ").");
+        lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
     }
 
     @Override
-    public CommandData getData() {
+    public GuildMessageReceivedEvent getEvent() {
         return data;
+    }
+
+    @Override
+    public CommandType getType() {
+        return CommandType.SETBOUNDS;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return lgr;
     }
 }

@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * Deals with  different InsufficientPermissionExceptions
+ * Deals with different InsufficientPermissionExceptions
  * thrown by the JDA library, along with ErrorResponses.
  * Also controls timed message deletion to prevent spam.
  * Consider this class a "wrapper" for JDA Message Functions.
