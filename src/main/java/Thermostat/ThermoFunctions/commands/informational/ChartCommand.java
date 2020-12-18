@@ -98,7 +98,7 @@ public class ChartCommand implements Command {
                 ResponseManager.commandFailed(this,
                         ErrorEmbeds.inputError("Channel \"" + arguments.get(1) + "\" was not found.", commandId),
                         "Channel that user provided wasn't found.");
-            } else if ((arguments.get(1).equalsIgnoreCase("slowfreq"))) {
+            } else if ((arguments.get(0).equalsIgnoreCase("slowfreq"))) {
                 frequencyChart(data.getGuild(), data.getMember());
             } else {
                 ResponseManager.commandFailed(this,

@@ -11,8 +11,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class MonitoredMessage {
-    private String messageId;
-    private String messageOwner;
+    private final String messageId;
+    private final String messageOwner;
     private ScheduledFuture<?> destructionTimer = null;
     private MenuType menu;
 

@@ -32,7 +32,6 @@ public class Worker {
     private String assignedGuild;
     protected final List<WorkerChannel> channelsToMonitor = new ArrayList<>();
 
-
     /**
      * Creates an instance of the ChannelWorker, representing
      * a thread that manages a Guild's channels.

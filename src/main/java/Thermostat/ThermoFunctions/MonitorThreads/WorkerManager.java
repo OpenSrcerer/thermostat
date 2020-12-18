@@ -22,7 +22,7 @@ public class WorkerManager {
     private static WorkerManager WMInstance;
     protected static ScheduledExecutorService scheduledExecutorService;
     // ActiveWorkers array used for maintaining threads working on monitoring
-    private static ArrayList<Worker> activeWorkers = new ArrayList<>();
+    public static ArrayList<Worker> activeWorkers = new ArrayList<>();
 
     private WorkerManager() {
         Runnable setup = WorkerManager::updateGuilds;
@@ -53,7 +53,6 @@ public class WorkerManager {
         activeWorkers = workers;
     }
 
-    
     @Nullable
     public static Worker getActiveWorkerById(String guildId) {
         for (Worker activeWorker : activeWorkers) {
@@ -81,7 +80,6 @@ public class WorkerManager {
      */
     public static void updateGuilds() {
         try {
-
             // list that will hold all guilds taken from the DB
             ArrayList<String> guildArray = DataSource.queryStringArray("SELECT GUILD_ID FROM GUILDS", "");
 

@@ -73,6 +73,11 @@ public class SetBoundsCommand implements Command {
             type = ActionType.MAXIMUM;
         } else if (arguments.get(0).contains("min")) {
             type = ActionType.MINIMUM;
+        } else {
+            ResponseManager.commandFailed(this,
+                    HelpEmbeds.helpSetBounds(prefix),
+                    "User provided a wrong minimum/maximum argument.");
+            return;
         }
 
         // #2 - Check the [slowmode] argument
@@ -156,30 +161,30 @@ public class SetBoundsCommand implements Command {
                     return;
                 }
             }
+
+            // #6 - Send the results embed to manager
+            ResponseManager.commandSucceeded(this,
+                    DynamicEmbeds.dynamicEmbed(
+                            Arrays.asList(
+                                    "Channels given a maximum slowmode of " + argumentSlow + ":",
+                                    maxComplete.toString(),
+                                    "Channels given a minimum slowmode of " + argumentSlow + ":",
+                                    minComplete.toString(),
+                                    "Channels for which the given slowmode value was not appropriate:",
+                                    badSlowmode.toString(),
+                                    "Channels that were not valid or found:",
+                                    nonValid.toString(),
+                                    "Categories with no Text Channels:",
+                                    noText.toString()
+                            ),
+                            data.getMember().getUser()
+                    )
+            );
         } else {
             ResponseManager.commandFailed(this,
                     HelpEmbeds.helpSensitivity(prefix),
                     "User provided an incorrect bound type.");
         }
-
-        // #6 - Send the results embed to manager
-        ResponseManager.commandSucceeded(this,
-                DynamicEmbeds.dynamicEmbed(
-                        Arrays.asList(
-                                "Channels given a maximum slowmode of " + argumentSlow + ":",
-                                maxComplete.toString(),
-                                "Channels given a minimum slowmode of " + argumentSlow + ":",
-                                minComplete.toString(),
-                                "Channels for which the given slowmode value was not appropriate:",
-                                badSlowmode.toString(),
-                                "Channels that were not valid or found:",
-                                nonValid.toString(),
-                                "Categories with no Text Channels:",
-                                noText.toString()
-                        ),
-                        data.getMember().getUser()
-                )
-        );
     }
 
     @Override
