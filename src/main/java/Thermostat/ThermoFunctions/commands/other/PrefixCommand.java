@@ -3,10 +3,11 @@ package thermostat.thermoFunctions.commands.other;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
@@ -19,17 +20,18 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("ConstantConditions")
 public class PrefixCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(PrefixCommand.class);
 
     private final GuildMessageReceivedEvent data;
     private final List<String> arguments;
     private final String prefix;
+    private final long commandId;
 
     public PrefixCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -42,14 +44,18 @@ public class PrefixCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpPrefix(prefix));
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.inputError("No arguments provided. Please insert a valid prefix.", commandId),
+                    "User did not provide arguments.");
             return;
         }
 
         try {
             prefixAction(data, arguments, prefix);
         } catch (SQLException ex) {
-            Messages.sendMessage(data.getChannel(), ErrorEmbeds.errFatal("Try setting the prefix again."));
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ex);
         }
     }
 
@@ -93,5 +99,10 @@ public class PrefixCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

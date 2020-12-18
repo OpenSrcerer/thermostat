@@ -6,6 +6,7 @@ import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 
 import java.sql.SQLException;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
@@ -114,5 +115,9 @@ public abstract class Functions {
         } catch (SQLException ex) {
             lgr.error("SQL Exception while setting guild ID: " + guildId + " and channel ID: " + channelId);
         }
+    }
+
+    public static long getCommandId() {
+        return System.currentTimeMillis() * ThreadLocalRandom.current().nextLong(10000);
     }
 }

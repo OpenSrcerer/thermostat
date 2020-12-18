@@ -50,6 +50,12 @@ public interface Command extends Runnable {
     Logger getLogger();
 
     /**
+     * Gets the specific Command ID of a Command.
+     * @return Command's ID
+     */
+    long getId();
+
+    /**
      * Adds channel to database if it's not found.
      * @param guildId Id of guild.
      * @param channelId Id of channel.

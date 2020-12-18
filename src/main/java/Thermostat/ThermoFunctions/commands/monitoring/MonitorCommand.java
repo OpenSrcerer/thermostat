@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
@@ -37,11 +38,13 @@ public class MonitorCommand implements Command {
     private final GuildMessageReceivedEvent data;
     private List<String> arguments;
     private final String prefix;
+    private final long commandId;
 
     public MonitorCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -54,7 +57,9 @@ public class MonitorCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpMonitor(prefix));
+            ResponseManager.commandFailed(this,
+                    HelpEmbeds.helpMonitor(prefix),
+                    "User did not provide any arguments.");
             return;
         } else if (arguments.size() >= 2) {
             if (arguments.get(1).equalsIgnoreCase("all")) {
@@ -104,21 +109,21 @@ public class MonitorCommand implements Command {
             message2 = "Channels that were already not being monitored:";
         }
 
-        // #6 - Send the results embed to user
-        Messages.sendMessage(data.getChannel(), DynamicEmbeds.dynamicEmbed(
-                Arrays.asList(
-                        message1,
-                        complete.toString(),
-                        message2,
-                        monitored.toString(),
-                        "Channels that were not valid or found:",
-                        nonValid.toString(),
-                        "Categories with no Text Channels:",
-                        noText.toString()
-                ),
-                data.getMember().getUser()
-        ));
-        lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
+        // #6 - Send the results embed to manager
+        ResponseManager.commandSucceeded(this,
+                DynamicEmbeds.dynamicEmbed(
+                        Arrays.asList(
+                                message1,
+                                complete.toString(),
+                                message2,
+                                monitored.toString(),
+                                "Channels that were not valid or found:",
+                                nonValid.toString(),
+                                "Categories with no Text Channels:",
+                                noText.toString()
+                        ), data.getMember().getUser()
+                )
+        );
     }
 
     private void unMonitorAll() {
@@ -138,7 +143,9 @@ public class MonitorCommand implements Command {
             }
         };
 
-        Messages.sendMessage(data.getChannel(), GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()), consumer);
+        ResponseManager.commandSucceeded(this,
+                GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()),
+                consumer);
     }
 
     @Override
@@ -154,5 +161,10 @@ public class MonitorCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
-import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.thermoFunctions.Messages;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -158,7 +156,7 @@ public class Worker {
 
         // add failed to monitor msg here
 
-        Messages.sendMessage(channel, ErrorEmbeds.errFatal("I am missing the necessary permissions to monitor this channel."));
+        //Messages.sendMessage(channel, ErrorEmbeds.errFatal("I am missing the necessary permissions to monitor this channel."));
 
         for (int index = 0; index < channelsToMonitor.size(); ++index) {
             if (channelsToMonitor.get(index).getChannelId().equals(channel.getId())) {

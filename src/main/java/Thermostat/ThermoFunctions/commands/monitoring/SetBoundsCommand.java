@@ -3,11 +3,12 @@ package thermostat.thermoFunctions.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
-import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
 
@@ -26,6 +27,7 @@ public class SetBoundsCommand implements Command {
     private final GuildMessageReceivedEvent data;
     private List<String> arguments;
     private final String prefix;
+    private final long commandId;
 
     private enum ActionType {
         INVALID, MINIMUM, MAXIMUM
@@ -35,6 +37,7 @@ public class SetBoundsCommand implements Command {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -47,7 +50,9 @@ public class SetBoundsCommand implements Command {
     @Override
     public void run() {
         if (arguments.size() < 2) {
-            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpSetBounds(prefix));
+            ResponseManager.commandFailed(this,
+                    HelpEmbeds.helpSetBounds(prefix),
+                    "User did not provide enough arguments.");
             return;
         }
 
@@ -74,7 +79,9 @@ public class SetBoundsCommand implements Command {
         try {
             argumentSlow = parseSlowmode(arguments.get(1));
         } catch (NumberFormatException ex) {
-            Messages.sendMessage(data.getChannel(), ErrorEmbeds.invalidSlowmode());
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.inputError("Slowmode value \"" + arguments.get(1) + "\" was incorrect.", commandId),
+                    "User provided an incorrect sensitivity value.");
             return;
         }
 
@@ -143,32 +150,36 @@ public class SetBoundsCommand implements Command {
                     }
 
                 } catch (SQLException ex) {
-                    Messages.sendMessage(data.getChannel(), ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
-                    lgr.warn("(" + data.getGuild().getName() + "/" + data.getGuild().getId() + ") - " + ex.toString());
+                    ResponseManager.commandFailed(this,
+                            ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                            ex);
                     return;
                 }
             }
         } else {
-            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpSetBounds(prefix));
+            ResponseManager.commandFailed(this,
+                    HelpEmbeds.helpSensitivity(prefix),
+                    "User provided an incorrect bound type.");
         }
 
-        // #6 - Send the results embed
-        Messages.sendMessage(data.getChannel(), DynamicEmbeds.dynamicEmbed(
-                Arrays.asList(
-                        "Channels given a maximum slowmode of " + argumentSlow + ":",
-                        maxComplete.toString(),
-                        "Channels given a minimum slowmode of " + argumentSlow + ":",
-                        minComplete.toString(),
-                        "Channels for which the given slowmode value was not appropriate:",
-                        badSlowmode.toString(),
-                        "Channels that were not valid or found:",
-                        nonValid.toString(),
-                        "Categories with no Text Channels:",
-                        noText.toString()
-                ),
-                data.getMember().getUser()
-        ));
-        lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
+        // #6 - Send the results embed to manager
+        ResponseManager.commandSucceeded(this,
+                DynamicEmbeds.dynamicEmbed(
+                        Arrays.asList(
+                                "Channels given a maximum slowmode of " + argumentSlow + ":",
+                                maxComplete.toString(),
+                                "Channels given a minimum slowmode of " + argumentSlow + ":",
+                                minComplete.toString(),
+                                "Channels for which the given slowmode value was not appropriate:",
+                                badSlowmode.toString(),
+                                "Channels that were not valid or found:",
+                                nonValid.toString(),
+                                "Categories with no Text Channels:",
+                                noText.toString()
+                        ),
+                        data.getMember().getUser()
+                )
+        );
     }
 
     @Override
@@ -184,5 +195,10 @@ public class SetBoundsCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

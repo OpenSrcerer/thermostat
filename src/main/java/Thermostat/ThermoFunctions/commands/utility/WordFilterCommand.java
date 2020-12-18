@@ -10,9 +10,10 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermostat;
@@ -33,7 +34,6 @@ import java.util.*;
  */
 @SuppressWarnings("ConstantConditions")
 public class WordFilterCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(WordFilterCommand.class);
 
     private static List<String>
@@ -43,10 +43,12 @@ public class WordFilterCommand implements Command {
 
     private final GuildMessageReceivedEvent data;
     private final List<String> message;
+    private final long commandId;
 
     public WordFilterCommand(@Nonnull GuildMessageReceivedEvent data) {
         this.data = data;
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkThermoPermissionsAndQueue(this);
@@ -184,8 +186,9 @@ public class WordFilterCommand implements Command {
                                                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
                                         Arrays.asList(webhook.getId(), webhook.getToken(), data.getChannel().getId()));
                             } catch (SQLException ex) {
-                                Messages.sendMessage(data.getChannel(), ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
-                                lgr.warn("(" + data.getChannel().getGuild().getName() + "/" + data.getChannel().getGuild().getId() + ") - " + ex.toString());
+                                ResponseManager.commandFailed(this,
+                                        ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                                        ex);
                             }
                             return webhook;
                         }
@@ -232,5 +235,10 @@ public class WordFilterCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

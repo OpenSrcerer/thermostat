@@ -10,24 +10,23 @@ import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.style.Styler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
-import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +36,7 @@ public class ChartCommand implements Command {
     private final GuildMessageReceivedEvent data;
     private final List<String> arguments;
     private final String prefix;
+    private final long commandId;
 
     // Stylizing for Charts
     private static final Color
@@ -53,11 +53,11 @@ public class ChartCommand implements Command {
 
     private static final Font titleFont = new Font("Arial", Font.BOLD, 16);
 
-    @SuppressWarnings("ConstantConditions")
     public ChartCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -71,35 +71,44 @@ public class ChartCommand implements Command {
     public void run() {
         // prefix removed (sends info msg)
         if (arguments.isEmpty()) {
-            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpChart(prefix));
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.inputError("No arguments provided. Chart Type is required.", commandId),
+                    "User did not provide arguments.");
         }
 
         // <charttype>
         else if (arguments.size() == 1) {
             // freq chart
             if (arguments.get(0).equalsIgnoreCase("slowfreq")) {
-                frequencyChart(data.getGuild(), data.getChannel(), data.getMember());
+                frequencyChart(data.getGuild(), data.getMember());
             } else {
-                Messages.sendMessage(data.getChannel(), HelpEmbeds.helpChart(prefix));
+                ResponseManager.commandFailed(this,
+                        ErrorEmbeds.inputError("\"" + arguments.get(0) + "\" chart type does not exist.", commandId),
+                        "User provided an incorrect chart type.");
             }
             arguments.remove(0);
         }
 
         // <charttype> [channel]
         else {
+            // Retrieve channel from last argument
             TextChannel argumentChannel = data.getGuild().getTextChannelById(Functions.parseMention(arguments.get(1), "#"));
 
             if (argumentChannel == null) {
-                Messages.sendMessage(data.getChannel(), ErrorEmbeds.channelNotFound(arguments.get(1)));
+                ResponseManager.commandFailed(this,
+                        ErrorEmbeds.inputError("Channel \"" + arguments.get(1) + "\" was not found.", commandId),
+                        "Channel that user provided wasn't found.");
             } else if ((arguments.get(1).equalsIgnoreCase("slowfreq"))) {
-                frequencyChart(data.getGuild(), argumentChannel, data.getMember());
+                frequencyChart(data.getGuild(), data.getMember());
             } else {
-                Messages.sendMessage(data.getChannel(), HelpEmbeds.helpChart(prefix));
+                ResponseManager.commandFailed(this,
+                        ErrorEmbeds.inputError("\"" + arguments.get(0) + "\" chart type does not exist.", commandId),
+                        "User provided an incorrect chart type.");
             }
         }
     }
 
-    public static void frequencyChart(Guild eventGuild, TextChannel eventChannel, Member eventMember) {
+    public void frequencyChart(Guild eventGuild, Member eventMember) {
 
         // #1 - Retrieve data through the database relevant to the chart.
         Map<String, Integer> top5slowmode =
@@ -109,7 +118,10 @@ public class ChartCommand implements Command {
         // #2 - If not enough data on the chart, channels were never slowmoded
         // in this guild.
         if (top5slowmode == null) {
-            Messages.sendMessage(eventChannel, GenericEmbeds.noChannelsEverSlowmoded());
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
+                            "Get some channels slowmoded with `th!monitor`.", Functions.getCommandId()),
+                    "Channels were never slowmoded in this guild.");
             return;
         }
 
@@ -174,12 +186,15 @@ public class ChartCommand implements Command {
             ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", baos);
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
-            Messages.sendMessage(eventChannel, ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
-            lgr.warn("(" + eventGuild.getName() + "/" + eventGuild.getId() + ") - " + ex.toString());
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ex);
             return;
         }
-        Messages.sendMessage(eventChannel, inputStream, GenericEmbeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()));
-        lgr.info("Successfully executed on (" + eventGuild.getName() + "/" + eventGuild.getId() + ").");
+
+        ResponseManager.commandSucceeded(this,
+                GenericEmbeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()),
+                inputStream);
     }
 
     @Override
@@ -195,5 +210,10 @@ public class ChartCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

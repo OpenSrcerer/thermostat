@@ -40,7 +40,7 @@ public abstract class Messages {
         };
 
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
-            // send message and run custom provided consumer
+            // send message and run provided consumer
             try {
                 channel.sendMessage(eb.build()).queue(success, throwableConsumer);
             } catch (InsufficientPermissionException ex) {

@@ -2,27 +2,30 @@ package thermostat.managers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.commands.Command;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 
 public final class CommandManager {
 
     private static final Logger lgr = LoggerFactory.getLogger(CommandManager.class);
 
     private static final int nThreads = 4;
-    private static final ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(nThreads);
     private static final LinkedBlockingQueue<Command> commands = new LinkedBlockingQueue<>(nThreads);
 
     static {
-        Runnable runRequests = () -> {
+        Runnable drainCommands = () -> {
             while (true) {
                 Command command = null;
 
+                // Pick up commands from the queue
                 try {
+                    // Wait until a command gets in the queue
                     command = commands.take();
                 } catch (InterruptedException ex) {
                     lgr.error("Thread interrupted while waiting for request.", ex);
@@ -37,7 +40,7 @@ public final class CommandManager {
         };
 
         for (int thread = 1; thread <= nThreads; ++thread) {
-            executor.submit(runRequests);
+            executor.submit(drainCommands);
         }
     }
 
@@ -50,7 +53,11 @@ public final class CommandManager {
             commands.put(command);
         } catch (InterruptedException ex) {
             lgr.error("Request queue was interrupted!");
-            ResponseManager.commandFailed();
+            ResponseManager.commandFailed(
+                    command,
+                    ErrorEmbeds.error("Please try again later.", ex.getCause().toString(), command.getId()),
+                    ex
+            );
         }
     }
 }

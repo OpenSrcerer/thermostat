@@ -3,11 +3,12 @@ package thermostat.thermoFunctions.commands.utility;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.Create;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
-import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.commands.monitoring.SetBoundsCommand;
 import thermostat.thermoFunctions.entities.CommandType;
@@ -22,17 +23,18 @@ import static thermostat.thermoFunctions.Functions.convertToBooleanInteger;
 
 @SuppressWarnings("ConstantConditions")
 public class FilterCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(SetBoundsCommand.class);
 
     private final GuildMessageReceivedEvent data;
     private List<String> arguments;
     private final String prefix;
+    private final long commandId;
 
     public FilterCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -45,8 +47,9 @@ public class FilterCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            Messages.sendMessage(data.getChannel(), HelpEmbeds.helpFilter(prefix));
-            return;
+            ResponseManager.commandFailed(this,
+                    HelpEmbeds.helpFilter(prefix),
+                    "User did not provide arguments.");
         }
 
         int filtered = convertToBooleanInteger(arguments.get(0));
@@ -75,8 +78,9 @@ public class FilterCommand implements Command {
             addIfNotInDb(data.getGuild().getId(), arguments);
             complete = Create.setFilter(Integer.toString(filtered), arguments);
         } catch (SQLException ex) {
-            Messages.sendMessage(data.getChannel(), ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
-            lgr.warn("(" + data.getGuild().getName() + "/" + data.getGuild().getId() + ") - " + ex.toString());
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ex);
             return;
         }
 
@@ -87,18 +91,19 @@ public class FilterCommand implements Command {
             message = "Disabled filtering on:";
         }
 
-        Messages.sendMessage(data.getChannel(), DynamicEmbeds.dynamicEmbed(
-                Arrays.asList(
-                        message,
-                        complete.toString(),
-                        "Channels that were not valid or found:",
-                        nonValid.toString(),
-                        "Categories with no Text Channels:",
-                        noText.toString()
-                ),
-                data.getMember().getUser()
-        ));
-        lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
+        ResponseManager.commandSucceeded(this,
+                DynamicEmbeds.dynamicEmbed(
+                        Arrays.asList(
+                                message,
+                                complete.toString(),
+                                "Channels that were not valid or found:",
+                                nonValid.toString(),
+                                "Categories with no Text Channels:",
+                                noText.toString()
+                        ),
+                        data.getMember().getUser()
+                )
+        );
     }
 
     @Override
@@ -114,5 +119,10 @@ public class FilterCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

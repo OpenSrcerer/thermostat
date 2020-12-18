@@ -6,10 +6,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
+import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
@@ -149,7 +148,7 @@ public class ReactionAddEvent extends ListenerAdapter {
 
                 } catch (SQLException ex) {
                     lgr.error(ex.getMessage(), ex);
-                    Messages.sendMessage(ev.getChannel(), ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
+                    //Messages.sendMessage(ev.getChannel(), ErrorEmbeds.errFatal(ex.getLocalizedMessage()));
                 }
                 monitoredMessage.invalidate();
                 Messages.deleteMessage(ev.getChannel(), monitoredMessage.getMessageId());

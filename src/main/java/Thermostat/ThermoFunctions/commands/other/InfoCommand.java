@@ -5,8 +5,10 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
@@ -26,16 +28,17 @@ import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMess
  */
 @SuppressWarnings("ConstantConditions")
 public class InfoCommand implements Command {
-
     private static final Logger lgr = LoggerFactory.getLogger(InfoCommand.class);
 
     private final GuildMessageReceivedEvent data;
     private final String argument;
     private final String prefix;
+    private final long commandId;
 
     public InfoCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
         
         if (!arguments.isEmpty()) {
             argument = arguments.get(0);
@@ -98,8 +101,9 @@ public class InfoCommand implements Command {
             return;
         }
 
-        Messages.sendMessage(data.getChannel(), GenericEmbeds.getInfoSelection(), consumer);
-        lgr.info("Successfully executed on (" + data.getChannel().getGuild().getName() + "/" + data.getChannel().getGuild().getId() + ").");
+        ResponseManager.commandSucceeded(this,
+                GenericEmbeds.getInfoSelection(),
+                consumer);
     }
 
     @Override
@@ -115,5 +119,10 @@ public class InfoCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

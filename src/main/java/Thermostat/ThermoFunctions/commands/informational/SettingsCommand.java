@@ -4,10 +4,11 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
 
@@ -28,11 +29,13 @@ public class SettingsCommand implements Command {
     private final GuildMessageReceivedEvent data;
     private final List<String> arguments;
     private final String prefix;
+    private final long commandId;
 
     public SettingsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -58,7 +61,9 @@ public class SettingsCommand implements Command {
 
             // if channel doesn't exist, show error msg
             if (channelId.isEmpty() || data.getGuild().getTextChannelById(channelId) == null) {
-                Messages.sendMessage(data.getChannel(), ErrorEmbeds.channelNotFound(arguments.get(0)));
+                ResponseManager.commandFailed(this,
+                        ErrorEmbeds.inputError("Channel \"" + arguments.get(0) + "\" was not found.", commandId),
+                        "Channel that user provided wasn't found.");
                 return;
             }
         }
@@ -78,15 +83,16 @@ public class SettingsCommand implements Command {
                 monitored = (boolean) objects.get(3);
                 filtered = (boolean) objects.get(4);
         } catch (SQLException ex) {
-            Messages.sendMessage(data.getChannel(), ErrorEmbeds.errFatal("running the command again", ex.getLocalizedMessage()));
-            lgr.warn("(" + data.getGuild().getName() + "/" + data.getGuild().getId() + ") - " + ex.toString());
+            ResponseManager.commandFailed(this,
+                    ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ex);
             return;
         }
 
         TextChannel settingsChannel = data.getGuild().getTextChannelById(channelId);
 
         if (settingsChannel != null) {
-            Messages.sendMessage(data.getChannel(),
+            ResponseManager.commandSucceeded(this,
                     GenericEmbeds.channelSettings(settingsChannel.getName(),
                             data.getMember().getUser().getAsTag(),
                             data.getMember().getUser().getAvatarUrl(),
@@ -97,7 +103,6 @@ public class SettingsCommand implements Command {
                             filtered
                     )
             );
-            lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
         }
     }
 
@@ -114,5 +119,10 @@ public class SettingsCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }

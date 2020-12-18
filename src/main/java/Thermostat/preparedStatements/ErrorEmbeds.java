@@ -41,22 +41,35 @@ public abstract class ErrorEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder errFatal(String errFix, String error) {
+    public static EmbedBuilder inputError(String error, long id) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("If you are seeing this message, an error has occurred. Try " + errFix + ". If the problem persists, please join my support server: https://discord.gg/FnPb4nM");
-        eb.addField("Error details:", error, false);
+        eb.setTitle("You have an error in your input:");
+        eb.addField("`" + error + "`", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + id, thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x36393f);
         return eb;
     }
 
-    public static EmbedBuilder errFatal(String error) {
+    public static EmbedBuilder error(String error, String errFix, long id) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("If you are seeing this message, an error has occurred. Please join my support server: https://discord.gg/FnPb4nM");
+        eb.setTitle("❌ An error has occurred. ❌");
         eb.addField("Error details:", error, false);
+        eb.addField("Suggested fix: ", errFix, false);
+        eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + id, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x36393f);
+        return eb;
+    }
+
+    public static EmbedBuilder error(String error, long id) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ An error has occurred. ❌");
+        eb.addField("Error details:", error, false);
+        eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter("Command ID: " + id, thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x36393f);
         return eb;
     }
@@ -89,24 +102,6 @@ public abstract class ErrorEmbeds {
     public static EmbedBuilder invalidSlowmode() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Please enter a valid slowmode value.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
-    public static EmbedBuilder bothChannelAndSlow() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please specify the channels and then the slowmode.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
-    public static EmbedBuilder specifyChannels() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please specify the channels you want to configure.");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);

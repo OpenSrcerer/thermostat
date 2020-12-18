@@ -4,9 +4,10 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.ResponseManager;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
-import thermostat.thermoFunctions.Messages;
+import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
 
@@ -24,9 +25,11 @@ public class GetMonitorCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(GetMonitorCommand.class);
 
     private final GuildMessageReceivedEvent data;
+    private final long commandId;
 
     public GetMonitorCommand(@Nonnull GuildMessageReceivedEvent data) {
         this.data = data;
+        this.commandId = Functions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -63,16 +66,17 @@ public class GetMonitorCommand implements Command {
         }
 
         // #3 - Sends embed with information.
-        Messages.sendMessage(data.getChannel(), DynamicEmbeds.dynamicEmbed(
-                Arrays.asList(
-                        "Channels currently being monitored:",
-                        monitoredString,
-                        "Channels currently being filtered:",
-                        filteredString
-                ),
-                data.getMember().getUser()
-        ));
-        lgr.info("Successfully executed on (" + data.getGuild().getName() + "/" + data.getGuild().getId() + ").");
+        ResponseManager.commandSucceeded(this,
+                DynamicEmbeds.dynamicEmbed(
+                        Arrays.asList(
+                                "Channels currently being monitored:",
+                                monitoredString,
+                                "Channels currently being filtered:",
+                                filteredString
+                        ),
+                        data.getMember().getUser()
+                )
+        );
     }
 
     private String getEmbedString(List<String> list) {
@@ -106,5 +110,10 @@ public class GetMonitorCommand implements Command {
     @Override
     public Logger getLogger() {
         return lgr;
+    }
+
+    @Override
+    public long getId() {
+        return commandId;
     }
 }
