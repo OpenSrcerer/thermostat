@@ -2,6 +2,7 @@ package thermostat.mySQL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.managers.SynapseManager;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -72,6 +73,12 @@ public abstract class Create {
                     "SET MONITORED = ? WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?" +
                     " AND GUILDS.GUILD_ID = ?",
                     Arrays.asList(Integer.toString(monitor), CHANNEL_ID, GUILD_ID));
+
+            if (monitor == 1) {
+                SynapseManager.getSynapse(GUILD_ID).addChannel(CHANNEL_ID);
+            } else {
+                SynapseManager.getSynapse(GUILD_ID).removeChannel(CHANNEL_ID);
+            }
         } catch (SQLException ex) {
             lgr.warn(ex.getMessage(), ex);
         }

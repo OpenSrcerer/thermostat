@@ -25,7 +25,7 @@ import java.util.Arrays;
  * Adapter for any sort of action based on the
  * GuildMessageReactionEvent event class.
  */
-public class CommandTrigger extends ListenerAdapter {
+public final class CommandTrigger extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {

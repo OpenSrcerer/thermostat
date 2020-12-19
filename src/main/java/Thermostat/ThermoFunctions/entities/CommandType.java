@@ -138,6 +138,17 @@ public enum CommandType {
             ),
             EnumSet.noneOf(
                     Permission.class
+            )),
+
+    // ---- Internal ----
+
+    SYNAPSE_MONITOR("", "",
+            EnumSet.of(
+                    Permission.MESSAGE_HISTORY,
+                    Permission.MANAGE_CHANNEL
+            ),
+            EnumSet.noneOf(
+                    Permission.class
             ));
 
     private final String alias1, alias2;
