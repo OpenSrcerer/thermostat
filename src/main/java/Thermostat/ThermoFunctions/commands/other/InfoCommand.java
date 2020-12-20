@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
@@ -101,7 +101,7 @@ public class InfoCommand implements Command {
             return;
         }
 
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 GenericEmbeds.getInfoSelection(),
                 consumer);
     }

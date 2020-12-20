@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.guild.UnavailableGuildJoinedEvent;
 import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import thermostat.managers.SynapseManager;
+import thermostat.dispatchers.SynapseDispatcher;
 
 /**
  * Manages all JDA Events that relate to Synapses.
@@ -19,7 +19,7 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
-        SynapseManager.addSynapse(event.getGuild().getId());
+        SynapseDispatcher.addSynapse(event.getGuild().getId());
     }
 
     /**
@@ -27,7 +27,7 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onUnavailableGuildJoined(@NotNull UnavailableGuildJoinedEvent event) {
-        SynapseManager.addSynapse(event.getGuildId());
+        SynapseDispatcher.addSynapse(event.getGuildId());
     }
 
     /**
@@ -36,7 +36,7 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onTextChannelDelete(@NotNull TextChannelDeleteEvent event) {
-        SynapseManager.getSynapse(event.getGuild().getId()).removeChannel(event.getChannel().getId());
+        SynapseDispatcher.getSynapse(event.getGuild().getId()).removeChannel(event.getChannel().getId());
     }
 
     /**
@@ -44,7 +44,7 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
-        SynapseManager.removeSynapse(event.getGuild().getId());
+        SynapseDispatcher.removeSynapse(event.getGuild().getId());
     }
 
     /**
@@ -52,6 +52,6 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onUnavailableGuildLeave(@NotNull UnavailableGuildLeaveEvent event) {
-        SynapseManager.removeSynapse(event.getGuildId());
+        SynapseDispatcher.removeSynapse(event.getGuildId());
     }
 }

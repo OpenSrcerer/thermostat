@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.thermoFunctions.Functions;
@@ -66,7 +66,7 @@ public class GetMonitorCommand implements Command {
         }
 
         // #3 - Sends embed with information.
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
                                 "Channels currently being monitored:",

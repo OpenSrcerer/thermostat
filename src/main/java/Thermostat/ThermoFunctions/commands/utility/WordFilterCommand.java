@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.Functions;
@@ -186,7 +186,7 @@ public class WordFilterCommand implements Command {
                                                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
                                         Arrays.asList(webhook.getId(), webhook.getToken(), data.getChannel().getId()));
                             } catch (SQLException ex) {
-                                ResponseManager.commandFailed(this,
+                                ResponseDispatcher.commandFailed(this,
                                         ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
                                         ex);
                             }

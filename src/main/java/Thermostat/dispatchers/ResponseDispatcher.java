@@ -1,4 +1,4 @@
-package thermostat.managers;
+package thermostat.dispatchers;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
-public final class ResponseManager {
+public final class ResponseDispatcher {
     public static void commandSucceeded(@Nonnull Command command, @Nonnull EmbedBuilder embed) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
         Messages.sendMessage(command.getEvent().getChannel(), embed);

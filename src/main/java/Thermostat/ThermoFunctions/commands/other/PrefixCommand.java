@@ -3,7 +3,7 @@ package thermostat.thermoFunctions.commands.other;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
@@ -44,7 +44,7 @@ public class PrefixCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("No arguments provided. Please insert a valid prefix.", commandId),
                     "User did not provide arguments.");
             return;
@@ -53,7 +53,7 @@ public class PrefixCommand implements Command {
         try {
             prefixAction(data, arguments, prefix);
         } catch (SQLException ex) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
                     ex);
         }

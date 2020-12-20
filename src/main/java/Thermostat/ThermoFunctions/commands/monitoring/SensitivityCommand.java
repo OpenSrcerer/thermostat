@@ -3,7 +3,7 @@ package thermostat.thermoFunctions.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
@@ -43,7 +43,7 @@ public class SensitivityCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("No arguments provided. Please insert a sensitivity value.", commandId),
                     "User did not provide arguments.");
             return;
@@ -60,7 +60,7 @@ public class SensitivityCommand implements Command {
             offset = Float.parseFloat(arguments.get(0));
             arguments.remove(0);
         } catch (NumberFormatException ex) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("Sensitivity value must be between 0 and 10 (inclusive).", commandId),
                     "User provided an incorrect sensitivity value.");
             return;
@@ -89,7 +89,7 @@ public class SensitivityCommand implements Command {
                 }
 
             } catch (SQLException ex) {
-                ResponseManager.commandFailed(this,
+                ResponseDispatcher.commandFailed(this,
                         ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
                         ex);
                 return;
@@ -97,7 +97,7 @@ public class SensitivityCommand implements Command {
         }
 
         // #4 - Send embed results to user
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
                                 "Channels given a new sensitivity of " + offset + ":",

@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
-import thermostat.managers.CommandManager;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
@@ -98,7 +98,7 @@ public interface Command extends Runnable {
                                     missingThermostatPerms = getMissingPermissions(thermostat, commandEvent.getChannel(), command.getType().getThermoPerms());
 
                             if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
-                                CommandManager.queueCommand(command);
+                                CommandDispatcher.queueCommand(command);
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
                                         " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
@@ -124,7 +124,7 @@ public interface Command extends Runnable {
                             EnumSet<Permission> missingThermostatPerms = getMissingPermissions(thermostat, commandEvent.getChannel(), command.getType().getThermoPerms());
 
                             if (missingThermostatPerms.isEmpty()) {
-                                CommandManager.queueCommand(command);
+                                CommandDispatcher.queueCommand(command);
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getChannel().getGuild().getName() + "/" + commandEvent.getChannel().getGuild().getId() + "):" +
                                         " [" + missingThermostatPerms.toString() + "]");

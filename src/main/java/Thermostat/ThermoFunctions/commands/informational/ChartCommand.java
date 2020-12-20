@@ -10,7 +10,7 @@ import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.style.Styler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
@@ -71,7 +71,7 @@ public class ChartCommand implements Command {
     public void run() {
         // prefix removed (sends info msg)
         if (arguments.isEmpty()) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("No arguments provided. Chart Type is required.", commandId),
                     "User did not provide arguments.");
         }
@@ -82,7 +82,7 @@ public class ChartCommand implements Command {
             if (arguments.get(0).equalsIgnoreCase("slowfreq")) {
                 frequencyChart(data.getGuild(), data.getMember());
             } else {
-                ResponseManager.commandFailed(this,
+                ResponseDispatcher.commandFailed(this,
                         ErrorEmbeds.inputError("\"" + arguments.get(0) + "\" chart type does not exist.", commandId),
                         "User provided an incorrect chart type.");
             }
@@ -95,13 +95,13 @@ public class ChartCommand implements Command {
             TextChannel argumentChannel = data.getGuild().getTextChannelById(Functions.parseMention(arguments.get(1), "#"));
 
             if (argumentChannel == null) {
-                ResponseManager.commandFailed(this,
+                ResponseDispatcher.commandFailed(this,
                         ErrorEmbeds.inputError("Channel \"" + arguments.get(1) + "\" was not found.", commandId),
                         "Channel that user provided wasn't found.");
             } else if ((arguments.get(0).equalsIgnoreCase("slowfreq"))) {
                 frequencyChart(data.getGuild(), data.getMember());
             } else {
-                ResponseManager.commandFailed(this,
+                ResponseDispatcher.commandFailed(this,
                         ErrorEmbeds.inputError("\"" + arguments.get(0) + "\" chart type does not exist.", commandId),
                         "User provided an incorrect chart type.");
             }
@@ -118,7 +118,7 @@ public class ChartCommand implements Command {
         // #2 - If not enough data on the chart, channels were never slowmoded
         // in this guild.
         if (top5slowmode == null) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
                             "Get some channels slowmoded with `th!monitor`.", Functions.getCommandId()),
                     "Channels were never slowmoded in this guild.");
@@ -186,13 +186,13 @@ public class ChartCommand implements Command {
             ImageIO.write(BitmapEncoder.getBufferedImage(chart), "png", baos);
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
                     ex);
             return;
         }
 
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 GenericEmbeds.chartHolder(eventMember.getUser().getAsTag(), eventMember.getUser().getAvatarUrl(), eventGuild.getName()),
                 inputStream);
     }

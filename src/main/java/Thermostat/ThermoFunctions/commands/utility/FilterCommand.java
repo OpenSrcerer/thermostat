@@ -3,7 +3,7 @@ package thermostat.thermoFunctions.commands.utility;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
@@ -47,7 +47,7 @@ public class FilterCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     HelpEmbeds.helpFilter(prefix),
                     "User did not provide arguments.");
         }
@@ -78,7 +78,7 @@ public class FilterCommand implements Command {
             addIfNotInDb(data.getGuild().getId(), arguments);
             complete = Create.setFilter(Integer.toString(filtered), arguments);
         } catch (SQLException ex) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
                     ex);
             return;
@@ -91,7 +91,7 @@ public class FilterCommand implements Command {
             message = "Disabled filtering on:";
         }
 
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
                                 message,

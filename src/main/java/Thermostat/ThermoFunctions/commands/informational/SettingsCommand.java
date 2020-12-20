@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
@@ -61,7 +61,7 @@ public class SettingsCommand implements Command {
 
             // if channel doesn't exist, show error msg
             if (channelId.isEmpty() || data.getGuild().getTextChannelById(channelId) == null) {
-                ResponseManager.commandFailed(this,
+                ResponseDispatcher.commandFailed(this,
                         ErrorEmbeds.inputError("Channel \"" + arguments.get(0) + "\" was not found.", commandId),
                         "Channel that user provided wasn't found.");
                 return;
@@ -83,7 +83,7 @@ public class SettingsCommand implements Command {
                 monitored = (boolean) objects.get(3);
                 filtered = (boolean) objects.get(4);
         } catch (SQLException ex) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
                     ex);
             return;
@@ -92,7 +92,7 @@ public class SettingsCommand implements Command {
         TextChannel settingsChannel = data.getGuild().getTextChannelById(channelId);
 
         if (settingsChannel != null) {
-            ResponseManager.commandSucceeded(this,
+            ResponseDispatcher.commandSucceeded(this,
                     GenericEmbeds.channelSettings(settingsChannel.getName(),
                             data.getMember().getUser().getAsTag(),
                             data.getMember().getUser().getAvatarUrl(),

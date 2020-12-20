@@ -3,7 +3,7 @@ package thermostat.thermoFunctions.commands.other;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
@@ -40,7 +40,7 @@ public class InviteCommand implements Command {
      */
     @Override
     public void run() {
-        ResponseManager.commandSucceeded(this, GenericEmbeds.inviteServer(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()));
+        ResponseDispatcher.commandSucceeded(this, GenericEmbeds.inviteServer(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package thermostat.managers;
+package thermostat.dispatchers;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
 import thermostat.mySQL.DataSource;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Main purpose queuing them for periodic server slowmode
  * updates.
  */
-public final class SynapseManager {
+public final class SynapseDispatcher {
     private static final ArrayList<Synapse> synapses = new ArrayList<>();
 
     /**

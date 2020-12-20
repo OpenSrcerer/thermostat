@@ -3,7 +3,7 @@ package thermostat.thermoFunctions.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
@@ -50,7 +50,7 @@ public class SetBoundsCommand implements Command {
     @Override
     public void run() {
         if (arguments.size() < 2) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     HelpEmbeds.helpSetBounds(prefix),
                     "User did not provide enough arguments.");
             return;
@@ -74,7 +74,7 @@ public class SetBoundsCommand implements Command {
         } else if (arguments.get(0).contains("min")) {
             type = ActionType.MINIMUM;
         } else {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     HelpEmbeds.helpSetBounds(prefix),
                     "User provided a wrong minimum/maximum argument.");
             return;
@@ -84,7 +84,7 @@ public class SetBoundsCommand implements Command {
         try {
             argumentSlow = parseSlowmode(arguments.get(1));
         } catch (NumberFormatException ex) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("Slowmode value \"" + arguments.get(1) + "\" was incorrect.", commandId),
                     "User provided an incorrect sensitivity value.");
             return;
@@ -155,7 +155,7 @@ public class SetBoundsCommand implements Command {
                     }
 
                 } catch (SQLException ex) {
-                    ResponseManager.commandFailed(this,
+                    ResponseDispatcher.commandFailed(this,
                             ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
                             ex);
                     return;
@@ -163,7 +163,7 @@ public class SetBoundsCommand implements Command {
             }
 
             // #6 - Send the results embed to manager
-            ResponseManager.commandSucceeded(this,
+            ResponseDispatcher.commandSucceeded(this,
                     DynamicEmbeds.dynamicEmbed(
                             Arrays.asList(
                                     "Channels given a maximum slowmode of " + argumentSlow + ":",
@@ -181,7 +181,7 @@ public class SetBoundsCommand implements Command {
                     )
             );
         } else {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     HelpEmbeds.helpSensitivity(prefix),
                     "User provided an incorrect bound type.");
         }

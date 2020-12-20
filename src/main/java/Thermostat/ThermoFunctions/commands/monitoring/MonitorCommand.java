@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.managers.ResponseManager;
+import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
@@ -57,7 +57,7 @@ public class MonitorCommand implements Command {
     @Override
     public void run() {
         if (arguments.isEmpty()) {
-            ResponseManager.commandFailed(this,
+            ResponseDispatcher.commandFailed(this,
                     HelpEmbeds.helpMonitor(prefix),
                     "User did not provide any arguments.");
             return;
@@ -110,7 +110,7 @@ public class MonitorCommand implements Command {
         }
 
         // #6 - Send the results embed to manager
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
                                 message1,
@@ -143,7 +143,7 @@ public class MonitorCommand implements Command {
             }
         };
 
-        ResponseManager.commandSucceeded(this,
+        ResponseDispatcher.commandSucceeded(this,
                 GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()),
                 consumer);
     }
