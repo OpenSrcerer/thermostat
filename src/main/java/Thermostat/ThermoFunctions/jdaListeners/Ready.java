@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.commands.CommandTrigger;
+import thermostat.thermoFunctions.commands.events.SynapseEvents;
 import thermostat.thermoFunctions.monitorThreads.DBLServerMonitor;
 import thermostat.thermoFunctions.monitorThreads.MessageReceived;
 import thermostat.thermoFunctions.monitorThreads.WorkerManager;
@@ -47,7 +48,8 @@ public class Ready extends ListenerAdapter {
                 new MessageDeleteEvent(),
                 new ReactionAddEvent(),
                 new MessageReceived(),
-                new ChannelDeleteEvent()
+                new ChannelDeleteEvent(),
+                new SynapseEvents()
         );
 
         DBLServerMonitor.getInstance();
