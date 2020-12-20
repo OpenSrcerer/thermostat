@@ -16,7 +16,7 @@ import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
 import thermostat.thermoFunctions.entities.CommandType;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -147,7 +147,7 @@ public class WordFilterCommand implements Command {
 
         Icon userAvatar = getUserIcon(userAvatarURL);
 
-        return thermostat.thermo
+        return Thermostat.thermo
                 .retrieveWebhookById(webhookId)
                 .flatMap(
                         Objects::nonNull,

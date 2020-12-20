@@ -1,7 +1,7 @@
 package thermostat.preparedStatements;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import java.time.Instant;
 
@@ -24,7 +24,7 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("No channels have ever been given slowmode by Thermostat.");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);
         return eb;
     }
@@ -39,7 +39,7 @@ public abstract class GenericEmbeds {
 
     public static EmbedBuilder resetPrefix() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Thermostat's prefix has been reset to `" + thermostat.prefix + "` .");
+        eb.setTitle("Thermostat's prefix has been reset to `" + Thermostat.prefix + "` .");
         eb.setTimestamp(Instant.now());
         eb.setColor(0x00aeff);
         return eb;
@@ -139,7 +139,7 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Did not react to prompt in time. Operation cancelled.");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x00aeff);
         return eb;
     }
@@ -157,7 +157,7 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("No channels are currently being monitored!");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x00aeff);
         return eb;
     }
@@ -168,7 +168,7 @@ public abstract class GenericEmbeds {
         eb.addField("This command is used to add a channel to the monitoring database. " +
                 "You can also input an ID of a category instead, and the text channels in that category will be removed.", "`Syntax: th!monitor/mon/m <channels>/<categories>.`", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);
         return eb;
     }
@@ -202,7 +202,7 @@ public abstract class GenericEmbeds {
         eb.setTitle("ℹ┇Other Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
         eb.addField(prefix + "info", "`Syntax:" + prefix + "info.`", false);
-        eb.addField("@Thermostat prefix", "Syntax: <@!" + thermostat.thermo.getSelfUser().getId() + "> `prefix.`", false);
+        eb.addField("@Thermostat prefix", "Syntax: <@!" + Thermostat.thermo.getSelfUser().getId() + "> `prefix.`", false);
         eb.addField(prefix + "chart", "Syntax: `" + prefix + "chart <charttype>.`", false);
         eb.addField(prefix + "vote", "Syntax: `" + prefix + "vote.`", false);
         eb.addField(prefix + "invite", "Syntax: `" + prefix + "invite.`", false);

@@ -12,7 +12,7 @@ import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.entities.MenuType;
 import thermostat.thermoFunctions.entities.MonitoredMessage;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -48,7 +48,7 @@ public class ReactionAddEvent extends ListenerAdapter {
             // gets guild prefix from database. if it doesn't have one, use default
             String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", ev.getGuild().getId());
             if (prefix == null) {
-                prefix = thermostat.prefix;
+                prefix = Thermostat.prefix;
             }
 
             try {

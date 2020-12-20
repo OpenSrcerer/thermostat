@@ -286,6 +286,7 @@ public abstract class DataSource {
             // Filtered
             resultArray.add(rs.getBoolean(5));
 
+        conn.close();
         return resultArray;
     }
 

@@ -15,7 +15,7 @@ import thermostat.thermoFunctions.commands.other.VoteCommand;
 import thermostat.thermoFunctions.commands.utility.FilterCommand;
 import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermoFunctions.commands.utility.WordFilterCommand;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public final class CommandTrigger extends ListenerAdapter {
 
         String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", event.getGuild().getId());
         if (prefix == null) {
-            prefix = thermostat.prefix;
+            prefix = Thermostat.prefix;
         }
 
         // gets given arguments and passes them to a list
@@ -130,7 +130,7 @@ public final class CommandTrigger extends ListenerAdapter {
         }
 
         else if (
-                (arguments.get(0).equalsIgnoreCase("<@!" + thermostat.thermo.getSelfUser().getId() + ">"))
+                (arguments.get(0).equalsIgnoreCase("<@!" + Thermostat.thermo.getSelfUser().getId() + ">"))
         ) {
             if (arguments.size() > 1)
                 if (arguments.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias1()) ||

@@ -5,7 +5,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 
 /**
  * Initializes token variables for loading.
- * @see thermostat
+ * @see Thermostat
  */
 public class InitTokens implements Callable<String[]> {
 
@@ -32,7 +32,7 @@ public class InitTokens implements Callable<String[]> {
         String[] tokens = new String[3];
 
         try {
-            InputStream configFile = thermostat.class.getClassLoader().getResourceAsStream("config.json");
+            InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
 
             if (configFile == null) { lgr.error("JSON config file not found."); return tokens; }
 

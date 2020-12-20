@@ -2,45 +2,59 @@ package thermostat.dispatchers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Thermostat;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.commands.Command;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * Organizes Command objects in a queue to be processed
+ * by executor Threads.
+ */
 public final class CommandDispatcher {
-
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(CommandDispatcher.class);
 
-    private static final int nThreads = 4;
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(nThreads);
-    private static final LinkedBlockingQueue<Command> commands = new LinkedBlockingQueue<>(nThreads);
+    /**
+     * Queue to hold command objects waiting while the worker threads are
+     * completing them.
+     */
+    private static final LinkedBlockingQueue<Command> commands = new LinkedBlockingQueue<>(100);
 
     static {
         Runnable drainCommands = () -> {
+            // Boolean that shows if the thread should wait
+            // for the problem to be resolved.
+            boolean backOff = false;
+
             while (true) {
-                Command command = null;
-
-                // Pick up commands from the queue
                 try {
-                    // Wait until a command gets in the queue
-                    command = commands.take();
-                } catch (InterruptedException ex) {
+                    if (backOff) {
+                        Thread.sleep (1000);
+                        backOff = false;
+                    }
+
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+
+                    commands.take().run();
+                } catch (Exception ex) {
                     lgr.error("Thread interrupted while waiting for request.", ex);
+                    backOff = true;
+                } catch (Error err) {
+                    lgr.error("Java error thrown!", err);
+                    Thermostat.shutdownThermostat();
                 }
-
-                if (command == null) {
-                    return;
-                }
-
-                command.run();
             }
         };
 
-        for (int thread = 1; thread <= nThreads; ++thread) {
-            executor.submit(drainCommands);
+        for (int thread = 1; thread <= 2; ++thread) {
+            Thermostat.executor.submit(drainCommands);
         }
     }
 
@@ -60,4 +74,6 @@ public final class CommandDispatcher {
             );
         }
     }
+
+
 }

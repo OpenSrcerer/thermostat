@@ -4,13 +4,13 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
+import thermostat.Thermostat;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.entities.CommandType;
-import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
@@ -89,7 +89,7 @@ public interface Command extends Runnable {
 
         // check main permissions
         commandEvent.getGuild()
-                .retrieveMember(thermostat.thermo.getSelfUser())
+                .retrieveMember(Thermostat.thermo.getSelfUser())
                 .queue(
                         thermostat -> {
                             // Get member and thermostat's missing permissions, if applicable
@@ -117,7 +117,7 @@ public interface Command extends Runnable {
         GuildMessageReceivedEvent commandEvent = command.getEvent();
 
         commandEvent.getGuild()
-                .retrieveMember(thermostat.thermo.getSelfUser())
+                .retrieveMember(Thermostat.thermo.getSelfUser())
                 .queue(
                         thermostat -> {
                             // Get Thermostat's missing permissions, if applicable
@@ -126,7 +126,7 @@ public interface Command extends Runnable {
                             if (missingThermostatPerms.isEmpty()) {
                                 CommandDispatcher.queueCommand(command);
                             } else {
-                                command.getLogger().info("Missing permissions on (" + commandEvent.getChannel().getGuild().getName() + "/" + commandEvent.getChannel().getGuild().getId() + "):" +
+                                command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
                                         " [" + missingThermostatPerms.toString() + "]");
                                 Messages.sendMessage(commandEvent.getChannel(), ErrorEmbeds.errPermission(missingThermostatPerms));
                             }

@@ -40,14 +40,6 @@ public class Synapse {
     }
 
     /**
-     * Set the state of the Synapse.
-     * @param state New state of Synapse.
-     */
-    public synchronized void setState(SynapseState state) {
-        this.state = state;
-    }
-
-    /**
      * Adds a new channel in synapse's monitoring cache.
      * @param channelId ID of channel to monitor.
      */
@@ -77,6 +69,14 @@ public class Synapse {
      */
     public String getGuildId() {
         return guildId;
+    }
+
+    /**
+     * Set the state of the Synapse.
+     * @param state New state of Synapse.
+     */
+    public synchronized void setState(SynapseState state) {
+        this.state = state;
     }
 
     /**

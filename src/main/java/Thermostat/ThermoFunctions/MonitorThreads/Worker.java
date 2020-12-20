@@ -19,7 +19,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static thermostat.thermostat.thermo;
+import static thermostat.Thermostat.thermo;
 
 /**
  * Manager class for each instance of a Guild.

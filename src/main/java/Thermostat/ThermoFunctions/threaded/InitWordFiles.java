@@ -3,7 +3,7 @@ package thermostat.thermoFunctions.threaded;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.thermoFunctions.commands.utility.WordFilterCommand;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,8 +38,8 @@ public class InitWordFiles implements Callable<Boolean> {
 
         // reads from files
         try (
-                InputStream niceFile = thermostat.class.getClassLoader().getResourceAsStream(File1);
-                InputStream badFile = thermostat.class.getClassLoader().getResourceAsStream(File2)
+                InputStream niceFile = Thermostat.class.getClassLoader().getResourceAsStream(File1);
+                InputStream badFile = Thermostat.class.getClassLoader().getResourceAsStream(File2)
         ) {
             lgr.debug("Loaded word files " + File1 + " and " + File2);
 

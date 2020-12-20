@@ -7,19 +7,19 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Thermostat;
+import thermostat.dispatchers.SynapseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.commands.CommandTrigger;
 import thermostat.thermoFunctions.commands.events.SynapseEvents;
-import thermostat.thermoFunctions.monitorThreads.DBLServerMonitor;
 import thermostat.thermoFunctions.monitorThreads.MessageReceived;
-import thermostat.thermoFunctions.monitorThreads.WorkerManager;
 import thermostat.thermoFunctions.threaded.InitWordFiles;
-import thermostat.thermostat;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static thermostat.thermostat.thermo;
+import static thermostat.Thermostat.shutdownThermostat;
+import static thermostat.Thermostat.thermo;
 
 /**
  * Listener class that runs the rest of the
@@ -27,15 +27,13 @@ import static thermostat.thermostat.thermo;
  * initialization.
  */
 public class Ready extends ListenerAdapter {
-    private static final Logger lgr = LoggerFactory.getLogger(thermostat.class);
-
+    private static final Logger lgr = LoggerFactory.getLogger(Thermostat.class);
     public void onReady(@Nonnull ReadyEvent event) {
 
         DataSource.getDataSource();
 
         if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
-            DataSource.closeDataSource();
-            thermo.shutdownNow();
+            shutdownThermostat();
             lgr.error("Word files could not be set up!\nBot instance shutting down...");
             return;
         }
@@ -52,10 +50,9 @@ public class Ready extends ListenerAdapter {
                 new SynapseEvents()
         );
 
-        DBLServerMonitor.getInstance();
-        WorkerManager.getInstance();
+        SynapseDispatcher.initializeSynapses();
         getConnectedGuilds();
-        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://www.youtube.com/watch?v=fC7oUOUEEi4"));
+        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://github.com/opensrcerer/thermostat"));
     }
 
     // Prints out list of currently connected guilds

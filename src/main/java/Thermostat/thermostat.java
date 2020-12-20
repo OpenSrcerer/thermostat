@@ -8,14 +8,14 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.discordbots.api.client.DiscordBotListAPI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.jdaListeners.Ready;
 import thermostat.thermoFunctions.threaded.InitTokens;
 
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Thermostat
@@ -24,57 +24,60 @@ import java.util.EnumSet;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 0.9.2
+ * @version 1.0.0_beta
  * @since 2020-04-17
  */
-
-public class thermostat {
-    // JDA instance, default bot prefix, API instances, logger
-    public static JDA thermo;
-    public static String prefix;
-    public static DiscordBotListAPI thermoAPI;
-    private static final Logger lgr = LoggerFactory.getLogger(thermostat.class);
-
-    // Intents to using the Discord Gateway
-    private static final EnumSet<GatewayIntent> intents = EnumSet.of(
-            GatewayIntent.GUILD_MESSAGES,
-            GatewayIntent.GUILD_MESSAGE_REACTIONS
-    );
+public abstract class Thermostat {
+    /**
+     * Pool of threads used by every non JDA related action in this application.
+     */
+    public static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
 
     /**
-     * Main run function for the bot. Event listeners
-     * are defined in {@link Ready}.
+     * Static JDA instance for thermostat.
      */
-    public static void main(String[] args) {
+    public static JDA thermo;
 
-        String[] tokens = new InitTokens().call();
+    /**
+     * Thermostat's default prefix.
+     */
+    public static String prefix;
 
-        try {
-            thermo = JDABuilder
-                    .create(tokens[1], intents)
-                    .disableCache(
-                            CacheFlag.ACTIVITY,
-                            CacheFlag.EMOTE,
-                            CacheFlag.CLIENT_STATUS,
-                            CacheFlag.MEMBER_OVERRIDES,
-                            CacheFlag.VOICE_STATE
-                    )
-                    .setMemberCachePolicy(MemberCachePolicy.NONE)
-                    .setChunkingFilter(ChunkingFilter.NONE)
-                    .setEnableShutdownHook(true)
-                    .addEventListeners(new Ready())
-                    .build();
-        } catch (LoginException ex) {
-            lgr.error("Error while logging in the Discord Gateway!", ex);
-        }
+    public static void initializeThermostat() throws LoginException {
+        String[] config = new InitTokens().call();
+        prefix = config[0];
 
-        prefix = tokens[0];
+        thermo = JDABuilder
+                .create(
+                        config[1],
+                        EnumSet.of(
+                                GatewayIntent.GUILD_MESSAGES,
+                                GatewayIntent.GUILD_MESSAGE_REACTIONS
+                        )
+                )
+                .disableCache(
+                        CacheFlag.ACTIVITY,
+                        CacheFlag.EMOTE,
+                        CacheFlag.CLIENT_STATUS,
+                        CacheFlag.MEMBER_OVERRIDES,
+                        CacheFlag.VOICE_STATE
+                )
+                .setMemberCachePolicy(MemberCachePolicy.NONE)
+                .setChunkingFilter(ChunkingFilter.NONE)
+                .setEnableShutdownHook(true)
+                .addEventListeners(new Ready())
+                .build();
 
-        /*thermoAPI = new DiscordBotListAPI.Builder()
-                .token(tokens[2])
-                .botId(thermo.getSelfUser().getId())
-                .build();*/
+        // MiscellaneousDispatcher.setDblApi(config[2]);
+        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("fast loading..."));
+    }
 
-        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.listening("loading sounds..."));
+    /**
+     * Shuts down Thermostat in case of a major Error thrown.
+     */
+    public static void shutdownThermostat() {
+        executor.shutdown();
+        thermo.shutdown();
+        DataSource.closeDataSource();
     }
 }

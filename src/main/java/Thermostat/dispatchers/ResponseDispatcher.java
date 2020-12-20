@@ -9,6 +9,10 @@ import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
+/**
+ * Organizes all types of responses from Commands into a comprehensible
+ * set of functions to output data to the end user.
+ */
 public final class ResponseDispatcher {
     public static void commandSucceeded(@Nonnull Command command, @Nonnull EmbedBuilder embed) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
@@ -19,6 +23,7 @@ public final class ResponseDispatcher {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
         Messages.sendMessage(command.getEvent().getChannel(), inputStream, embed);
     }
+
     public static void commandSucceeded(@Nonnull Command command,  @Nonnull EmbedBuilder embed, @Nonnull Consumer<Message> consumer) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
         Messages.sendMessage(command.getEvent().getChannel(), embed, consumer);

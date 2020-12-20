@@ -4,11 +4,13 @@ import net.dv8tion.jda.api.entities.ISnowflake;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.Delete;
 import thermostat.thermoFunctions.commands.monitoring.synapses.Synapse;
-import thermostat.thermostat;
+import thermostat.Thermostat;
+import thermostat.thermoFunctions.commands.monitoring.synapses.SynapseMonitor;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -21,15 +23,13 @@ public final class SynapseDispatcher {
 
     /**
      * Initializes the synapses cache with a synapse for every Guild Thermostat is in.
-     * @return ArrayList of Synapses in active form.
      */
-    private static ArrayList<Synapse> initializeSynapses() {
-        ArrayList<Synapse> synapses = new ArrayList<>();
+    public static void initializeSynapses() {
         List<String> databaseGuilds = DataSource.queryStringArray("SELECT GUILD_ID FROM GUILDS", "");
-        List<String> thermostatGuilds = thermostat.thermo.getGuilds().stream().map(ISnowflake::getId).collect(Collectors.toList());
+        List<String> thermostatGuilds = Thermostat.thermo.getGuilds().stream().map(ISnowflake::getId).collect(Collectors.toList());
 
         if (databaseGuilds == null) {
-            return new ArrayList<>();
+            return;
         }
 
         for (String guild : databaseGuilds) {
@@ -40,7 +40,13 @@ public final class SynapseDispatcher {
             }
         }
 
-        return synapses;
+        Runnable run = () -> {
+            for (Synapse synapse : synapses) {
+                new SynapseMonitor(synapse);
+            }
+        };
+
+        Thermostat.executor.scheduleAtFixedRate(run, 0, 8, TimeUnit.SECONDS);
     }
 
     /**

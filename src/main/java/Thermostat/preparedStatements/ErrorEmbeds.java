@@ -2,7 +2,7 @@ package thermostat.preparedStatements;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import thermostat.thermostat;
+import thermostat.Thermostat;
 
 import java.time.Instant;
 import java.util.EnumSet;
@@ -46,7 +46,7 @@ public abstract class ErrorEmbeds {
         eb.setTitle("You have an error in your input:");
         eb.addField("`" + error + "`", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + id, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + id, Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x36393f);
         return eb;
     }
@@ -58,7 +58,7 @@ public abstract class ErrorEmbeds {
         eb.addField("Suggested fix: ", errFix, false);
         eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + id, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + id, Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x36393f);
         return eb;
     }
@@ -69,7 +69,7 @@ public abstract class ErrorEmbeds {
         eb.addField("Error details:", error, false);
         eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + id, thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + id, Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0x36393f);
         return eb;
     }
@@ -78,7 +78,7 @@ public abstract class ErrorEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Please enter a valid sensitivity value.");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);
         return eb;
     }
@@ -103,7 +103,7 @@ public abstract class ErrorEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Please enter a valid slowmode value.");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);
         return eb;
     }
@@ -112,7 +112,7 @@ public abstract class ErrorEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Channel " + channel + " was not found in this guild.");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xff0000);
         return eb;
     }

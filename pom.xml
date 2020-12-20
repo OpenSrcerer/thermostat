@@ -6,7 +6,7 @@
 
     <groupId>opensrcerer.com.github</groupId>
     <artifactId>Thermostat</artifactId>
-    <version>0.9.2</version>
+    <version>1.0.0_beta</version>
     <build>
         <plugins>
             <plugin>
@@ -14,8 +14,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>15</source>
+                    <target>15</target>
                 </configuration>
             </plugin>
 
@@ -33,7 +33,7 @@
                             <transformers>
                                 <transformer implementation=
                                                      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>thermostat.thermostat</mainClass>
+                                    <mainClass>thermostat.Run</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
