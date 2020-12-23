@@ -20,15 +20,6 @@ public abstract class GenericEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder noChannelsEverSlowmoded() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("No channels have ever been given slowmode by Thermostat.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
-        return eb;
-    }
-
     public static EmbedBuilder samePrefix(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("My prefix is already `" + prefix + "` !");

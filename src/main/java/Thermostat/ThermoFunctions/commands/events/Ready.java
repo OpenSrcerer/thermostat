@@ -1,4 +1,4 @@
-package thermostat.thermoFunctions.jdaListeners;
+package thermostat.thermoFunctions.commands.events;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -11,8 +11,6 @@ import thermostat.Thermostat;
 import thermostat.dispatchers.SynapseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.commands.CommandTrigger;
-import thermostat.thermoFunctions.commands.events.SynapseEvents;
-import thermostat.thermoFunctions.monitorThreads.MessageReceived;
 import thermostat.thermoFunctions.threaded.InitWordFiles;
 
 import javax.annotation.Nonnull;
@@ -40,13 +38,8 @@ public class Ready extends ListenerAdapter {
 
         thermo.addEventListener(
                 new CommandTrigger(),
-                // Other Event Listeners
-                new GuildJoin(),
-                new GuildLeave(),
                 new MessageDeleteEvent(),
                 new ReactionAddEvent(),
-                new MessageReceived(),
-                new ChannelDeleteEvent(),
                 new SynapseEvents()
         );
 

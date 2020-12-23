@@ -5,14 +5,30 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.UnavailableGuildJoinedEvent;
 import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import thermostat.dispatchers.SynapseDispatcher;
+import thermostat.thermoFunctions.commands.monitoring.synapses.Synapse;
+import thermostat.thermoFunctions.entities.SynapseState;
 
 /**
  * Manages all JDA Events that relate to Synapses.
  */
 public class SynapseEvents extends ListenerAdapter {
+
+    @Override
+    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        Synapse synapse = SynapseDispatcher.getSynapse(event.getGuild().getId());
+
+        // Re-activate Synapse if it was disabled due to inactivity.
+        if (synapse.getState() == SynapseState.INACTIVE && synapse.getChannels().contains(event.getChannel().getId())) {
+            synapse.setState(SynapseState.ACTIVE);
+            System.out.println("Synapse reactivated! Guild: " + event.getGuild().getName());
+        }
+
+        synapse.addMessage(event.getChannel().getId(), event.getMessage().getTimeCreated());
+    }
 
     /**
      * Adds a new Synapse if a new Guild adds Thermostat.

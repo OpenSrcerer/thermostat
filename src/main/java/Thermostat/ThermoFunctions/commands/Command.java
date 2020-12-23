@@ -102,7 +102,7 @@ public interface Command extends Runnable {
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
                                         " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
-                                Messages.sendMessage(commandEvent.getChannel(), ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms));
+                                Messages.sendMessage(commandEvent.getChannel(), ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms, command.getId()));
                             }
                         }
                 );

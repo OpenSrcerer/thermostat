@@ -6,6 +6,7 @@ import thermostat.mySQL.Delete;
 import thermostat.thermoFunctions.commands.monitoring.synapses.Synapse;
 import thermostat.Thermostat;
 import thermostat.thermoFunctions.commands.monitoring.synapses.SynapseMonitor;
+import thermostat.thermoFunctions.entities.SynapseState;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -42,7 +43,9 @@ public final class SynapseDispatcher {
 
         Runnable run = () -> {
             for (Synapse synapse : synapses) {
-                new SynapseMonitor(synapse);
+                if (synapse.getState() == SynapseState.ACTIVE) {
+                    new SynapseMonitor(synapse);
+                }
             }
         };
 

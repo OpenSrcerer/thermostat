@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.jdaListeners.Ready;
+import thermostat.thermoFunctions.commands.events.Ready;
 import thermostat.thermoFunctions.threaded.InitTokens;
 
 import javax.security.auth.login.LoginException;

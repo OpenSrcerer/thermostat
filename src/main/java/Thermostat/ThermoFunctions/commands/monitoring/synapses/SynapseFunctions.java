@@ -2,35 +2,33 @@ package thermostat.thermoFunctions.commands.monitoring.synapses;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ISnowflake;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import thermostat.Thermostat;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.Delete;
-import thermostat.Thermostat;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class SynapseFunctions {
+    private static final Logger lgr = LoggerFactory.getLogger(SynapseFunctions.class);
 
     @Nonnull
-    protected static ArrayList<String> initializeMonitoredChannels(String guildId) {
+    protected static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(String guildId) {
+        Map<String, LinkedList<OffsetDateTime>> monChannels = new HashMap<>();
+
         ArrayList<String> databaseMonitoredChannels = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                 "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1", guildId);
-        ArrayList<String> monitoredChannels = new ArrayList<>();
 
         Guild guild = Thermostat.thermo.getGuildById(guildId);
-
         if (guild == null || databaseMonitoredChannels == null) {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
 
         // Get all channel ids from list of text channels
@@ -38,13 +36,13 @@ public final class SynapseFunctions {
 
         for (String channel : databaseMonitoredChannels) {
             if (channelsInGuild.contains(channel)) {
-                monitoredChannels.add(channel);
+                monChannels.put(channel, new LinkedList<>());
             } else {
                 Delete.Channel(guildId, channel);
             }
         }
 
-        return monitoredChannels;
+        return monChannels;
     }
 
     /**
@@ -54,12 +52,6 @@ public final class SynapseFunctions {
      * @param time    Int representing the adjustment time.
      */
     public static void putSlowmode(TextChannel channel, int time) {
-        Consumer<Throwable> slowmodeFailureConsumer = throwable -> {
-            if (!(throwable instanceof IOException)) {
-                // all
-            }
-        };
-
         // gets the maximum and minimum slowmode values
         // from the database.
         int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
@@ -68,7 +60,7 @@ public final class SynapseFunctions {
         int slowmodeToSet;
 
         try {
-            // gets the current slowmode
+            // gets the current slowmode in the channel
             int slow = channel.getSlowmode();
 
             // if slowmode and the added time exceed the max slowmode
@@ -83,7 +75,14 @@ public final class SynapseFunctions {
                     slowmodeToSet = TextChannel.MAX_SLOWMODE;
                 } else slowmodeToSet = Math.max(slow + time, min);
 
-            channel.getManager().setSlowmode(slowmodeToSet).queue(null, slowmodeFailureConsumer);
+            channel.getManager().setSlowmode(slowmodeToSet)
+                    .queue(null, throwable ->
+                            lgr.info("Failed to set slowmode on channel "
+                                    + channel.getName() + " of Guild " +
+                                    channel.getGuild().getName() +
+                                    ". Cause:" + throwable.getMessage()
+                            )
+                    );
 
             // Adds +1 when slowmode turns on for the first time. (Charting)
             if (slow == min && slowmodeToSet > min) {
@@ -91,10 +90,12 @@ public final class SynapseFunctions {
                         Arrays.asList(channel.getId(), channel.getGuild().getId()));
             }
 
-        } catch (InsufficientPermissionException ex) {
-            // log
         } catch (Exception ex) {
-            // log
+            lgr.info("Failed to set slowmode on channel "
+                    + channel.getName() + " of Guild " +
+                    channel.getGuild().getName() +
+                    ". Cause:", ex
+            );
         }
     }
 
@@ -109,12 +110,8 @@ public final class SynapseFunctions {
         if (channel == null) {
             return;
         }
-        // variables that store the maximum
-        // and minimum  slow values for each channel
-        int max, min;
-        float offset;
 
-        offset = DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+        float offset = DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
 
         // accounting for each delay of the messages
         // this function picks an appropriate slowmode
@@ -146,22 +143,19 @@ public final class SynapseFunctions {
      * Calculates an average of the delay time between
      * each message.
      *
-     * @param messages A list containing Discord sent
-     *                 messages.
+     * @param messageTimes A list containing Discord sent
+     *                 message times.
      * @return A long value, with the average time.
      */
-    public static long calculateAverageTime(List<Message> messages) {
+    public static long calculateAverageTime(List<OffsetDateTime> messageTimes) {
         long sum = 0;
 
-        if (messages.isEmpty())
+        if (messageTimes.isEmpty())
             return 0;
 
-        for (int index = 0; index < messages.size() - 1; ++index) {
-            sum += ChronoUnit.MILLIS.between(
-                    messages.get(index + 1).getTimeCreated(),
-                    messages.get(0).getTimeCreated()
-            );
+        for (int index = 0; index < messageTimes.size() - 1; ++index) {
+            sum += ChronoUnit.MILLIS.between(messageTimes.get(index + 1), messageTimes.get(index));
         }
-        return sum / messages.size();
+        return sum / messageTimes.size();
     }
 }

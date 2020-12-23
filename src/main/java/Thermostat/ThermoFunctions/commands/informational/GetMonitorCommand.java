@@ -74,7 +74,7 @@ public class GetMonitorCommand implements Command {
                                 "Channels currently being filtered:",
                                 filteredString
                         ),
-                        data.getMember().getUser()
+                        data.getMember().getUser(), commandId
                 )
         );
     }

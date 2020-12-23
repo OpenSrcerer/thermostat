@@ -65,7 +65,7 @@ public class PrefixCommand implements Command {
      * @param data CommandData object that stores information about the command triggerer.
      * @throws SQLException If some error went wrong with the DB conn.
      */
-    public static void prefixAction(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) throws SQLException {
+    public void prefixAction(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) throws SQLException {
         if (arguments.size() > 1 && arguments.get(0).equalsIgnoreCase("set")) {
             if (Pattern.matches("[!-~]*", arguments.get(1)) && arguments.get(1).length() <= 10 && !arguments.get(1).equalsIgnoreCase(prefix)) {
                 Messages.sendMessage(data.getChannel(), GenericEmbeds.setPrefix(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl(), arguments.get(1)));
@@ -74,10 +74,10 @@ public class PrefixCommand implements Command {
             } else if (arguments.get(1).equalsIgnoreCase(prefix)) {
                 Messages.sendMessage(data.getChannel(), GenericEmbeds.samePrefix(prefix));
             } else {
-                Messages.sendMessage(data.getChannel(), ErrorEmbeds.incorrectPrefix());
+                Messages.sendMessage(data.getChannel(), ErrorEmbeds.incorrectPrefix(this.getId()));
             }
         } else if (arguments.size() == 1 && arguments.get(0).equalsIgnoreCase("set")) {
-            Messages.sendMessage(data.getChannel(), ErrorEmbeds.insertPrefix());
+            Messages.sendMessage(data.getChannel(), ErrorEmbeds.insertPrefix(this.getId()));
         } else if (arguments.size() >= 1 && arguments.get(0).equalsIgnoreCase("reset")) {
             DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = ?", data.getGuild().getId());
             Messages.sendMessage(data.getChannel(), GenericEmbeds.resetPrefix());

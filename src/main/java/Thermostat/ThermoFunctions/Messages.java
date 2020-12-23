@@ -20,10 +20,9 @@ import java.util.function.Consumer;
 /**
  * Deals with different InsufficientPermissionExceptions
  * thrown by the JDA library, along with ErrorResponses.
- * Also controls timed message deletion to prevent spam.
- * Consider this class a "wrapper" for JDA Message Functions.
+ * Controls timed message deletion to prevent spam.
  */
-public abstract class Messages {
+public final class Messages {
     /**
      * Sends an embed to a designated channel, runs
      * a success Consumer afterwards.

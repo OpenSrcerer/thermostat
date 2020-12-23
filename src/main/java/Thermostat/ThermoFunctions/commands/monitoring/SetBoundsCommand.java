@@ -64,7 +64,7 @@ public class SetBoundsCommand implements Command {
 
         // type represents the action being taken
         // setMaximum or setMinimum
-        ActionType type = ActionType.INVALID;
+        ActionType type;
         // value given to us by user to assign as slowmode
         int argumentSlow;
 
@@ -177,7 +177,7 @@ public class SetBoundsCommand implements Command {
                                     "Categories with no Text Channels:",
                                     noText.toString()
                             ),
-                            data.getMember().getUser()
+                            data.getMember().getUser(), commandId
                     )
             );
         } else {

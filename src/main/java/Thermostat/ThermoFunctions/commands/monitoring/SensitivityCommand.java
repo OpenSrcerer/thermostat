@@ -109,7 +109,7 @@ public class SensitivityCommand implements Command {
                                 "Categories with no Text Channels:",
                                 noText.toString()
                         ),
-                        data.getMember().getUser()
+                        data.getMember().getUser(), commandId
                 )
         );
     }

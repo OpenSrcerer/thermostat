@@ -1,4 +1,4 @@
-package thermostat.thermoFunctions.jdaListeners;
+package thermostat.thermoFunctions.commands.events;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

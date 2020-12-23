@@ -8,10 +8,8 @@ import java.util.List;
 
 public abstract class DynamicEmbeds {
 
-    public static EmbedBuilder dynamicEmbed(List<String> options, User user) {
-
+    public static EmbedBuilder dynamicEmbed(List<String> options, User user, long commandId) {
         EmbedBuilder builder = new EmbedBuilder();
-
         builder.setColor(0x00aeff);
 
         // Elements are grouped two by two:
@@ -23,7 +21,7 @@ public abstract class DynamicEmbeds {
         }
 
         builder.setTimestamp(Instant.now());
-        builder.setFooter("Requested by " + user.getAsTag(), user.getAvatarUrl());
+        builder.setFooter("Requested by " + user.getAsTag() + "\nCommand ID: " + commandId, user.getAvatarUrl());
 
         return builder;
     }

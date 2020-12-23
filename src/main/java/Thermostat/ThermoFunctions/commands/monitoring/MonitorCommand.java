@@ -121,7 +121,7 @@ public class MonitorCommand implements Command {
                                 nonValid.toString(),
                                 "Categories with no Text Channels:",
                                 noText.toString()
-                        ), data.getMember().getUser()
+                        ), data.getMember().getUser(), commandId
                 )
         );
     }
