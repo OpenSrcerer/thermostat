@@ -8,11 +8,11 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.commands.events.Ready;
 import thermostat.thermoFunctions.threaded.InitTokens;
 
-import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 1.0.0_beta
+ * @version 1.0.0_beta2
  * @since 2020-04-17
  */
 public abstract class Thermostat {
@@ -43,7 +43,7 @@ public abstract class Thermostat {
      */
     public static String prefix;
 
-    public static void initializeThermostat() throws LoginException {
+    public static void initializeThermostat() throws Exception {
         String[] config = new InitTokens().call();
         prefix = config[0];
 
@@ -68,7 +68,7 @@ public abstract class Thermostat {
                 .addEventListeners(new Ready())
                 .build();
 
-        // MiscellaneousDispatcher.setDblApi(config[2]);
+        MiscellaneousDispatcher.setDblApi(config[2]);
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("fast loading..."));
     }
 

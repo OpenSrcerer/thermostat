@@ -6,7 +6,7 @@
 
     <groupId>opensrcerer.com.github</groupId>
     <artifactId>Thermostat</artifactId>
-    <version>1.0.0_beta</version>
+    <version>1.0.0_beta2</version>
     <build>
         <plugins>
             <plugin>

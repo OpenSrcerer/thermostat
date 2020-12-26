@@ -38,6 +38,7 @@ public abstract class DataSource {
             String configFile = "/db.properties";
             HikariConfig config = new HikariConfig(configFile);
             ds = new HikariDataSource(config);
+            ds.setLeakDetectionThreshold(100);
         }
 
         return ds;
@@ -56,28 +57,28 @@ public abstract class DataSource {
      * for the specified query. Returns an empty ResultSet
      * if the provided query did not return any results.
      */
-    public static Map<String, Integer> queryMap(String Query, String argument) {
-        Map<String, Integer> resultMap = null;
+    @Nonnull
+    public static Map<String, Integer> queryMap(String Query, String argument) throws SQLException {
+        Map<String, Integer> resultMap = new LinkedHashMap<>();
 
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            pst.setString(1, argument);
-            ResultSet rs = pst.executeQuery();
+        Connection conn = DataSource.getConnection();
+        PreparedStatement pst = conn.prepareStatement(
+                Query,
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE
+        );
 
-            resultMap = new LinkedHashMap<>();
-            while (rs.next()) {
-                resultMap.put(rs.getString(1), rs.getInt(2));
-            }
-        } catch (SQLException ex) {
-            Logger lgr = LoggerFactory.getLogger(ds.getClass());
-            lgr.error(ex.getMessage(), ex);
+        pst.setString(1, argument);
+        ResultSet rs = pst.executeQuery();
+
+        while (rs.next()) {
+            resultMap.put(rs.getString(1), rs.getInt(2));
         }
+
+        rs.close();
+        pst.close();
+        conn.close();
+
         return resultMap;
     }
 
@@ -305,7 +306,6 @@ public abstract class DataSource {
             pst.setString(it + 1, args.get(it));
         }
         pst.executeUpdate();
-
         pst.close();
         conn.close();
     }

@@ -10,7 +10,6 @@ import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
-import thermostat.thermoFunctions.commands.monitoring.SetBoundsCommand;
 import thermostat.thermoFunctions.entities.CommandType;
 
 import javax.annotation.Nonnull;
@@ -23,7 +22,7 @@ import static thermostat.thermoFunctions.Functions.convertToBooleanInteger;
 
 @SuppressWarnings("ConstantConditions")
 public class FilterCommand implements Command {
-    private static final Logger lgr = LoggerFactory.getLogger(SetBoundsCommand.class);
+    private static final Logger lgr = LoggerFactory.getLogger(FilterCommand.class);
 
     private final GuildMessageReceivedEvent data;
     private List<String> arguments;

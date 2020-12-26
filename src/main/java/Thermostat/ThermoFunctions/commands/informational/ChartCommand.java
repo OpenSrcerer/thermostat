@@ -109,15 +109,21 @@ public class ChartCommand implements Command {
     }
 
     public void frequencyChart(Guild eventGuild, Member eventMember) {
-
         // #1 - Retrieve data through the database relevant to the chart.
-        Map<String, Integer> top5slowmode =
-                DataSource.queryMap("SELECT CHANNEL_ID, MANIPULATED  FROM CHANNELS WHERE GUILD_ID = ?"
-                        + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5", eventGuild.getId());
+        Map<String, Integer> top5slowmode;
+        try {
+            top5slowmode = DataSource.queryMap("SELECT CHANNEL_ID, MANIPULATED FROM CHANNELS WHERE GUILD_ID = ?"
+                    + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5", eventGuild.getId());
+        } catch (Exception ex) {
+            ResponseDispatcher.commandFailed(this,
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    "Exception thrown while querying slowmode data.");
+            return;
+        }
 
         // #2 - If not enough data on the chart, channels were never slowmoded
         // in this guild.
-        if (top5slowmode == null) {
+        if (top5slowmode.isEmpty()) {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
                             "Get some channels slowmoded with `th!monitor`.", Functions.getCommandId()),
