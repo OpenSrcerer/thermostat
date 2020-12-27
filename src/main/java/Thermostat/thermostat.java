@@ -43,7 +43,7 @@ public abstract class Thermostat {
      */
     public static String prefix;
 
-    public static void initializeThermostat() throws Exception {
+    public static void initializeThermostat() throws Exception, Error {
         String[] config = new InitTokens().call();
         prefix = config[0];
 

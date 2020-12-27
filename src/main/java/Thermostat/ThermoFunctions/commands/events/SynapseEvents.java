@@ -1,9 +1,7 @@
 package thermostat.thermoFunctions.commands.events;
 
 import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
-import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
-import net.dv8tion.jda.api.events.guild.UnavailableGuildJoinedEvent;
 import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -21,6 +19,11 @@ public class SynapseEvents extends ListenerAdapter {
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         Synapse synapse = SynapseDispatcher.getSynapse(event.getGuild().getId());
 
+        // Create a new Synapse for the guild where the message was sent.
+        if (synapse.getGuildId().equals("0")) {
+            synapse = SynapseDispatcher.addSynapse(event.getGuild().getId());
+        }
+
         // Re-activate Synapse if it was disabled due to inactivity.
         if (synapse.getState() == SynapseState.INACTIVE && synapse.getChannels().contains(event.getChannel().getId())) {
             synapse.setState(SynapseState.ACTIVE);
@@ -28,22 +31,6 @@ public class SynapseEvents extends ListenerAdapter {
         }
 
         synapse.addMessage(event.getChannel().getId(), event.getMessage().getTimeCreated());
-    }
-
-    /**
-     * Adds a new Synapse if a new Guild adds Thermostat.
-     */
-    @Override
-    public void onGuildJoin(@NotNull GuildJoinEvent event) {
-        SynapseDispatcher.addSynapse(event.getGuild().getId());
-    }
-
-    /**
-     * Adds a new Synapse if a new Guild adds Thermostat.
-     */
-    @Override
-    public void onUnavailableGuildJoined(@NotNull UnavailableGuildJoinedEvent event) {
-        SynapseDispatcher.addSynapse(event.getGuildId());
     }
 
     /**

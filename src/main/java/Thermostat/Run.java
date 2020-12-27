@@ -12,7 +12,7 @@ public final class Run {
     public static void main(String[] args) {
         try {
             Thermostat.initializeThermostat();
-        } catch (Exception ex) {
+        } catch (Exception | Error ex) {
             lgr.error("Thermostat was unable to start due to this problem:", ex);
             Thermostat.shutdownThermostat();
             System.exit(-1);
