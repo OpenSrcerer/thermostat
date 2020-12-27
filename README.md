@@ -15,9 +15,6 @@
   <img src="https://top.gg/api/widget/upvotes/700341788136833065.svg" alt="Thermostat" />
 </a>
 <br><br>
-<a href="https://bots.rovelstars.ga/bots/700341788136833065">
-  <img src="https://bots.rovelstars.ga/api/v1/bots/700341788136833065/widget?size=large" alt="View on RBL">
-</a>   
 
 
 # Thermostat
