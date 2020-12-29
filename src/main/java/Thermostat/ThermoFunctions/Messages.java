@@ -13,7 +13,6 @@ import thermostat.preparedStatements.ErrorEmbeds;
 import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -62,10 +61,8 @@ public final class Messages {
         };
 
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
-            // send message and delete after 100 seconds
             try {
-                Consumer<Message> consumer = message -> Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
-                channel.sendMessage(eb.build()).queue(consumer, throwableConsumer);
+                channel.sendMessage(eb.build()).queue(null, throwableConsumer);
             } catch (InsufficientPermissionException ex) {
                 sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot!");
             }
@@ -87,8 +84,7 @@ public final class Messages {
 
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
             try {
-                Consumer<Message> consumer = message -> Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
-                channel.sendMessage(msg).queue(consumer, throwableConsumer);
+                channel.sendMessage(msg).queue(null, throwableConsumer);
             } catch (InsufficientPermissionException ignored) {
             }
         }
@@ -113,13 +109,12 @@ public final class Messages {
                         channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ATTACH_FILES)
         ) {
             try {
-                Consumer<Message> consumer = message -> Messages.deleteMessage(message, 100, TimeUnit.SECONDS);
                 channel.sendFile(
                         inputStream,
                         "chart.png"
                 )
                         .embed(embed.setImage("attachment://chart.png").build())
-                        .queue(consumer, throwableConsumer);
+                        .queue(null, throwableConsumer);
             } catch (InsufficientPermissionException ignored) {
             }
         } else {
@@ -215,32 +210,6 @@ public final class Messages {
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
         }
-    }
-
-    /**
-     * Deletes a message from discord after an amount of time.
-     *
-     * @param msg      Message to delete.
-     * @param delay    Numerical waiting value.
-     * @param timeUnit The unit of time to wait.
-     * @return A ScheduledFuture representing the delayed operation.
-     */
-    public static ScheduledFuture<?> deleteMessage(Message msg, long delay, TimeUnit timeUnit) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
-            }
-        };
-
-        ScheduledFuture<?> msgFuture = null;
-        try {
-            msgFuture = msg.delete().queueAfter(delay, timeUnit, null, throwableConsumer);
-        } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
-        }
-        return msgFuture;
     }
 
     /**
