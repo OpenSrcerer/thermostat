@@ -9,12 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.dispatchers.SynapseDispatcher;
-import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.commands.CommandTrigger;
-import thermostat.thermoFunctions.threaded.InitWordFiles;
+import thermostat.thermoFunctions.commands.utility.WordFilterCommand;
 
 import javax.annotation.Nonnull;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static thermostat.Thermostat.shutdownThermostat;
 import static thermostat.Thermostat.thermo;
@@ -26,11 +29,11 @@ import static thermostat.Thermostat.thermo;
  */
 public class Ready extends ListenerAdapter {
     private static final Logger lgr = LoggerFactory.getLogger(Thermostat.class);
+
     public void onReady(@Nonnull ReadyEvent event) {
-
-        DataSource.getDataSource();
-
-        if (!new InitWordFiles("niceWords.txt", "badWords.txt").call()) {
+        try {
+            initializeWordFiles("niceWords.txt", "badWords.txt");
+        } catch (Exception ex) {
             shutdownThermostat();
             lgr.error("Word files could not be set up!\nBot instance shutting down...");
             return;
@@ -48,8 +51,37 @@ public class Ready extends ListenerAdapter {
         thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://github.com/opensrcerer/thermostat"));
     }
 
-    // Prints out list of currently connected guilds
-    // with names, owner ids, and guild ids.
+    public void initializeWordFiles(@Nonnull String file1, @Nonnull String file2) throws Exception {
+        ArrayList<String> niceWords, badWords;
+
+        niceWords = retrieveWordFile(file1);
+        badWords = retrieveWordFile(file2);
+
+        WordFilterCommand.setWordArrays(niceWords, badWords);
+        lgr.info("Loaded word files " + file1 + " and " + file2);
+    }
+
+    private static ArrayList<String> retrieveWordFile(String fileName) throws Exception {
+        ArrayList<String> wordFileArray = new ArrayList<>();
+
+        InputStream fileStream = Thermostat.class.getClassLoader().getResourceAsStream(fileName);
+
+        if (fileStream == null) {
+            throw new FileNotFoundException("Could not find a file with given file name.");
+        }
+
+        Scanner scanner = new Scanner(fileStream);
+        scanner.useDelimiter(",+");
+
+        while (scanner.hasNext()) {
+            wordFileArray.add(scanner.next());
+        }
+
+        return wordFileArray;
+    }
+
+    /** Prints out list of currently connected guilds
+     * with names, owner ids, and guild ids. */
     private void getConnectedGuilds() {
         List<Guild> guildList = thermo.getGuilds();
 

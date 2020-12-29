@@ -8,11 +8,15 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.commands.events.Ready;
-import thermostat.thermoFunctions.threaded.InitTokens;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,8 +47,13 @@ public abstract class Thermostat {
      */
     public static String prefix;
 
+    /**
+     * Start Thermostat and initialize all needed variables.
+     * @throws Exception Any Exception that may occur.
+     * @throws Error Any Error that may occur while loading.
+     */
     public static void initializeThermostat() throws Exception, Error {
-        String[] config = new InitTokens().call();
+        String[] config = initializeTokens();
         prefix = config[0];
 
         thermo = JDABuilder
@@ -73,7 +82,37 @@ public abstract class Thermostat {
     }
 
     /**
-     * Shuts down Thermostat in case of a major Error thrown.
+     * Reads the config.json file and parses the data into a usable
+     * array of strings.
+     * @return Array of configuration tokens.
+     * @throws Exception If I/O operations had an issue.
+     */
+    private static String[] initializeTokens() throws Exception {
+        String[] tokens = new String[3];
+
+        InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
+
+        if (configFile == null) {
+            Run.lgr.error("JSON config file not found.");
+            return tokens;
+        }
+
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(
+                new InputStreamReader(configFile, StandardCharsets.UTF_8
+                )
+        );
+
+        tokens[0] = jsonObject.get("Prefix").toString();
+        tokens[1] = jsonObject.get("Token").toString();
+        tokens[2] = jsonObject.get("DBLToken").toString();
+
+        return tokens;
+    }
+
+    /**
+     * Shuts down Thermostat in case of an Error/Exception thrown
+     * or failure to initialize necessary configuration files.
      */
     public static void shutdownThermostat() {
         executor.shutdown();
