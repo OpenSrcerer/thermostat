@@ -16,32 +16,29 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static thermostat.Thermostat.shutdownThermostat;
+
 /**
  * A single Hikari data source for Thermostat.
  */
 public abstract class DataSource {
-
     private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
 
-    private static HikariDataSource ds;
-
-    public DataSource() {
+    // Creates the single HikariDataSource instance
+    private static HikariDataSource ds = null;
+    static {
+        try {
+            HikariConfig config = new HikariConfig("/db.properties");
+            ds = new HikariDataSource(config);
+            ds.setLeakDetectionThreshold(100);
+        } catch (Exception | Error ex) {
+            shutdownThermostat();
+            lgr.error("Word files could not be set up!\nBot instance shutting down...");
+        }
     }
 
     public static Connection getConnection() throws SQLException {
         return ds.getConnection();
-    }
-
-    public static HikariDataSource getDataSource() {
-
-        if (ds == null) {
-            String configFile = "/db.properties";
-            HikariConfig config = new HikariConfig(configFile);
-            ds = new HikariDataSource(config);
-            ds.setLeakDetectionThreshold(100);
-        }
-
-        return ds;
     }
 
     public static void closeDataSource() {
@@ -227,7 +224,7 @@ public abstract class DataSource {
      * Same as above, returns single String value.
      */
     @Nullable
-    public static String queryString(String Query, String argument) {
+    public static String queryString(String Query, String argument) throws SQLException {
         String retString = null;
 
         try (
@@ -315,7 +312,6 @@ public abstract class DataSource {
         PreparedStatement pst = conn.prepareStatement(Query);
         pst.setString(1, argument);
         pst.executeUpdate();
-
         pst.close();
         conn.close();
     }
