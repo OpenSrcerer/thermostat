@@ -54,8 +54,9 @@ public abstract class Thermostat {
      */
     public static void initializeThermostat() throws Exception, Error {
         String[] config = initializeTokens();
-        prefix = config[0];
+        DataSource.initializeDataSource();
 
+        prefix = config[0];
         thermo = JDABuilder
                 .create(
                         config[1],
