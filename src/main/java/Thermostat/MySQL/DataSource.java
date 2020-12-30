@@ -239,6 +239,10 @@ public abstract class DataSource {
             return null;
         }
 
+        rs.close();
+        pst.close();
+        conn.close();
+
         return retString;
     }
 
