@@ -116,7 +116,13 @@ public abstract class Thermostat {
      */
     public static void shutdownThermostat() {
         executor.shutdown();
-        thermo.shutdown();
+
+        if (thermo != null) {
+            thermo.shutdown();
+        }
+
         DataSource.closeDataSource();
+
+        System.exit(-1);
     }
 }

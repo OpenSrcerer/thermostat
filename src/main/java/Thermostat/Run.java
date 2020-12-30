@@ -15,7 +15,6 @@ public final class Run {
         } catch (Exception | Error ex) {
             lgr.error("Thermostat was unable to start due to this problem:", ex);
             Thermostat.shutdownThermostat();
-            System.exit(-1);
         }
     }
 }

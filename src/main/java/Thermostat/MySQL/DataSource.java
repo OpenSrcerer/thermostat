@@ -16,8 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static thermostat.Thermostat.shutdownThermostat;
-
 /**
  * A single Hikari data source for Thermostat.
  */
@@ -26,15 +24,11 @@ public abstract class DataSource {
 
     // Creates the single HikariDataSource instance
     private static HikariDataSource ds = null;
-    static {
-        try {
-            HikariConfig config = new HikariConfig("/db.properties");
-            ds = new HikariDataSource(config);
-            ds.setLeakDetectionThreshold(100);
-        } catch (Exception | Error ex) {
-            shutdownThermostat();
-            lgr.error("Word files could not be set up!\nBot instance shutting down...");
-        }
+
+    public static void initializeDataSource() {
+        HikariConfig config = new HikariConfig("/db.properties");
+        ds = new HikariDataSource(config);
+        ds.setLeakDetectionThreshold(100);
     }
 
     public static Connection getConnection() throws SQLException {
@@ -42,7 +36,9 @@ public abstract class DataSource {
     }
 
     public static void closeDataSource() {
-        ds.close();
+        if (ds != null) {
+            ds.close();
+        }
     }
 
     /**
@@ -225,27 +221,24 @@ public abstract class DataSource {
      */
     @Nullable
     public static String queryString(String Query, String argument) throws SQLException {
-        String retString = null;
+        String retString;
 
-        try (
-                Connection conn = DataSource.getConnection();
-                PreparedStatement pst = conn.prepareStatement(
-                        Query,
-                        ResultSet.TYPE_SCROLL_SENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE
-                )
-        ) {
-            pst.setString(1, argument);
-            ResultSet rs = pst.executeQuery();
+        Connection conn = DataSource.getConnection();
+        PreparedStatement pst = conn.prepareStatement(
+                Query,
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE
+        );
 
-            if (rs.next()) {
-                retString = rs.getString(1);
-            } else {
-                return null;
-            }
-        } catch (SQLException ex) {
-            lgr.error(ex.getMessage(), ex);
+        pst.setString(1, argument);
+        ResultSet rs = pst.executeQuery();
+
+        if (rs.next()) {
+            retString = rs.getString(1);
+        } else {
+            return null;
         }
+
         return retString;
     }
 
