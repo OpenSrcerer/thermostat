@@ -2,22 +2,27 @@ package thermostat.thermoFunctions.commands;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import thermostat.Thermostat;
 import thermostat.mySQL.DataSource;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.informational.ChartCommand;
 import thermostat.thermoFunctions.commands.informational.GetMonitorCommand;
 import thermostat.thermoFunctions.commands.informational.SettingsCommand;
-import thermostat.thermoFunctions.commands.monitoring.*;
+import thermostat.thermoFunctions.commands.monitoring.MonitorCommand;
+import thermostat.thermoFunctions.commands.monitoring.SensitivityCommand;
+import thermostat.thermoFunctions.commands.monitoring.SetBoundsCommand;
 import thermostat.thermoFunctions.commands.other.InfoCommand;
 import thermostat.thermoFunctions.commands.other.InviteCommand;
 import thermostat.thermoFunctions.commands.other.PrefixCommand;
 import thermostat.thermoFunctions.commands.other.VoteCommand;
 import thermostat.thermoFunctions.commands.utility.FilterCommand;
-import thermostat.thermoFunctions.entities.CommandType;
 import thermostat.thermoFunctions.commands.utility.WordFilterCommand;
-import thermostat.Thermostat;
+import thermostat.thermoFunctions.entities.CommandType;
 
 import javax.annotation.Nonnull;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -26,11 +31,16 @@ import java.util.Arrays;
  * GuildMessageReactionEvent event class.
  */
 public final class CommandTrigger extends ListenerAdapter {
+    private static final Logger lgr = LoggerFactory.getLogger(CommandTrigger.class);
 
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-
-        String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", event.getGuild().getId());
+        String prefix = null;
+        try {
+            prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", event.getGuild().getId());
+        } catch (SQLException ex) {
+            lgr.warn("Command Trigger SQLException. Details:", ex);
+        }
         if (prefix == null) {
             prefix = Thermostat.prefix;
         }

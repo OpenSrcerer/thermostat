@@ -6,6 +6,7 @@ import thermostat.thermoFunctions.Messages;
 import thermostat.thermoFunctions.commands.Command;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
@@ -14,9 +15,10 @@ import java.util.function.Consumer;
  * set of functions to output data to the end user.
  */
 public final class ResponseDispatcher {
-    public static void commandSucceeded(@Nonnull Command command, @Nonnull EmbedBuilder embed) {
+    public static void commandSucceeded(@Nonnull Command command, @Nullable EmbedBuilder embed) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
-        Messages.sendMessage(command.getEvent().getChannel(), embed);
+        if (embed != null)
+            Messages.sendMessage(command.getEvent().getChannel(), embed);
     }
 
     public static void commandSucceeded(@Nonnull Command command, @Nonnull EmbedBuilder embed, @Nonnull InputStream inputStream) {
@@ -29,14 +31,15 @@ public final class ResponseDispatcher {
         Messages.sendMessage(command.getEvent().getChannel(), embed, consumer);
     }
 
-    public static void commandFailed(@Nonnull Command command, @Nonnull EmbedBuilder embed, @Nonnull String reason) {
+    public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed, @Nonnull String reason) {
         command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Reason:\n" + reason);
-        Messages.sendMessage(command.getEvent().getChannel(), embed);
+        if (embed != null)
+            Messages.sendMessage(command.getEvent().getChannel(), embed);
     }
 
-    public static void commandFailed(@Nonnull Command command, @Nonnull EmbedBuilder embed, @Nonnull Throwable throwable) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Details:\n");
-        throwable.printStackTrace();
-        Messages.sendMessage(command.getEvent().getChannel(), embed);
+    public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed, @Nonnull Throwable throwable) {
+        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Details:\n", throwable);
+        if (embed != null)
+            Messages.sendMessage(command.getEvent().getChannel(), embed);
     }
 }

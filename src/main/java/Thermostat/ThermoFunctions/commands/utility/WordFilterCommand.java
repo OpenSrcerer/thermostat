@@ -36,9 +36,7 @@ import java.util.*;
 public class WordFilterCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(WordFilterCommand.class);
 
-    private static List<String>
-            badWords,
-            niceWords;
+    private static List<String> badWords, niceWords;
     private static final Random random = new Random();
 
     private final GuildMessageReceivedEvent data;
@@ -75,21 +73,34 @@ public class WordFilterCommand implements Command {
                     .reason("Inappropriate Language Filter (Thermostat)")
                     .queue();
 
-            String webhookId = getWebhookID(), webhookToken = getWebhookToken();
+
+            String webhookId, webhookToken;
+            try {
+                webhookId = getWebhookID();
+                webhookToken = getWebhookToken();
+            } catch (SQLException ex) {
+                ResponseDispatcher.commandFailed(this, null, ex);
+                return;
+            }
 
             if (webhookId.equals("0")) {
                 createWebhook()
-                .map(unused -> {
+                    .map(webhook -> {
+                        try {
                             sendWebhookMessage(getWebhookID(), getWebhookToken());
-                            return unused;
+                        } catch (SQLException ex) {
+                            ResponseDispatcher.commandFailed(this, null, ex);
+                        }
+                        return webhook;
                 }).queue();
             } else {
                 updateWebhook(data.getAuthor(), webhookId)
-                .map(unused -> {
+                .map(webhook -> {
                     sendWebhookMessage(webhookId, webhookToken);
-                    return unused;
+                    return webhook;
                 }).queue();
             }
+
             lgr.info("Successfully filtered on (" + data.getChannel().getGuild().getName() + "/" + data.getChannel().getGuild().getId() + ").");
         }
     }
@@ -98,7 +109,7 @@ public class WordFilterCommand implements Command {
      * Retrieves Webhook URL from DB.
      * @return webhookurl
      */
-    public String getWebhookToken() {
+    public String getWebhookToken() throws SQLException {
         return DataSource.queryString("SELECT WEBHOOK_TOKEN FROM " +
                 "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", data.getChannel().getId());
@@ -108,7 +119,7 @@ public class WordFilterCommand implements Command {
      * Retrieves Webhook URL from DB.
      * @return webhookurl
      */
-    public String getWebhookID() {
+    public String getWebhookID() throws SQLException {
         return DataSource.queryString("SELECT WEBHOOK_ID FROM " +
                 "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?", data.getChannel().getId());
