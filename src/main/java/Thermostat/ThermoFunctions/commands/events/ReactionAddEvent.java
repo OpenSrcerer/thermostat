@@ -21,7 +21,7 @@ import java.util.List;
 import static thermostat.thermoFunctions.entities.MonitoredMessage.monitoredMessages;
 
 public class ReactionAddEvent extends ListenerAdapter {
-    private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
+    private static final Logger lgr = LoggerFactory.getLogger(ReactionAddEvent.class);
 
     public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent ev) {
         for (MonitoredMessage it : monitoredMessages) {
@@ -46,7 +46,12 @@ public class ReactionAddEvent extends ListenerAdapter {
                         ev.getUserId().equals(monitoredMessage.getMessageOwner())
         ) {
             // gets guild prefix from database. if it doesn't have one, use default
-            String prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", ev.getGuild().getId());
+            String prefix = null;
+            try {
+                prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", ev.getGuild().getId());
+            } catch (SQLException ex) {
+                lgr.warn("Reaction Event SQLException. Details:", ex);
+            }
             if (prefix == null) {
                 prefix = Thermostat.prefix;
             }
