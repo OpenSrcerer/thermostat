@@ -21,7 +21,7 @@ public final class MiscellaneousDispatcher {
         Runnable run = () -> {
             int currentServers = thermo.getGuilds().size();
             dblApi.setStats(currentServers);
-            lgr.info("Discord Bot List Update - CS: [: " + currentServers + "]");
+            lgr.info("Current Guilds: [" + currentServers + "]");
         };
 
         Thermostat.executor.scheduleAtFixedRate(run, 10, 120, TimeUnit.SECONDS);
