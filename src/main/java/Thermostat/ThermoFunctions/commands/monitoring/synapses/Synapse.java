@@ -52,6 +52,13 @@ public class Synapse {
         this.monitoredChannels = SynapseFunctions.initializeMonitoredChannels(guildId);
     }
 
+    /**
+     * Iterate through each of the channels found in this Synapse's
+     * monitoredChannels cache, and adjust their slowmode value
+     * depending on a temporal average of the dispatch rate between
+     * every message.
+     * @param lgr Logger to use for logging.
+     */
     public void monitorChannels(Logger lgr) {
         OffsetDateTime timeNow = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(millis);
         Guild synapseGuild = Thermostat.thermo.getGuildById(this.getGuildId());

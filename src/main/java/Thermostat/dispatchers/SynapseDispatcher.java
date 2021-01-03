@@ -6,7 +6,8 @@ import thermostat.thermoFunctions.commands.monitoring.synapses.SynapseMonitor;
 import thermostat.thermoFunctions.entities.SynapseState;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -15,7 +16,10 @@ import java.util.concurrent.TimeUnit;
  * updates.
  */
 public final class SynapseDispatcher {
-    private static final ArrayList<Synapse> synapses = new ArrayList<>();
+    /**
+     * A cache that contains Synapses.
+     */
+    private static final Map<String, Synapse> synapses = new WeakHashMap<>();
 
     /**
      * Initializes the Runnable that will be scheduled for
@@ -23,9 +27,9 @@ public final class SynapseDispatcher {
      */
     public static void initializeSynapses() {
         Runnable run = () -> {
-            for (Synapse synapse : synapses) {
-                if (synapse.getState() == SynapseState.ACTIVE) {
-                    new SynapseMonitor(synapse);
+            for (Map.Entry<String, Synapse> synapseEntry : synapses.entrySet()) {
+                if (synapseEntry.getValue().getState() == SynapseState.ACTIVE) {
+                    new SynapseMonitor(synapseEntry.getValue());
                 }
             }
         };
@@ -41,31 +45,29 @@ public final class SynapseDispatcher {
      */
     @Nonnull
     public static Synapse getSynapse(String guildId) {
-        for (Synapse synapse : synapses) {
-            if (synapse.getGuildId().equals(guildId)) {
-                return synapse;
-            }
+        if (synapses.get(guildId) == null) {
+            return new Synapse("0");
+        } else {
+            return synapses.get(guildId);
         }
-
-        return new Synapse("0");
     }
 
     /**
      * Creates a new Synapse object to manage a Guild's
-     * slowmode.
+     * slowmode & returns it.
      * @param guildId ID of Guild to manage.
      */
     public static synchronized Synapse addSynapse(String guildId) {
         Synapse newSynapse = new Synapse(guildId);
-        synapses.add(newSynapse);
+        synapses.put(guildId, newSynapse);
         return newSynapse;
     }
 
     /**
      * Removes a Synapse object from the synapses
-     * ArrayList (only used when a guild is removed).
+     * cache (only used when a guild is removed).
      */
     public static synchronized void removeSynapse(String guildId) {
-        synapses.removeIf(synapse -> synapse.getGuildId().equals(guildId));
+        synapses.remove(guildId);
     }
 }

@@ -15,6 +15,12 @@ import thermostat.thermoFunctions.entities.SynapseState;
  */
 public class SynapseEvents extends ListenerAdapter {
 
+    /**
+     * Lazy-loader for Synapses that is tied to a GuildMessageReceivedEvent.
+     *
+     * @param event Event that contains the ID of the Guild that
+     *              the Synapse will be initialized on.
+     */
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         Synapse synapse = SynapseDispatcher.getSynapse(event.getGuild().getId());
