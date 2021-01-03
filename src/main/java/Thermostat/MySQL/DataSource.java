@@ -54,23 +54,21 @@ public abstract class DataSource {
     public static Map<String, Integer> queryMap(String Query, String argument) throws SQLException {
         Map<String, Integer> resultMap = new LinkedHashMap<>();
 
-        Connection conn = DataSource.getConnection();
-        PreparedStatement pst = conn.prepareStatement(
-                Query,
-                ResultSet.TYPE_SCROLL_SENSITIVE,
-                ResultSet.CONCUR_UPDATABLE
-        );
+        try (
+            Connection conn = DataSource.getConnection();
+            PreparedStatement pst = conn.prepareStatement(
+                    Query,
+                    ResultSet.TYPE_SCROLL_SENSITIVE,
+                    ResultSet.CONCUR_UPDATABLE
+            )
+        ) {
+            pst.setString(1, argument);
+            ResultSet rs = pst.executeQuery();
 
-        pst.setString(1, argument);
-        ResultSet rs = pst.executeQuery();
-
-        while (rs.next()) {
-            resultMap.put(rs.getString(1), rs.getInt(2));
+            while (rs.next()) {
+                resultMap.put(rs.getString(1), rs.getInt(2));
+            }
         }
-
-        rs.close();
-        pst.close();
-        conn.close();
 
         return resultMap;
     }
@@ -223,25 +221,23 @@ public abstract class DataSource {
     public static String queryString(String Query, String argument) throws SQLException {
         String retString;
 
-        Connection conn = DataSource.getConnection();
-        PreparedStatement pst = conn.prepareStatement(
-                Query,
-                ResultSet.TYPE_SCROLL_SENSITIVE,
-                ResultSet.CONCUR_UPDATABLE
-        );
+        try (
+            Connection conn = DataSource.getConnection();
+            PreparedStatement pst = conn.prepareStatement(
+                    Query,
+                    ResultSet.TYPE_SCROLL_SENSITIVE,
+                    ResultSet.CONCUR_UPDATABLE
+            )
+        ) {
+            pst.setString(1, argument);
+            ResultSet rs = pst.executeQuery();
 
-        pst.setString(1, argument);
-        ResultSet rs = pst.executeQuery();
-
-        if (rs.next()) {
-            retString = rs.getString(1);
-        } else {
-            return null;
+            if (rs.next()) {
+                retString = rs.getString(1);
+            } else {
+                return null;
+            }
         }
-
-        rs.close();
-        pst.close();
-        conn.close();
 
         return retString;
     }
@@ -257,14 +253,15 @@ public abstract class DataSource {
     public static List<Object> getSettingsPackage(String channelId) throws SQLException {
         List<Object> resultArray;
 
-        Connection conn = DataSource.getConnection();
-        PreparedStatement pst = conn.prepareStatement(
-                "SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET, MONITORED, FILTERED " +
-                        "FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?",
-                ResultSet.TYPE_SCROLL_SENSITIVE,
-                ResultSet.CONCUR_UPDATABLE
-        );
-
+        try (
+             Connection conn = DataSource.getConnection();
+             PreparedStatement pst = conn.prepareStatement(
+                     "SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET, MONITORED, FILTERED " +
+                             "FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?",
+                     ResultSet.TYPE_SCROLL_SENSITIVE,
+                     ResultSet.CONCUR_UPDATABLE
+             )
+        ) {
             pst.setString(1, channelId);
             ResultSet rs = pst.executeQuery();
 
@@ -280,8 +277,8 @@ public abstract class DataSource {
             resultArray.add(rs.getBoolean(4));
             // Filtered
             resultArray.add(rs.getBoolean(5));
+        }
 
-        conn.close();
         return resultArray;
     }
 
@@ -294,23 +291,25 @@ public abstract class DataSource {
      * @throws SQLException Error while executing update.
      */
     public static void update(String Query, List<String> args) throws SQLException {
-        Connection conn = DataSource.getConnection();
-        PreparedStatement pst = conn.prepareStatement(Query);
-        for (int it = 0; it < args.size(); ++it) {
-            pst.setString(it + 1, args.get(it));
+        try (
+             Connection conn = DataSource.getConnection();
+             PreparedStatement pst = conn.prepareStatement(Query)
+        ) {
+            for (int it = 0; it < args.size(); ++it) {
+                pst.setString(it + 1, args.get(it));
+            }
+            pst.executeUpdate();
         }
-        pst.executeUpdate();
-        pst.close();
-        conn.close();
     }
 
     public static void update(String Query, String argument) throws SQLException {
-        Connection conn = DataSource.getConnection();
-        PreparedStatement pst = conn.prepareStatement(Query);
-        pst.setString(1, argument);
-        pst.executeUpdate();
-        pst.close();
-        conn.close();
+        try (
+             Connection conn = DataSource.getConnection();
+             PreparedStatement pst = conn.prepareStatement(Query)
+        ) {
+            pst.setString(1, argument);
+            pst.executeUpdate();
+        }
     }
 
     /**
