@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  */
 public abstract class Functions {
-
     private static final Logger lgr = LoggerFactory.getLogger(Functions.class);
 
     /**

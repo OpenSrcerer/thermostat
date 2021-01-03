@@ -25,26 +25,31 @@ import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Adapter for any sort of action based on the
  * GuildMessageReactionEvent event class.
  */
 public final class CommandTrigger extends ListenerAdapter {
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(CommandTrigger.class);
 
+    /**
+     * Cache object that contains Guild prefixes.
+     */
+    private static final Map<String, String> prefixCache = new WeakHashMap<>();
+
+    /**
+     * Trigger a new command when a message calling thermostat gets sent.
+     * @param event Event that contains sent message.
+     */
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        String prefix = null;
-        try {
-            prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", event.getGuild().getId());
-        } catch (SQLException ex) {
-            lgr.warn("Command Trigger SQLException. Details:", ex);
-        }
-        if (prefix == null) {
-            prefix = Thermostat.prefix;
-        }
-
+        String prefix = getGuildPrefix(event.getGuild().getId());
         // gets given arguments and passes them to a list
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(event.getMessage().getContentRaw().split("\\s+")));
         Functions.checkGuildAndChannelThenSet(event.getGuild().getId(), event.getChannel().getId());
@@ -155,5 +160,49 @@ public final class CommandTrigger extends ListenerAdapter {
             arguments.remove(0);
             new VoteCommand(event, arguments, prefix);
         }
+    }
+
+    /**
+     * Convenience method that retrieves a Prefix for a Guild
+     * from the cache or database.
+     * @param guildId ID of Guild to lookup prefix for.
+     * @return Prefix of said guild.
+     */
+    @Nonnull
+    private static String getGuildPrefix(String guildId) {
+        boolean isCached = true;
+        String prefix = prefixCache.get(guildId);
+
+        // Null check 1: If prefix is not cached for guild
+        // retrieve prefix from database and create a cache entry
+        if (prefix == null) {
+            isCached = false;
+            try {
+                prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", guildId);
+            } catch (SQLException ex) {
+                lgr.warn("Failure to retrieve prefix for Guild" + guildId + ":", ex);
+            }
+        }
+
+        // Null check 2: If prefix is NULL in database
+        // Fallback to default prefix
+        if (prefix == null) {
+            prefix = Thermostat.prefix;
+        }
+
+        if (!isCached) {
+            prefixCache.put(guildId, prefix);
+        }
+
+        return prefix;
+    }
+
+    /**
+     * Updates Guild prefix cache entry if it exists.
+     * @param guildId ID of Guild to update.
+     * @param newPrefix Newly assigned Guild prefix.
+     */
+    public static void updateEntry(String guildId, String newPrefix) {
+        prefixCache.replace(guildId, newPrefix);
     }
 }
