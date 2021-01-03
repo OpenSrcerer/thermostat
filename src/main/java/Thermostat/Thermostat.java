@@ -28,7 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * running the bot.
  *
  * @author OpenSrcerer
- * @version 1.0.0_beta2
+ * @version 1.0.0_beta3
  * @since 2020-04-17
  */
 public abstract class Thermostat {
