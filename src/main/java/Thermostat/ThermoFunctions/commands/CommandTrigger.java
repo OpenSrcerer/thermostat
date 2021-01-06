@@ -22,6 +22,8 @@ import thermostat.thermoFunctions.commands.utility.WordFilterCommand;
 import thermostat.thermoFunctions.entities.CommandType;
 
 import javax.annotation.Nonnull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,7 +180,7 @@ public final class CommandTrigger extends ListenerAdapter {
         if (prefix == null) {
             isCached = false;
             try {
-                prefix = DataSource.queryString("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?", guildId);
+                prefix = retrievePrefix(guildId);
             } catch (SQLException ex) {
                 lgr.warn("Failure to retrieve prefix for Guild" + guildId + ":", ex);
             }
@@ -195,6 +197,26 @@ public final class CommandTrigger extends ListenerAdapter {
         }
 
         return prefix;
+    }
+
+    /**
+     *
+     * Retrieves a Prefix for a Guild from the database.
+     * @param guildId ID of Guild to lookup prefix for.
+     * @return Prefix of said guild.
+     */
+    private static String retrievePrefix(String guildId) throws SQLException {
+        return DataSource.execute(conn -> {
+            PreparedStatement query = conn.prepareStatement("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?");
+            query.setString(1, guildId);
+            ResultSet rs = query.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString(1);
+            } else {
+                return null;
+            }
+        });
     }
 
     /**

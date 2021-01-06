@@ -88,6 +88,7 @@ public class WordFilterCommand implements Command {
                     .map(webhook -> {
                         try {
                             sendWebhookMessage(getWebhookID(), getWebhookToken());
+                            ResponseDispatcher.commandSucceeded(this, null);
                         } catch (SQLException ex) {
                             ResponseDispatcher.commandFailed(this, null, ex);
                         }
@@ -97,11 +98,10 @@ public class WordFilterCommand implements Command {
                 updateWebhook(data.getAuthor(), webhookId)
                 .map(webhook -> {
                     sendWebhookMessage(webhookId, webhookToken);
+                    ResponseDispatcher.commandSucceeded(this, null);
                     return webhook;
                 }).queue();
             }
-
-            lgr.info("Successfully filtered on (" + data.getChannel().getGuild().getName() + "/" + data.getChannel().getGuild().getId() + ").");
         }
     }
 
