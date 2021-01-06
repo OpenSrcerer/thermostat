@@ -55,7 +55,7 @@ public abstract class DataSource {
         Map<String, Integer> resultMap = new LinkedHashMap<>();
 
         try (
-            Connection conn = DataSource.getConnection();
+            Connection conn = getConnection();
             PreparedStatement pst = conn.prepareStatement(
                     Query,
                     ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -87,7 +87,7 @@ public abstract class DataSource {
         ArrayList<String> resultArray = null;
 
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = getConnection();
                 PreparedStatement pst = conn.prepareStatement(
                         Query,
                         ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -111,7 +111,7 @@ public abstract class DataSource {
 
     public static boolean queryBool(String Query, List<String> args) {
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = getConnection();
                 PreparedStatement pst = conn.prepareStatement(
                         Query,
                         ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -138,7 +138,7 @@ public abstract class DataSource {
         float retVal = 0;
 
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = getConnection();
                 PreparedStatement pst = conn.prepareStatement(
                         Query,
                         ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -166,7 +166,7 @@ public abstract class DataSource {
         int retVal = -1;
 
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = getConnection();
                 PreparedStatement pst = conn.prepareStatement(
                         Query,
                         ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -194,7 +194,7 @@ public abstract class DataSource {
         List<Integer> retVal = new ArrayList<>();
 
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = getConnection();
                 PreparedStatement pst = conn.prepareStatement(
                         Query,
                         ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -222,7 +222,7 @@ public abstract class DataSource {
         String retString;
 
         try (
-            Connection conn = DataSource.getConnection();
+            Connection conn = getConnection();
             PreparedStatement pst = conn.prepareStatement(
                     Query,
                     ResultSet.TYPE_SCROLL_SENSITIVE,
@@ -254,7 +254,7 @@ public abstract class DataSource {
         List<Object> resultArray;
 
         try (
-             Connection conn = DataSource.getConnection();
+             Connection conn = getConnection();
              PreparedStatement pst = conn.prepareStatement(
                      "SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET, MONITORED, FILTERED " +
                              "FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?",
@@ -292,7 +292,7 @@ public abstract class DataSource {
      */
     public static void update(String Query, List<String> args) throws SQLException {
         try (
-             Connection conn = DataSource.getConnection();
+             Connection conn = getConnection();
              PreparedStatement pst = conn.prepareStatement(Query)
         ) {
             for (int it = 0; it < args.size(); ++it) {
@@ -304,7 +304,7 @@ public abstract class DataSource {
 
     public static void update(String Query, String argument) throws SQLException {
         try (
-             Connection conn = DataSource.getConnection();
+             Connection conn = getConnection();
              PreparedStatement pst = conn.prepareStatement(Query)
         ) {
             pst.setString(1, argument);
@@ -321,7 +321,7 @@ public abstract class DataSource {
      */
     public static boolean checkDatabaseForData(String Query, String argument) throws SQLException {
         try (
-                Connection conn = DataSource.getConnection();
+                Connection conn = getConnection();
                 PreparedStatement pst = conn.prepareStatement(Query)
         ) {
             pst.setString(1, argument);
