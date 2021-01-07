@@ -158,7 +158,7 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("`th!monitor`");
         eb.addField("This command is used to add a channel to the monitoring database. " +
-                "You can also input an ID of a category instead, and the text channels in that category will be removed.", "`Syntax: th!monitor/mon/m <channels>/<categories>.`", false);
+                "You can also input an ID of a category instead, and the text channels in that category will be removed.", "`Syntax: th!monitor/m <channels>/<categories>.`", false);
         eb.setTimestamp(Instant.now());
         eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
         eb.setColor(0xffff00);
@@ -169,7 +169,7 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("🌡┇Monitoring Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "monitor", "Syntax: `" + prefix + "monitor <true/false> [channel(s)/category(ies)].`", false);
+        eb.addField(prefix + "monitor", "Syntax: `" + prefix + "monitor <on/off> [channel(s)/category(ies)].`", false);
         eb.addField(prefix + "getmonitor", "Syntax: `" + prefix + "getmonitor.`", false);
         eb.addField(prefix + "setbounds", "Syntax: `" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)].`", false);
         eb.addField(prefix + "settings", "Syntax: `" + prefix + "settings[channel].`", false);

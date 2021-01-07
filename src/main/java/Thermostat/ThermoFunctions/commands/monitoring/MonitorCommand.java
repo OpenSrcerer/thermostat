@@ -9,6 +9,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
+import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.thermoFunctions.Functions;
@@ -70,6 +71,14 @@ public class MonitorCommand implements Command {
         }
 
         int monitor = Functions.convertToBooleanInteger(arguments.get(0));
+        if (monitor == -1) {
+            ResponseDispatcher.commandFailed(
+                    this, ErrorEmbeds.inputError("Please provide a correct action. Example: `" + prefix + "monitor on`", this.commandId),
+                    "User did not provide a correct action."
+            );
+            return;
+        }
+
         String message1, message2;
         arguments.remove(0);
 
@@ -84,8 +93,6 @@ public class MonitorCommand implements Command {
 
             nonValid = (StringBuilder) results.get(0);
             noText = (StringBuilder) results.get(1);
-            // Suppressing is okay because type for
-            // results.get(3) is always ArrayList<String>
             //noinspection unchecked
             arguments = ((ArrayList<String>) results.get(2));
         }

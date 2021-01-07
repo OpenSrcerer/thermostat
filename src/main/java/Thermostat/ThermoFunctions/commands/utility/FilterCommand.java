@@ -52,8 +52,15 @@ public class FilterCommand implements Command {
         }
 
         int filtered = convertToBooleanInteger(arguments.get(0));
-        String message;
+        if (filtered == -1) {
+            ResponseDispatcher.commandFailed(
+                    this, ErrorEmbeds.inputError("Please provide a correct action. Example: `" + prefix + "filter on`", this.commandId),
+                    "User did not provide a correct action."
+            );
+            return;
+        }
 
+        String message;
         arguments.remove(0);
         StringBuilder nonValid,
                 noText,

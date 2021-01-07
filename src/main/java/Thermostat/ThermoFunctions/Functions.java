@@ -80,20 +80,23 @@ public abstract class Functions {
     }
 
     /**
-     * Converts a string to an int value.
+     * Converts a string to an int value that signifies a boolean.
      * @param value Value to convert.
      * @return Converted boolean.
      */
     public static int convertToBooleanInteger(String value) {
-        boolean returnValue = false;
         if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) ||
-                "true".equalsIgnoreCase(value))
-            returnValue = true;
-
-        if (returnValue) {
+                "true".equalsIgnoreCase(value) || "on".equalsIgnoreCase(value)) {
             return 1;
-        } else {
+        }
+
+        else if ("0".equalsIgnoreCase(value) || "no".equalsIgnoreCase(value) ||
+                "false".equalsIgnoreCase(value) || "off".equalsIgnoreCase(value)) {
             return 0;
+        }
+
+        else {
+            return -1;
         }
     }
 
