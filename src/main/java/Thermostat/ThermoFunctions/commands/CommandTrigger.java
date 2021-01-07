@@ -138,6 +138,7 @@ public final class CommandTrigger extends ListenerAdapter {
             new InviteCommand(event, arguments, prefix);
         }
 
+        // PrefixCommand has two checks, one for th!prefix
         else if (
                 arguments.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias1()) ||
                         arguments.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias2())
@@ -146,6 +147,7 @@ public final class CommandTrigger extends ListenerAdapter {
             new PrefixCommand(event, arguments, prefix);
         }
 
+        // one for @Thermostat
         else if (
                 (arguments.get(0).equalsIgnoreCase("<@!" + Thermostat.thermo.getSelfUser().getId() + ">"))
         ) {
