@@ -6,13 +6,16 @@ import thermostat.thermoFunctions.commands.CommandTrigger;
 import java.util.EnumSet;
 
 /**
- * Used to identifty commands on the Command listener.
- *
+ * Used to identify commands on the Command listener.
+ * Handy for organizing permissions for every command.
  * @see CommandTrigger
  */
 public enum CommandType {
 
-    // ---- Informational ----
+    // ***************************************************************
+    // **                       INFORMATIONAL                       **
+    // ***************************************************************
+
     CHART(
             "chart", "ch",
             EnumSet.of(
@@ -41,7 +44,10 @@ public enum CommandType {
                     Permission.MANAGE_CHANNEL
             )),
 
-    // ---- Monitoring ----
+    // ***************************************************************
+    // **                       MONITORING                          **
+    // ***************************************************************
+
     MONITOR("monitor", "mn",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -71,7 +77,50 @@ public enum CommandType {
                     Permission.MANAGE_CHANNEL
             )),
 
-    // ---- Utility ----
+    // ***************************************************************
+    // **                       MODERATION                          **
+    // ***************************************************************
+
+    BAN("ban", "bn",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.BAN_MEMBERS
+            ),
+            EnumSet.of(
+                    Permission.BAN_MEMBERS
+            )),
+    KICK("kick", "kk",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MANAGE_CHANNEL
+            ),
+            EnumSet.of(
+                    Permission.KICK_MEMBERS
+            )),
+    MUTE("mute", "mt",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MANAGE_CHANNEL
+            ),
+            EnumSet.of(
+                    Permission.MANAGE_CHANNEL
+            )),
+    PURGE("purge", "ex",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MANAGE_CHANNEL
+            ),
+            EnumSet.of(
+                    Permission.MANAGE_CHANNEL
+            )),
+
+    // ***************************************************************
+    // **                         UTILITY                           **
+    // ***************************************************************
     FILTER("filter", "ft",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -85,7 +134,9 @@ public enum CommandType {
                     Permission.MANAGE_SERVER
             )),
 
-    // ---- Other ----
+    // ***************************************************************
+    // **                       OTHER                               **
+    // ***************************************************************
     INFO("info", "io",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -141,7 +192,6 @@ public enum CommandType {
             )),
 
     // ---- Internal ----
-
     SYNAPSE_MONITOR("", "",
             EnumSet.of(
                     Permission.MESSAGE_HISTORY,
@@ -151,8 +201,20 @@ public enum CommandType {
                     Permission.class
             ));
 
+    /**
+     * Long and short alias to run the command.
+     */
     private final String alias1, alias2;
-    private final EnumSet<Permission> thermoPermissions, memberPermissions;
+
+    /**
+     * Permissions that Thermostat needs to run the command.
+     */
+    private final EnumSet<Permission> thermoPermissions;
+
+    /**
+     * Permissions that the initiator needs to run the command.
+     */
+    private final EnumSet<Permission> memberPermissions;
 
     CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
         this.alias1 = alias1;
@@ -161,10 +223,16 @@ public enum CommandType {
         this.memberPermissions = memberPermissions;
     }
 
+    /**
+     * @return First alias of command.
+     */
     public String getAlias1() {
         return alias1;
     }
 
+    /**
+     * @return Second alias of command.
+     */
     public String getAlias2() {
         return alias2;
     }
@@ -172,7 +240,13 @@ public enum CommandType {
     // Functions below must return clones, otherwise the originals will get modified by methods
     // that process these EnumSets due to the abstraction EnumSet provides..
 
+    /**
+     * @return A set of permissions required by Thermostat to run the command.
+     */
     public EnumSet<Permission> getThermoPerms() { return thermoPermissions.clone(); }
 
+    /**
+     * @return A set of permissions a member must have to run the command.
+     */
     public EnumSet<Permission> getMemberPerms() { return memberPermissions.clone(); }
 }
