@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import thermostat.dispatchers.SynapseDispatcher;
-import thermostat.thermoFunctions.commands.monitoring.synapses.Synapse;
+import thermostat.thermoFunctions.entities.Synapse;
 import thermostat.thermoFunctions.entities.SynapseState;
 
 /**

@@ -1,8 +1,8 @@
 package thermostat.dispatchers;
 
 import thermostat.Thermostat;
-import thermostat.thermoFunctions.commands.monitoring.synapses.Synapse;
-import thermostat.thermoFunctions.commands.monitoring.synapses.SynapseMonitor;
+import thermostat.thermoFunctions.entities.Synapse;
+import thermostat.thermoFunctions.commands.monitoring.SynapseMonitor;
 import thermostat.thermoFunctions.entities.SynapseState;
 
 import javax.annotation.Nonnull;

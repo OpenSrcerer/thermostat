@@ -1,4 +1,4 @@
-package thermostat.thermoFunctions.commands.monitoring.synapses;
+package thermostat.thermoFunctions.commands.monitoring;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.thermoFunctions.Functions;
 import thermostat.thermoFunctions.commands.Command;
+import thermostat.thermoFunctions.entities.Synapse;
 import thermostat.thermoFunctions.entities.CommandType;
 
 import javax.annotation.Nullable;
