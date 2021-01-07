@@ -2,8 +2,8 @@ package thermostat.dispatchers;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import thermostat.thermoFunctions.Messages;
-import thermostat.thermoFunctions.commands.Command;
+import thermostat.Messages;
+import thermostat.commands.Command;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

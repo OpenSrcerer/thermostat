@@ -12,7 +12,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.thermoFunctions.commands.events.Ready;
+import thermostat.commands.events.Ready;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;

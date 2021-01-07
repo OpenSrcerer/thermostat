@@ -9,6 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import static thermostat.Thermostat.thermo;
 
+/**
+ * Dispatches periodic miscellanous events like status changes, API
+ * connections, etc.
+ */
 public final class MiscellaneousDispatcher {
     private static final Logger lgr = LoggerFactory.getLogger(MiscellaneousDispatcher.class);
     private static DiscordBotListAPI dblApi;
