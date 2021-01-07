@@ -75,6 +75,17 @@ public abstract class ErrorEmbeds {
         return eb;
     }
 
+    public static EmbedBuilder error(String error) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("❌ An error has occurred. ❌");
+        eb.addField("Error details:", error, false);
+        eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
+        eb.setTimestamp(Instant.now());
+        eb.setFooter(Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setColor(0x36393f);
+        return eb;
+    }
+
 
     public static EmbedBuilder incorrectPrefix(long commandId) {
         EmbedBuilder eb = new EmbedBuilder();
