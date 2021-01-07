@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
+import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.SynapseDispatcher;
 import thermostat.commands.CommandTrigger;
 import thermostat.commands.utility.WordFilterCommand;
@@ -28,8 +29,15 @@ import static thermostat.Thermostat.thermo;
  * initialization.
  */
 public class Ready extends ListenerAdapter {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(Thermostat.class);
 
+    /**
+     * Initialize Thermostat's modules when the JDA instance has been constructed.
+     */
     public void onReady(@Nonnull ReadyEvent event) {
         try {
             initializeWordFiles("niceWords.txt", "badWords.txt");
@@ -41,14 +49,13 @@ public class Ready extends ListenerAdapter {
 
         thermo.addEventListener(
                 new CommandTrigger(),
-                new MessageDeleteEvent(),
-                new ReactionAddEvent(),
+                new MenuDispatcher(),
                 new SynapseEvents()
         );
 
         SynapseDispatcher.initializeSynapses();
         getConnectedGuilds();
-        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat prefix", "https://github.com/opensrcerer/thermostat"));
+        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat", "https://github.com/opensrcerer/thermostat"));
     }
 
     public void initializeWordFiles(@Nonnull String file1, @Nonnull String file2) throws Exception {
