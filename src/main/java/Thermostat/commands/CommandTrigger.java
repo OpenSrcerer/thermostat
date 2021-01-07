@@ -13,7 +13,7 @@ import thermostat.commands.informational.SettingsCommand;
 import thermostat.commands.monitoring.MonitorCommand;
 import thermostat.commands.monitoring.SensitivityCommand;
 import thermostat.commands.monitoring.SetBoundsCommand;
-import thermostat.commands.other.InfoCommand;
+import thermostat.commands.informational.InfoCommand;
 import thermostat.commands.other.InviteCommand;
 import thermostat.commands.other.PrefixCommand;
 import thermostat.commands.other.VoteCommand;
@@ -170,7 +170,7 @@ public final class CommandTrigger extends ListenerAdapter {
      * @return Prefix of said guild.
      */
     @Nonnull
-    private static String getGuildPrefix(String guildId) {
+    public static String getGuildPrefix(String guildId) {
         boolean isCached = true;
         String prefix = prefixCache.get(guildId);
 
