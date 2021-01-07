@@ -1,26 +1,24 @@
-package thermostat.commands.other;
+package thermostat.commands.informational;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.Functions;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.entities.ReactionMenu;
 import thermostat.enumeration.CommandType;
 import thermostat.enumeration.MenuType;
-import thermostat.entities.MonitoredMessage;
+import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.preparedStatements.GenericEmbeds;
+import thermostat.preparedStatements.HelpEmbeds;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static thermostat.entities.MonitoredMessage.monitoredMessages;
 
 /**
  * Class that manages the th!info command. Sends
@@ -56,24 +54,6 @@ public class InfoCommand implements Command {
      */
     @Override
     public void run() {
-        Consumer<Message> consumer = message -> {
-            try {
-                Messages.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
-                // create the information message object
-                // to be added to the monitored message
-                // ArrayList
-                MonitoredMessage infoMessage = new MonitoredMessage(
-                        message.getId(),
-                        data.getMember().getId(),
-                        MenuType.SELECTION
-                );
-                infoMessage.resetDestructionTimer(data.getChannel());
-                // adds the object to the list
-                monitoredMessages.add(infoMessage);
-            } catch (PermissionException ignored) {
-            }
-        };
-
         if (!argument.isEmpty()) {
             if (argument.equalsIgnoreCase(CommandType.CHART.getAlias1())) {
                 Messages.sendMessage(data.getChannel(), HelpEmbeds.expandedHelpChart(prefix));
@@ -101,9 +81,20 @@ public class InfoCommand implements Command {
             return;
         }
 
-        ResponseDispatcher.commandSucceeded(this,
-                GenericEmbeds.getInfoSelection(),
-                consumer);
+        Consumer<Message> consumer = message -> {
+            try {
+                Messages.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
+                new ReactionMenu(
+                        MenuType.SELECTION, data.getMember().getId(),
+                        message.getId(), data.getChannel()
+                );
+                ResponseDispatcher.commandSucceeded(this, null);
+            } catch (Exception ex) {
+                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getCause().toString(), this.getId()), ex);
+            }
+        };
+
+        Messages.sendMessage(data.getChannel(), GenericEmbeds.getInfoSelection(), consumer);
     }
 
     @Override
