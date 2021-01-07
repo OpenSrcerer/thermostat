@@ -129,14 +129,7 @@ public final class Messages {
      * @param msgId      Message to edit.
      * @param newContent New embed to place in the message.
      */
-    @SuppressWarnings("StatementWithEmptyBody")
-    public static void editMessage(TextChannel channel, String msgId, MessageEmbed newContent) {
-        Consumer<Throwable> editMessageConsumer = throwable -> {
-            if (throwable.toString().contains("UNKNOWN_MESSAGE")) {
-                // ignore
-            }
-        };
-
+    public static void editMessage(TextChannel channel, String msgId, MessageEmbed newContent) throws InsufficientPermissionException {
         Consumer<Throwable> retrieveMessageConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_ACCESS")) {
                 Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
@@ -145,7 +138,7 @@ public final class Messages {
             }
         };
 
-        Consumer<Message> onSuccessfulRetrieval = message -> message.editMessage(newContent).queue(null, editMessageConsumer);
+        Consumer<Message> onSuccessfulRetrieval = message -> message.editMessage(newContent).queue();
 
         try {
             channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, retrieveMessageConsumer);
@@ -266,28 +259,17 @@ public final class Messages {
      * @param message The message which will have reactions added to it.
      * @param unicode The unicode emoji to add as a reaction.
      */
-    public static void addReactions(Message message, List<String> unicode) {
+    public static void addReactions(Message message, List<String> unicode) throws InsufficientPermissionException {
         Consumer<Throwable> throwableReactionConsumer = throwable -> {
             if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
                 Messages.sendMessage(message.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
             }
         };
 
-        try {
-            long reactionsDuration = 750;
-            for (String it : unicode) {
-                message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS, null, throwableReactionConsumer);
-                reactionsDuration += 500;
-            }
-        } catch (InsufficientPermissionException ex) {
-            if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
-                Messages.sendMessage(message.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
-            } else if (ex.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(message.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_HISTORY)));
-            }
-            Messages.deleteMessage(message);
-            throw new PermissionException("Missing Permissions to add Reaction.");
-        } catch (ErrorResponseException ignored) {
+        long reactionsDuration = 750;
+        for (String it : unicode) {
+            message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS, null, throwableReactionConsumer);
+            reactionsDuration += 500;
         }
     }
 
@@ -297,7 +279,7 @@ public final class Messages {
      * @param msg     The target message.
      * @param unicode The unicode emoji to add as a reaction.
      */
-    public static void addReaction(Message msg, String unicode) {
+    public static void addReaction(Message msg, String unicode) throws InsufficientPermissionException {
         Consumer<Throwable> throwableConsumer = throwable -> {
             if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
                 Messages.deleteMessage(msg);
@@ -305,18 +287,7 @@ public final class Messages {
             }
         };
 
-        try {
-            msg.addReaction(unicode).queue(null, throwableConsumer);
-        } catch (InsufficientPermissionException ex) {
-            if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
-            } else if (ex.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_HISTORY)));
-            }
-            Messages.deleteMessage(msg);
-            throw new PermissionException("Missing Permissions to add Reaction.");
-        } catch (ErrorResponseException ignored) {
-        }
+        msg.addReaction(unicode).queue(null, throwableConsumer);
     }
 
     /**
@@ -325,7 +296,7 @@ public final class Messages {
      * @param channel Channel that the message resides in.
      * @param msgId   The ID of message to have its' reactions cleared.
      */
-    public static void clearReactions(TextChannel channel, String msgId) {
+    public static void clearReactions(TextChannel channel, String msgId) throws InsufficientPermissionException {
         Consumer<Throwable> throwableClearConsumer = throwable -> {
             if (throwable.toString().contains("MISSING_PERMISSIONS")) {
                 Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
@@ -350,10 +321,6 @@ public final class Messages {
             }
         };
 
-        try {
-            channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
-        } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)));
-        }
+        channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
     }
 }
