@@ -9,7 +9,6 @@ import java.time.Instant;
  * Class for all static embeds.
  */
 public abstract class GenericEmbeds {
-
     public static EmbedBuilder chartHolder(String authorID, String authorAvatarURL, String serverName) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Slowmode Frequency Chart");
@@ -48,7 +47,9 @@ public abstract class GenericEmbeds {
     public static EmbedBuilder getPrefix(String authorID, String authorAvatarURL, String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("My prefix in this server is: " + "`" + prefix + "`");
-        eb.setDescription("You can give me a new one using `" + prefix + "prefix set <prefix>`!\n " + "Reset it to the default using `" + prefix + "prefix reset`!");
+        eb.setDescription("You can give me a new one using `" + prefix + "prefix set <prefix>`!\n " +
+                "Reset it to the default using `" + prefix + "prefix reset`!\n" +
+                "If you need help, launch a help menu with " + prefix + "info");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, authorAvatarURL);
         eb.setColor(0x00aeff);

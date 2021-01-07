@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import java.time.Instant;
 
 public abstract class HelpEmbeds {
-
     public static EmbedBuilder expandedHelpInfo(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n `" + prefix + "info [command]`");

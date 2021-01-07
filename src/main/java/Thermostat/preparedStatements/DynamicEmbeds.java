@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.List;
 
 public abstract class DynamicEmbeds {
-
     public static EmbedBuilder dynamicEmbed(List<String> options, User user, long commandId) {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setColor(0x00aeff);
