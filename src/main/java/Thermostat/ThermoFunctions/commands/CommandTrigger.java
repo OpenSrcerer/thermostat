@@ -149,13 +149,10 @@ public final class CommandTrigger extends ListenerAdapter {
         else if (
                 (arguments.get(0).equalsIgnoreCase("<@!" + Thermostat.thermo.getSelfUser().getId() + ">"))
         ) {
-            if (arguments.size() > 1)
-                if (arguments.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias1()) ||
-                        arguments.get(1).equalsIgnoreCase(CommandType.PREFIX.getAlias2())) {
-                    arguments.subList(0, 1).clear();
-                    new PrefixCommand(event, arguments, prefix);
-                }
-        } else if (
+            new PrefixCommand(event, arguments, prefix);
+        }
+
+        else if (
                 arguments.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias1()) ||
                         arguments.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias2())
         ) {
