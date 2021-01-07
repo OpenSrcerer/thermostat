@@ -2,30 +2,27 @@ package thermostat.commands.monitoring;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.exceptions.PermissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Functions;
+import thermostat.Messages;
+import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.entities.ReactionMenu;
+import thermostat.enumeration.CommandType;
+import thermostat.enumeration.MenuType;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
-import thermostat.Functions;
-import thermostat.Messages;
-import thermostat.commands.Command;
-import thermostat.enumeration.CommandType;
-import thermostat.enumeration.MenuType;
-import thermostat.entities.MonitoredMessage;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static thermostat.entities.MonitoredMessage.monitoredMessages;
 
 /**
  * Adds channels to the database provided in
@@ -138,21 +135,21 @@ public class MonitorCommand implements Command {
         Consumer<Message> consumer = message -> {
             try {
                 Messages.addReaction(message, "☑");
-                MonitoredMessage unMonitorAllMessage = new MonitoredMessage(
-                        message.getId(),
-                        data.getMember().getId(),
-                        MenuType.UNMONITORALL
+                new ReactionMenu(
+                        MenuType.UNMONITORALL, data.getMember().getId(),
+                        message.getId(), data.getChannel()
                 );
-                unMonitorAllMessage.resetDestructionTimer(data.getChannel());
-                // adds the object to the list
-                monitoredMessages.add(unMonitorAllMessage);
-            } catch (PermissionException ignored) {
+                ResponseDispatcher.commandSucceeded(this, null);
+            } catch (Exception ex) {
+                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getCause().toString(), this.getId()), ex);
             }
         };
 
-        ResponseDispatcher.commandSucceeded(this,
+        Messages.sendMessage(
+                data.getChannel(),
                 GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()),
-                consumer);
+                consumer
+        );
     }
 
     @Override
