@@ -128,7 +128,7 @@ public class Synapse {
             // Adds +1 when slowmode turns on for the first time. (Charting)
             if (slow == min && slowmodeToSet > min) {
                 DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?",
-                        Arrays.asList(channel.getId(), channel.getGuild().getId()));
+                        channel.getId(), channel.getGuild().getId());
             }
 
         } catch (Exception ex) {

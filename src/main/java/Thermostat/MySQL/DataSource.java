@@ -316,13 +316,13 @@ public abstract class DataSource {
      *              executed.
      * @throws SQLException Error while executing update.
      */
-    public static void update(String Query, List<String> args) throws SQLException {
+    public static void update(String Query, String... args) throws SQLException {
         try (
              Connection conn = getConnection();
              PreparedStatement pst = conn.prepareStatement(Query)
         ) {
-            for (int it = 0; it < args.size(); ++it) {
-                pst.setString(it + 1, args.get(it));
+            for (int it = 0; it < args.length; ++it) {
+                pst.setString(it + 1, args[it]);
             }
             pst.executeUpdate();
         }

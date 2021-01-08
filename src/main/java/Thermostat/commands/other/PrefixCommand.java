@@ -55,10 +55,8 @@ public class PrefixCommand implements Command {
             prefixAction(data, arguments, prefix);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error("Try running the command again",
-                            ex.getLocalizedMessage(),
-                            Functions.getCommandId()),
-                    ex
+                    ErrorEmbeds.error(ex.getLocalizedMessage(),
+                            Functions.getCommandId()), ex
             );
         }
     }
@@ -73,7 +71,7 @@ public class PrefixCommand implements Command {
         if (arguments.size() > 1 && arguments.get(0).equalsIgnoreCase("set")) {
             if (Pattern.matches("[!-~]*", arguments.get(1)) && arguments.get(1).length() <= 10 && !arguments.get(1).equalsIgnoreCase(prefix)) {
                 DataSource.update("UPDATE GUILDS SET GUILD_PREFIX = '?' WHERE GUILD_ID = ?",
-                        Arrays.asList(arguments.get(1), data.getGuild().getId()));
+                        arguments.get(1), data.getGuild().getId());
                 CommandTrigger.updateEntry(data.getGuild().getId(), arguments.get(1));
                 ResponseDispatcher.commandSucceeded(
                         this, GenericEmbeds.setPrefix(

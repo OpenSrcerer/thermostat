@@ -69,7 +69,7 @@ public final class CommandDispatcher {
             lgr.error("Request queue was interrupted!");
             ResponseDispatcher.commandFailed(
                     command,
-                    ErrorEmbeds.error("Please try again later.", ex.getCause().toString(), command.getId()),
+                    ErrorEmbeds.error(ex.getCause().toString(), command.getId()),
                     ex
             );
         }

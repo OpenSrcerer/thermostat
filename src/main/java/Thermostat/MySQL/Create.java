@@ -41,10 +41,10 @@ public abstract class Create {
      */
     public static void Channel(String GUILD_ID, String CHANNEL_ID, int monitor) {
         try {
-            DataSource.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (?, ?);", Arrays.asList(CHANNEL_ID, GUILD_ID));
+            DataSource.update("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (?, ?);", CHANNEL_ID, GUILD_ID);
             // add channelID, min, and max slowmode
             DataSource.update("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES (?, 0, 0, ?);",
-                    Arrays.asList(CHANNEL_ID, Integer.toString(monitor)));
+                    CHANNEL_ID, Integer.toString(monitor));
         } catch (SQLException ex) {
             lgr.warn(ex.getMessage(), ex);
         }
@@ -72,7 +72,7 @@ public abstract class Create {
                     "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
                     "SET MONITORED = ? WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?" +
                     " AND GUILDS.GUILD_ID = ?",
-                    Arrays.asList(Integer.toString(monitor), CHANNEL_ID, GUILD_ID));
+                    Integer.toString(monitor), CHANNEL_ID, GUILD_ID);
 
             if (monitor == 1) {
                 SynapseDispatcher.getSynapse(GUILD_ID).addChannel(CHANNEL_ID);
@@ -89,10 +89,10 @@ public abstract class Create {
             for (String arg : args) {
                 if (filtered.equals("0")) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_ID = 0, WEBHOOK_TOKEN = 0 WHERE CHANNEL_ID = ?",
-                            Arrays.asList(filtered, arg));
+                            filtered, arg);
                 } else {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?",
-                            Arrays.asList(filtered, arg));
+                            filtered, arg);
                 }
                 builder.append("<#").append(arg).append("> ");
             }

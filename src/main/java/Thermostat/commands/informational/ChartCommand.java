@@ -193,7 +193,7 @@ public class ChartCommand implements Command {
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
                     ex);
             return;
         }

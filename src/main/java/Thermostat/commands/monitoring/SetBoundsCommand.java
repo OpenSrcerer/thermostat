@@ -128,14 +128,14 @@ public class SetBoundsCommand implements Command {
                     // update both so they're equal
                     else if (argumentSlow < minimumSlow && type == ActionType.MAXIMUM) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
-                                Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), arg));
+                                Integer.toString(argumentSlow), Integer.toString(argumentSlow), arg);
                         maxComplete.append("<#").append(arg).append("> ");
                     }
                     // if the argument >= the minimum
                     // set maximum normally
                     else if (argumentSlow >= minimumSlow && type == ActionType.MAXIMUM) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
-                                Arrays.asList(Integer.toString(argumentSlow), arg));
+                                Integer.toString(argumentSlow), arg);
                         maxComplete.append("<#").append(arg).append("> ");
                     }
                     // -- Setting a Minimum Slowmode --
@@ -143,20 +143,20 @@ public class SetBoundsCommand implements Command {
                     // update both so they're equal
                     else if (argumentSlow > maximumSlow) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = ?, MAX_SLOW = ? WHERE CHANNEL_ID = ?",
-                                Arrays.asList(Integer.toString(argumentSlow), Integer.toString(argumentSlow), arg));
+                                Integer.toString(argumentSlow), Integer.toString(argumentSlow), arg);
                         minComplete.append("<#").append(arg).append("> ");
                     }
                     // if the argument <= the maximum
                     // set minimum normally
                     else if (argumentSlow <= maximumSlow) {
                         DataSource.update("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = ? WHERE CHANNEL_ID = ?",
-                                Arrays.asList(Integer.toString(argumentSlow), arg));
+                                Integer.toString(argumentSlow), arg);
                         minComplete.append("<#").append(arg).append("> ");
                     }
 
                 } catch (SQLException ex) {
                     ResponseDispatcher.commandFailed(this,
-                            ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                            ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
                             ex);
                     return;
                 }

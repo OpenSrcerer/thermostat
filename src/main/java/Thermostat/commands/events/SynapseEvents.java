@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import thermostat.dispatchers.SynapseDispatcher;
 import thermostat.entities.Synapse;
 import thermostat.enumeration.SynapseState;
+import thermostat.mySQL.Delete;
 
 /**
  * Manages all JDA Events that relate to Synapses.
@@ -54,6 +55,7 @@ public class SynapseEvents extends ListenerAdapter {
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
         SynapseDispatcher.removeSynapse(event.getGuild().getId());
+        Delete.Guild(event.getGuild().getId());
     }
 
     /**

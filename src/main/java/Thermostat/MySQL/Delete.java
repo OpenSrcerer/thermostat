@@ -4,15 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
- * Contains static functions, used to
- * initiate a database connection and perform
- * deletion operations.
+ * Contains static functions that
+ * perform deletion operations.
  */
-
 public abstract class Delete {
     private static final Logger lgr = LoggerFactory.getLogger(Delete.class);
 
@@ -60,13 +56,13 @@ public abstract class Delete {
                     " ON (CHANNELS.GUILD_ID = GUILDS.GUILD_ID) JOIN CHANNEL_SETTINGS" +
                     " ON (CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID)" +
                     " WHERE GUILDS.GUILD_ID = ? AND CHANNELS.CHANNEL_ID = ?",
-                    Arrays.asList(GUILD_ID, CHANNEL_ID));
+                    GUILD_ID, CHANNEL_ID);
 
             DataSource.update(
                     "DELETE CHANNELS FROM GUILDS JOIN CHANNELS " +
                             "ON (CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
                             "WHERE GUILDS.GUILD_ID = ? AND CHANNELS.CHANNEL_ID = ?",
-            Arrays.asList(GUILD_ID, CHANNEL_ID));
+            GUILD_ID, CHANNEL_ID);
         } catch (SQLException ex) {
             lgr.error(ex.getMessage(), ex);
         }

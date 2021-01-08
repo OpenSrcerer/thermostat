@@ -82,7 +82,7 @@ public class SensitivityCommand implements Command {
                 addIfNotInDb(data.getGuild().getId(), arg);
                 if (offset >= -10 && offset <= 10) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?",
-                            Arrays.asList(Float.toString(1f + offset / 20f), arg));
+                            Float.toString(1f + offset / 20f), arg);
                     complete.append("<#").append(arg).append("> ");
                 } else {
                     badSensitivity.append("<#").append(arg).append("> ");
@@ -90,7 +90,7 @@ public class SensitivityCommand implements Command {
 
             } catch (SQLException ex) {
                 ResponseDispatcher.commandFailed(this,
-                        ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                        ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
                         ex);
                 return;
             }

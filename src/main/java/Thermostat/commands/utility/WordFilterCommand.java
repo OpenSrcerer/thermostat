@@ -195,7 +195,7 @@ public class WordFilterCommand implements Command {
                                                 "SET CHANNEL_SETTINGS.WEBHOOK_ID = ?, " +
                                                 "CHANNEL_SETTINGS.WEBHOOK_TOKEN = ? " +
                                                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?",
-                                        Arrays.asList(webhook.getId(), webhook.getToken(), data.getChannel().getId()));
+                                        webhook.getId(), webhook.getToken(), data.getChannel().getId());
                             } catch (SQLException ex) {
                                 ResponseDispatcher.commandFailed(this,
                                         ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),

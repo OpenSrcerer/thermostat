@@ -84,7 +84,7 @@ public class SettingsCommand implements Command {
                 filtered = (boolean) objects.get(4);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error("Try running the command again", ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
                     ex);
             return;
         }
