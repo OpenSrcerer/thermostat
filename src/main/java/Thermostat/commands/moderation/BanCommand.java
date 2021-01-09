@@ -8,7 +8,10 @@ import thermostat.commands.Command;
 import thermostat.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
+import java.text.ParseException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 public class BanCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(BanCommand.class);
@@ -29,9 +32,39 @@ public class BanCommand implements Command {
         }
     }
 
+    /**
+     * Command form:
+     */
     @Override
     public void run() {
+        final Map<String, List<String>> parameters;
 
+        try {
+            parameters = parseArguments(arguments);
+        } catch (ParseException ex) {
+            // cmdfailed (error in arguments)
+            return;
+        }
+
+        List<String> users = parameters.get("u");
+        List<String> time = parameters.get("t");
+
+        if (hasArguments(users)) {
+            Calendar calendar = null;
+            if (hasArguments(time)) {
+                calendar = Functions.parseTime(String.join("", time));
+            }
+
+            banUsers(users, calendar);
+        } else {
+            // cmdfailed (no users)
+        }
+    }
+
+    private static void banUsers(List<String> users, Calendar calendar) {
+        if (calendar == null) {
+
+        }
     }
 
     @Override
@@ -41,16 +74,16 @@ public class BanCommand implements Command {
 
     @Override
     public CommandType getType() {
-        return null;
+        return CommandType.BAN;
     }
 
     @Override
     public Logger getLogger() {
-        return null;
+        return lgr;
     }
 
     @Override
     public long getId() {
-        return 0;
+        return commandId;
     }
 }
