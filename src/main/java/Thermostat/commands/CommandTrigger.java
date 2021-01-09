@@ -151,6 +151,7 @@ public final class CommandTrigger extends ListenerAdapter {
         else if (
                 (arguments.get(0).equalsIgnoreCase("<@!" + Thermostat.thermo.getSelfUser().getId() + ">"))
         ) {
+            arguments.remove(0);
             new PrefixCommand(event, arguments, prefix);
         }
 

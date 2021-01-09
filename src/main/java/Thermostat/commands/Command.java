@@ -4,26 +4,22 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
+import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.CommandDispatcher;
+import thermostat.enumeration.CommandType;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.Messages;
-import thermostat.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.text.ParseException;
+import java.util.*;
 
 import static thermostat.Functions.parseMention;
 
 public interface Command extends Runnable {
-
-    // boolean checkFormat();
 
     /**
      * Execute the Command's Discord-side code.
@@ -54,6 +50,46 @@ public interface Command extends Runnable {
      * @return Command's ID
      */
     long getId();
+
+    /**
+     * Checks if a list is not null and contains data.
+     * @param list List to check.
+     * @return True if the list does contain data, false otherwise.
+     */
+    default boolean hasArguments(List<String> list) {
+        if (list == null) {
+            return false;
+        }
+
+        return !list.isEmpty();
+    }
+
+    @Nonnull
+    default Map<String, List<String>> parseArguments(List<String> arguments) throws ParseException {
+        // Create a HashMap where the final parameters will be stored.
+        final Map<String, List<String>> params = new HashMap<>();
+
+        // create a temporary list for the options
+        List<String> options = null;
+
+        for (final String arg : arguments) {
+
+            if (arg.charAt(0) == '-') {
+                if (arg.length() < 2) {
+                    throw new ParseException("Error at argument " + arg + ".", 1);
+                }
+
+                params.put(arg.substring(1), options);
+                options = new ArrayList<>();
+            } else if (options != null) {
+                options.add(arg);
+            } else {
+                throw new IllegalArgumentException("Illegal argument usage: " + arg + ".");
+            }
+        }
+
+        return params;
+    }
 
     /**
      * Adds channel to database if it's not found.
@@ -295,9 +331,7 @@ public interface Command extends Runnable {
                 // removes element from arguments if it's not a valid channel ID
                 else if (eventChannel.getGuild().getTextChannelById(args.get(index)) == null) {
                     nonValid.append("\"").append(originalArgument).append("\" ");
-                }
-
-                else {
+                } else {
                     newArgs.add(args.get(index));
                 }
             }
