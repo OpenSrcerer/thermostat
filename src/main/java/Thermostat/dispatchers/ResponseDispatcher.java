@@ -61,7 +61,7 @@ public final class ResponseDispatcher {
      * @param reason Reason for failure.
      */
     public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed, @Nonnull String reason) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Reason:\n" + reason);
+        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Reason:" + reason);
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
     }
@@ -73,7 +73,7 @@ public final class ResponseDispatcher {
      * @param throwable Details of the error.
      */
     public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed, @Nonnull Throwable throwable) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Details:\n", throwable);
+        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Details:", throwable);
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
     }
