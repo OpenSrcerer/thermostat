@@ -4,6 +4,7 @@ import org.discordbots.api.client.DiscordBotListAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
+import xyz.discordboats.Boats4J.Boats4J;
 
 import java.util.concurrent.TimeUnit;
 
@@ -17,14 +18,15 @@ public final class MiscellaneousDispatcher {
     private static final Logger lgr = LoggerFactory.getLogger(MiscellaneousDispatcher.class);
     private static DiscordBotListAPI dblApi;
 
-    public static void setDblApi(String token) {
-        dblApi = new DiscordBotListAPI.Builder().token(token)
+    public static void initApis(String dblToken, String boatsToken) {
+        dblApi = new DiscordBotListAPI.Builder().token(dblToken)
                 .botId(thermo.getSelfUser().getId())
                 .build();
 
         Runnable run = () -> {
-            int currentServers = thermo.getGuilds().size();
-            dblApi.setStats(currentServers);
+            long currentServers = thermo.getGuildCache().size();
+            dblApi.setStats((int) currentServers);
+            Boats4J.postStats(currentServers, thermo.getSelfUser().getId(), boatsToken);
             lgr.info("Current Guilds: [" + currentServers + "]");
         };
 

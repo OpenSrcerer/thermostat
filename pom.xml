@@ -115,6 +115,12 @@
         </dependency>
 
         <dependency>
+            <groupId>xyz.discordboats</groupId>
+            <artifactId>Boats4J</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
             <version>4.2.0_225</version>

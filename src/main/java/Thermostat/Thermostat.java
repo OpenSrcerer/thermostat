@@ -78,7 +78,7 @@ public abstract class Thermostat {
                 .addEventListeners(new Ready())
                 .build();
 
-        MiscellaneousDispatcher.setDblApi(config[2]);
+        MiscellaneousDispatcher.initApis(config[2], config[3]);
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("fast loading..."));
     }
 
@@ -89,7 +89,7 @@ public abstract class Thermostat {
      * @throws Exception If I/O operations had an issue.
      */
     private static String[] initializeTokens() throws Exception {
-        String[] tokens = new String[3];
+        String[] tokens = new String[4];
 
         InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
 
@@ -107,6 +107,7 @@ public abstract class Thermostat {
         tokens[0] = jsonObject.get("Prefix").toString();
         tokens[1] = jsonObject.get("Token").toString();
         tokens[2] = jsonObject.get("DBLToken").toString();
+        tokens[3] = jsonObject.get("BoatsToken").toString();
 
         return tokens;
     }
