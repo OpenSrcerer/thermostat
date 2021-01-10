@@ -180,6 +180,14 @@ public enum CommandType {
     // **                   Internal Commands                       **
     // **     (Used as reference for Thermostat's Permissions)      **
     // ***************************************************************
+    ADD_REACTIONS(
+            EnumSet.of(
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_HISTORY,
+                    Permission.MESSAGE_MANAGE,
+                    Permission.MESSAGE_ADD_REACTION
+            )
+    ),
     SYNAPSE_MONITOR(
             EnumSet.of(
                     Permission.MESSAGE_HISTORY,
@@ -192,6 +200,13 @@ public enum CommandType {
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_MANAGE,
                     Permission.MANAGE_WEBHOOKS
+            )
+    ),
+    DELETE_REACTIONS(
+            EnumSet.of(
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_HISTORY,
+                    Permission.MESSAGE_MANAGE
             )
     ),
     DELETE_MESSAGE(
