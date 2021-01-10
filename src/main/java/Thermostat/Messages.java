@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.util.PermissionComputer;
+import thermostat.util.enumeration.CommandType;
 
 import java.io.InputStream;
 import java.util.EnumSet;
@@ -16,9 +18,27 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * A handy Message manager.
+ * A handy Message sender with static functions.
  */
 public final class Messages {
+
+    /**
+     * Sends a text message to a designated channel with an
+     * image attachment.
+     * @param channel     Channel to send the message in.
+     * @param inputStream Attachment to get sent.
+     * @param embed       Embed that contains the attachment.
+     */
+    public static void sendMessage(TextChannel channel, InputStream inputStream, EmbedBuilder embed) {
+        if (PermissionComputer.getMissingPermissions(channel.getGuild().getSelfMember(), channel, CommandType.SEND_MESSAGE_ATTACHMENT.getThermoPerms()).isEmpty()) {
+            channel.sendFile(inputStream, "chart.png")
+                    .embed(embed.setImage("attachment://chart.png").build())
+                    .queue();
+        } else {
+            Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_ATTACH_FILES)));
+        }
+    }
+
     /**
      * Sends an embed to a designated channel, runs
      * a success Consumer afterwards.
@@ -28,16 +48,10 @@ public final class Messages {
      * @param success The consumer to run after the .queue() call.
      */
     public static void sendMessage(TextChannel channel, EmbedBuilder eb, Consumer<Message> success) {
-
-
-
-        if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
-            // send message and run provided consumer
-            try {
-                channel.sendMessage(eb.build()).queue(success);
-            } catch (InsufficientPermissionException ex) {
-                sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot to see command results!");
-            }
+        if (PermissionComputer.getMissingPermissions(channel.getGuild().getSelfMember(), channel, CommandType.SEND_MESSAGE_EMBED.getThermoPerms()).isEmpty()) {
+            channel.sendMessage(eb.build()).queue(success);
+        } else {
+            sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot!");
         }
     }
 
@@ -48,12 +62,10 @@ public final class Messages {
      * @param eb      The embed to send.
      */
     public static void sendMessage(TextChannel channel, EmbedBuilder eb) {
-        if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
-            try {
-                channel.sendMessage(eb.build()).queue();
-            } catch (InsufficientPermissionException ex) {
-                sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot!");
-            }
+        if (PermissionComputer.getMissingPermissions(channel.getGuild().getSelfMember(), channel, CommandType.SEND_MESSAGE_EMBED.getThermoPerms()).isEmpty()) {
+            channel.sendMessage(eb.build()).queue();
+        } else {
+            sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot!");
         }
     }
 
@@ -64,34 +76,8 @@ public final class Messages {
      * @param msg     The message to send.
      */
     public static void sendMessage(TextChannel channel, String msg) {
-        if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
-            try {
-                channel.sendMessage(msg).queue();
-            } catch (InsufficientPermissionException ignored) {
-            }
-        }
-    }
-
-    /**
-     * Sends a text message to a designated channel.
-     *
-     * @param channel     Channel to send the message in.
-     * @param inputStream Chart to get sent.
-     * @param embed       Embed that contains the chart.
-     */
-    public static void sendMessage(TextChannel channel, InputStream inputStream, EmbedBuilder embed) {
-        if (
-                channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE) &&
-                        channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ATTACH_FILES)
-        ) {
-            try {
-                channel.sendFile(inputStream, "chart.png")
-                        .embed(embed.setImage("attachment://chart.png").build())
-                        .queue();
-            } catch (InsufficientPermissionException ignored) {
-            }
-        } else {
-            Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_ATTACH_FILES)));
+        if (PermissionComputer.getMissingPermissions(channel.getGuild().getSelfMember(), channel, CommandType.SEND_MESSAGE_TEXT.getThermoPerms()).isEmpty()) {
+            channel.sendMessage(msg).queue();
         }
     }
 
@@ -103,9 +89,9 @@ public final class Messages {
      * @param newContent New embed to place in the message.
      */
     public static void editMessage(TextChannel channel, String msgId, MessageEmbed newContent) throws InsufficientPermissionException {
-        try {
+        if (PermissionComputer.getMissingPermissions(channel.getGuild().getSelfMember(), channel, CommandType.EDIT_MESSAGE.getThermoPerms()).isEmpty()) {
             channel.retrieveMessageById(msgId).queue(message -> message.editMessage(newContent).queue());
-        } catch (InsufficientPermissionException ex) {
+        } else {
             Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)));
         }
     }

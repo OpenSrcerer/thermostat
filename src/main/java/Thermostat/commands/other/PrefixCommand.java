@@ -11,7 +11,7 @@ import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
 import thermostat.commands.CommandTrigger;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;

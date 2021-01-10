@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.text.ParseException;

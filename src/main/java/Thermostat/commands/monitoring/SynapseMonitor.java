@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
-import thermostat.entities.Synapse;
-import thermostat.enumeration.CommandType;
+import thermostat.util.entities.Synapse;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nullable;
 

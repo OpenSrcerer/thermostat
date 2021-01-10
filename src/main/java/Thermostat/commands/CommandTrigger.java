@@ -19,7 +19,7 @@ import thermostat.commands.other.PrefixCommand;
 import thermostat.commands.other.VoteCommand;
 import thermostat.commands.utility.FilterCommand;
 import thermostat.commands.utility.WordFilterCommand;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;

@@ -1,10 +1,10 @@
-package thermostat.entities;
+package thermostat.util.entities;
 
 import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.MenuDispatcher;
-import thermostat.enumeration.MenuType;
+import thermostat.util.enumeration.MenuType;
 import thermostat.preparedStatements.GenericEmbeds;
 
 import javax.annotation.Nonnull;

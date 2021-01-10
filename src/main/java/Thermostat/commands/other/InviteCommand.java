@@ -7,7 +7,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.util.List;

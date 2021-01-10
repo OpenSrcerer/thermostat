@@ -10,9 +10,9 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import thermostat.commands.events.Ready;
 import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.commands.events.Ready;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -52,7 +52,7 @@ public abstract class Thermostat {
      * @throws Exception Any Exception that may occur.
      * @throws Error Any Error that may occur while loading.
      */
-    public static void initializeThermostat() throws Exception, Error {
+    protected static void initializeThermostat() throws Exception, Error {
         String[] config = initializeTokens();
         DataSource.initializeDataSource();
 

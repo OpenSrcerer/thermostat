@@ -1,4 +1,4 @@
-package thermostat.enumeration;
+package thermostat.util.enumeration;
 
 import net.dv8tion.jda.api.Permission;
 import thermostat.commands.CommandTrigger;
@@ -111,6 +111,8 @@ public enum CommandType {
             )),
     PURGE("purge", "ex",
             EnumSet.of(
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_HISTORY,
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_MANAGE
@@ -144,27 +146,21 @@ public enum CommandType {
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_HISTORY,
                     Permission.MESSAGE_ADD_REACTION
-            ),
-            EnumSet.noneOf(
-                    Permission.class
-            )),
+            )
+    ),
     HELP("help", "hp",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_ADD_REACTION
-            ),
-            EnumSet.noneOf(
-                    Permission.class
-            )),
+            )
+    ),
     INVITE("invite", "iv",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS
-            ),
-            EnumSet.noneOf(
-                    Permission.class
-            )),
+            )
+    ),
     PREFIX("prefix", "px",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -173,34 +169,62 @@ public enum CommandType {
             EnumSet.of(
                     Permission.ADMINISTRATOR
             )),
-    WORDFILTEREVENT("wordfilter", "wf",
+    VOTE("vote", "vo",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS
+            )
+    ),
+
+    // ***************************************************************
+    // **                   Internal Commands                       **
+    // **     (Used as reference for Thermostat's Permissions)      **
+    // ***************************************************************
+    SYNAPSE_MONITOR(
+            EnumSet.of(
+                    Permission.MESSAGE_HISTORY,
+                    Permission.MANAGE_CHANNEL
+            )
+    ),
+    WORDFILTEREVENT(
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_MANAGE,
                     Permission.MANAGE_WEBHOOKS
-            ),
-            EnumSet.noneOf(
-                    Permission.class
-            )),
-    VOTE("vote", "vo",
+            )
+    ),
+    DELETE_MESSAGE(
+            EnumSet.of(
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_HISTORY,
+                    Permission.MESSAGE_MANAGE
+            )
+    ),
+    EDIT_MESSAGE(
+            EnumSet.of(
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_HISTORY
+            )
+    ),
+    SEND_MESSAGE_TEXT(
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE
+            )
+    ),
+    SEND_MESSAGE_EMBED(
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS
-            ),
-            EnumSet.noneOf(
-                    Permission.class
-            )),
-
-    // ---- Internal ----
-    SYNAPSE_MONITOR("", "",
+            )
+    ),
+    SEND_MESSAGE_ATTACHMENT(
             EnumSet.of(
-                    Permission.MESSAGE_HISTORY,
-                    Permission.MANAGE_CHANNEL
-            ),
-            EnumSet.noneOf(
-                    Permission.class
-            ));
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_ATTACH_FILES
+            )
+    );
 
     /**
      * Long and short alias to run the command.
@@ -222,6 +246,20 @@ public enum CommandType {
         this.alias2 = alias2;
         this.thermoPermissions = thermoPermissions;
         this.memberPermissions = memberPermissions;
+    }
+
+    CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions) {
+        this.alias1 = alias1;
+        this.alias2 = alias2;
+        this.thermoPermissions = thermoPermissions;
+        this.memberPermissions = EnumSet.noneOf(Permission.class);
+    }
+
+    CommandType(EnumSet<Permission> thermoPermissions) {
+        this.alias1 = null;
+        this.alias2 = null;
+        this.thermoPermissions = thermoPermissions;
+        this.memberPermissions = null;
     }
 
     /**

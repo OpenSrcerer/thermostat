@@ -1,9 +1,9 @@
 package thermostat.dispatchers;
 
 import thermostat.Thermostat;
-import thermostat.entities.Synapse;
+import thermostat.util.entities.Synapse;
 import thermostat.commands.monitoring.SynapseMonitor;
-import thermostat.enumeration.SynapseState;
+import thermostat.util.enumeration.SynapseState;
 
 import javax.annotation.Nonnull;
 import java.util.Map;

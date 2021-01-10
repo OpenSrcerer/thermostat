@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import thermostat.dispatchers.SynapseDispatcher;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -13,7 +12,6 @@ import java.util.List;
  * initiate a database connection and insert
  * new Guilds or Channels to the DB.
  */
-
 public abstract class Create {
     public static final Logger lgr = LoggerFactory.getLogger(Create.class);
 

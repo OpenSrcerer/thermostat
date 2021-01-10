@@ -36,26 +36,28 @@ public class Ready extends ListenerAdapter {
     private static final Logger lgr = LoggerFactory.getLogger(Thermostat.class);
 
     /**
-     * Initialize Thermostat's modules when the JDA instance has been constructed.
+     * Initialize Thermostat's modules when the JDA instance
+     * has been constructed successfully.
      */
     public void onReady(@Nonnull ReadyEvent event) {
         try {
             initializeWordFiles("niceWords.txt", "badWords.txt");
+
+            thermo.addEventListener(
+                    new CommandTrigger(),
+                    new MenuDispatcher(),
+                    new SynapseEvents()
+            );
+
+            SynapseDispatcher.initializeSynapses();
+            getConnectedGuilds();
+            thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat", "https://github.com/opensrcerer/thermostat"));
+
         } catch (Exception ex) {
             shutdownThermostat();
-            lgr.error("Word files could not be set up!\nBot instance shutting down...");
+            lgr.error("Thermostat could not initialize. Details:", ex);
             return;
         }
-
-        thermo.addEventListener(
-                new CommandTrigger(),
-                new MenuDispatcher(),
-                new SynapseEvents()
-        );
-
-        SynapseDispatcher.initializeSynapses();
-        getConnectedGuilds();
-        thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat", "https://github.com/opensrcerer/thermostat"));
     }
 
     public void initializeWordFiles(@Nonnull String file1, @Nonnull String file2) throws Exception {

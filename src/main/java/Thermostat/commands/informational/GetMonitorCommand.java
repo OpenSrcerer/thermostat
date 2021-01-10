@@ -9,7 +9,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;

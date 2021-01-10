@@ -1,4 +1,4 @@
-package thermostat.entities;
+package thermostat.util.entities;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ISnowflake;
@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.enumeration.SynapseState;
+import thermostat.util.enumeration.SynapseState;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.Delete;
 

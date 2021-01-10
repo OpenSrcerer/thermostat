@@ -15,7 +15,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 import thermostat.Thermostat;
 
 import javax.annotation.CheckReturnValue;

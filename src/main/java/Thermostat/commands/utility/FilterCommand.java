@@ -10,7 +10,7 @@ import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
-import thermostat.enumeration.CommandType;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
