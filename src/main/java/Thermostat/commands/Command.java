@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
 
-import static thermostat.Functions.parseMention;
+import static thermostat.util.Functions.parseMention;
 
 public interface Command extends Runnable {
 
@@ -137,7 +137,7 @@ public interface Command extends Runnable {
                                 CommandDispatcher.queueCommand(command);
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
-                                        " [" + missingThermostatPerms.toString() + "] [" + missingMemberPerms.toString() + "]");
+                                        " " + missingThermostatPerms.toString() + " " + missingMemberPerms.toString() + "");
                                 Messages.sendMessage(commandEvent.getChannel(), ErrorEmbeds.errPermission(missingThermostatPerms, missingMemberPerms, command.getId()));
                             }
                         }
@@ -163,7 +163,7 @@ public interface Command extends Runnable {
                                 CommandDispatcher.queueCommand(command);
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
-                                        " [" + missingThermostatPerms.toString() + "]");
+                                        " " + missingThermostatPerms.toString() + "");
                                 Messages.sendMessage(commandEvent.getChannel(), ErrorEmbeds.errPermission(missingThermostatPerms));
                             }
                         }

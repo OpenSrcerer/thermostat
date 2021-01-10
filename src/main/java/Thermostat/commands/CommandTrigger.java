@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.mySQL.DataSource;
-import thermostat.Functions;
+import thermostat.util.Functions;
 import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
 import thermostat.commands.informational.SettingsCommand;

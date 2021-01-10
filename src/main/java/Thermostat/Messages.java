@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
-import net.dv8tion.jda.api.exceptions.PermissionException;
 import thermostat.preparedStatements.ErrorEmbeds;
 
 import java.io.InputStream;
@@ -17,9 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * Deals with different InsufficientPermissionExceptions
- * thrown by the JDA library, along with ErrorResponses.
- * Controls timed message deletion to prevent spam.
+ * A handy Message manager.
  */
 public final class Messages {
     /**
@@ -31,16 +28,13 @@ public final class Messages {
      * @param success The consumer to run after the .queue() call.
      */
     public static void sendMessage(TextChannel channel, EmbedBuilder eb, Consumer<Message> success) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            }
-        };
+
+
 
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
             // send message and run provided consumer
             try {
-                channel.sendMessage(eb.build()).queue(success, throwableConsumer);
+                channel.sendMessage(eb.build()).queue(success);
             } catch (InsufficientPermissionException ex) {
                 sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot to see command results!");
             }
@@ -54,15 +48,9 @@ public final class Messages {
      * @param eb      The embed to send.
      */
     public static void sendMessage(TextChannel channel, EmbedBuilder eb) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            }
-        };
-
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
             try {
-                channel.sendMessage(eb.build()).queue(null, throwableConsumer);
+                channel.sendMessage(eb.build()).queue();
             } catch (InsufficientPermissionException ex) {
                 sendMessage(channel, "Please add the \"**Embed Links**\" permission to the bot!");
             }
@@ -76,15 +64,9 @@ public final class Messages {
      * @param msg     The message to send.
      */
     public static void sendMessage(TextChannel channel, String msg) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            }
-        };
-
         if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE)) {
             try {
-                channel.sendMessage(msg).queue(null, throwableConsumer);
+                channel.sendMessage(msg).queue();
             } catch (InsufficientPermissionException ignored) {
             }
         }
@@ -98,23 +80,14 @@ public final class Messages {
      * @param embed       Embed that contains the chart.
      */
     public static void sendMessage(TextChannel channel, InputStream inputStream, EmbedBuilder embed) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            }
-        };
-
         if (
                 channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE) &&
                         channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ATTACH_FILES)
         ) {
             try {
-                channel.sendFile(
-                        inputStream,
-                        "chart.png"
-                )
+                channel.sendFile(inputStream, "chart.png")
                         .embed(embed.setImage("attachment://chart.png").build())
-                        .queue(null, throwableConsumer);
+                        .queue();
             } catch (InsufficientPermissionException ignored) {
             }
         } else {
@@ -130,18 +103,8 @@ public final class Messages {
      * @param newContent New embed to place in the message.
      */
     public static void editMessage(TextChannel channel, String msgId, MessageEmbed newContent) throws InsufficientPermissionException {
-        Consumer<Throwable> retrieveMessageConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)));
-            }
-        };
-
-        Consumer<Message> onSuccessfulRetrieval = message -> message.editMessage(newContent).queue();
-
         try {
-            channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, retrieveMessageConsumer);
+            channel.retrieveMessageById(msgId).queue(message -> message.editMessage(newContent).queue());
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)));
         }
@@ -153,55 +116,16 @@ public final class Messages {
      * @param msgId ID of message to delete.
      */
     public static void deleteMessage(TextChannel channel, String msgId) {
-        Consumer<Throwable> throwableRetrieveConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_HISTORY)));
-            }
-        };
-
-        Consumer<Throwable> throwableDeleteConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
-            }
-        };
-
-        Consumer<Message> onSuccessfulRetrieval = message -> {
-            try {
-                message.delete().queueAfter(500, TimeUnit.MILLISECONDS, null, throwableDeleteConsumer);
-            } catch (InsufficientPermissionException ex) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
-            }
-        };
-
         try {
-            channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrieveConsumer);
+            channel.retrieveMessageById(msgId).queue(message -> {
+                try {
+                    message.delete().queueAfter(500, TimeUnit.MILLISECONDS);
+                } catch (InsufficientPermissionException ex) {
+                    Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
+                }
+            });
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)));
-        }
-    }
-
-    /**
-     * Deletes a message from Discord.
-     *
-     * @param msg Message to delete.
-     */
-    public static void deleteMessage(Message msg) {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
-            }
-        };
-
-        try {
-            msg.delete().queue(null, throwableConsumer);
-        } catch (InsufficientPermissionException ex) {
-            Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
         }
     }
 
@@ -213,41 +137,14 @@ public final class Messages {
      * @param unicode The unicode emoji to add as a reaction.
      */
     public static void addReactions(TextChannel channel, String msgId, List<String> unicode) {
-        Consumer<Throwable> throwableRetrievalConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_HISTORY)));
-            }
-        };
-
-        Consumer<Throwable> throwableReactionConsumer = throwable -> {
-            if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
-            }
-        };
-
-        Consumer<Message> onSuccessfulRetrieval = message -> {
-            try {
+        try {
+            channel.retrieveMessageById(msgId).queue(message -> {
                 long reactionsDuration = 750;
                 for (String it : unicode) {
-                    message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS, null, throwableReactionConsumer);
+                    message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS);
                     reactionsDuration += 500;
                 }
-            } catch (InsufficientPermissionException ex) {
-                if (ex.toString().contains("MESSAGE_ADD_REACTION")) {
-                    Messages.sendMessage(message.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
-                } else if (ex.toString().contains("MESSAGE_HISTORY")) {
-                    Messages.sendMessage(message.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_HISTORY)));
-                }
-                Messages.deleteMessage(message);
-                throw new PermissionException("Missing Permissions to add Reaction.");
-            } catch (ErrorResponseException ignored) {
-            }
-        };
-
-        try {
-            channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
+            });
         } catch (InsufficientPermissionException ex) {
             Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)));
         }
@@ -260,15 +157,10 @@ public final class Messages {
      * @param unicode The unicode emoji to add as a reaction.
      */
     public static void addReactions(Message message, List<String> unicode) throws InsufficientPermissionException {
-        Consumer<Throwable> throwableReactionConsumer = throwable -> {
-            if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
-                Messages.sendMessage(message.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
-            }
-        };
-
         long reactionsDuration = 750;
         for (String it : unicode) {
-            message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS, null, throwableReactionConsumer);
+            message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS);
+            // Timer to prevent RateLimiting
             reactionsDuration += 500;
         }
     }
@@ -280,14 +172,7 @@ public final class Messages {
      * @param unicode The unicode emoji to add as a reaction.
      */
     public static void addReaction(Message msg, String unicode) throws InsufficientPermissionException {
-        Consumer<Throwable> throwableConsumer = throwable -> {
-            if (throwable.toString().contains("Missing Permissions") || throwable.toString().contains("MESSAGE_HISTORY")) {
-                Messages.deleteMessage(msg);
-                Messages.sendMessage(msg.getTextChannel(), ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_ADD_REACTION)));
-            }
-        };
-
-        msg.addReaction(unicode).queue(null, throwableConsumer);
+        msg.addReaction(unicode).queue();
     }
 
     /**
@@ -297,30 +182,14 @@ public final class Messages {
      * @param msgId   The ID of message to have its' reactions cleared.
      */
     public static void clearReactions(TextChannel channel, String msgId) throws InsufficientPermissionException {
-        Consumer<Throwable> throwableClearConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
-            }
-        };
-
-        Consumer<Throwable> throwableRetrievalConsumer = throwable -> {
-            if (throwable.toString().contains("MISSING_ACCESS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_READ)));
-            } else if (throwable.toString().contains("MISSING_PERMISSIONS")) {
-                Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_HISTORY)));
-            }
-        };
-
-        Consumer<Message> onSuccessfulRetrieval = message -> {
+        channel.retrieveMessageById(msgId).queue(message -> {
             try {
-                message.clearReactions().queue(null, throwableClearConsumer);
+                message.clearReactions().queue();
             } catch (InsufficientPermissionException ex) {
                 Messages.sendMessage(channel, ErrorEmbeds.errPermission(EnumSet.of(Permission.MESSAGE_MANAGE)));
                 Messages.deleteMessage(channel, msgId);
             } catch (ErrorResponseException ignored) {
             }
-        };
-
-        channel.retrieveMessageById(msgId).queue(onSuccessfulRetrieval, throwableRetrievalConsumer);
+        });
     }
 }

@@ -8,7 +8,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.Functions;
+import thermostat.util.Functions;
 import thermostat.commands.Command;
 import thermostat.enumeration.CommandType;
 
@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.List;
 
-import static thermostat.Functions.parseMention;
+import static thermostat.util.Functions.parseMention;
 
 /**
  * Command that when called, shows an embed

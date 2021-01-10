@@ -8,14 +8,13 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.Functions;
+import thermostat.util.Functions;
 import thermostat.commands.Command;
 import thermostat.commands.CommandTrigger;
 import thermostat.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 

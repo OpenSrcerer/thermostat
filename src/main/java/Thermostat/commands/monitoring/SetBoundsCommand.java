@@ -8,7 +8,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
-import thermostat.Functions;
+import thermostat.util.Functions;
 import thermostat.commands.Command;
 import thermostat.enumeration.CommandType;
 
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static thermostat.Functions.parseSlowmode;
+import static thermostat.util.Functions.parseSlowmode;
 
 @SuppressWarnings("ConstantConditions")
 public class SetBoundsCommand implements Command {

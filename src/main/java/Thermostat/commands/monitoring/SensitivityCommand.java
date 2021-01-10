@@ -7,7 +7,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.Functions;
+import thermostat.util.Functions;
 import thermostat.commands.Command;
 import thermostat.enumeration.CommandType;
 
