@@ -3,18 +3,17 @@ package thermostat.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
 import thermostat.util.Functions;
-import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -95,14 +94,11 @@ public class SetBoundsCommand implements Command {
 
         // #4 - Parse the optional <channels/categories> argument
         {
-            List<?> results = parseChannelArgument(data.getChannel(), arguments);
+            Arguments results = parseChannelArgument(data.getChannel(), arguments);
 
-            nonValid = (StringBuilder) results.get(0);
-            noText = (StringBuilder) results.get(1);
-            // Suppressing is okay because type for
-            // results.get(3) is always ArrayList<String>
-            //noinspection unchecked
-            arguments = ((ArrayList<String>) results.get(2));
+            nonValid = results.nonValid;
+            noText = results.noText;
+            arguments = results.newArguments;
         }
         // args now remains as a list of target channel(s).
 

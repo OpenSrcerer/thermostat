@@ -4,22 +4,21 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.Functions;
 import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.util.entities.ReactionMenu;
-import thermostat.util.enumeration.CommandType;
-import thermostat.util.enumeration.MenuType;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.DynamicEmbeds;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
 import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.util.Functions;
+import thermostat.util.entities.ReactionMenu;
+import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -86,12 +85,11 @@ public class MonitorCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            List<?> results = parseChannelArgument(data.getChannel(), arguments);
+            Arguments results = parseChannelArgument(data.getChannel(), arguments);
 
-            nonValid = (StringBuilder) results.get(0);
-            noText = (StringBuilder) results.get(1);
-            //noinspection unchecked
-            arguments = ((ArrayList<String>) results.get(2));
+            nonValid = results.nonValid;
+            noText = results.noText;
+            arguments = results.newArguments;
         }
 
         // #2 - Monitor target channels
@@ -141,7 +139,7 @@ public class MonitorCommand implements Command {
                 );
                 ResponseDispatcher.commandSucceeded(this, null);
             } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getCause().toString(), this.getId()), ex);
+                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getLocalizedMessage(), this.getId()), ex);
             }
         };
 

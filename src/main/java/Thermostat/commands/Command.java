@@ -173,13 +173,28 @@ public interface Command extends Runnable {
     }
 
     /**
+     * A class that encapsulates returning values
+     * for parseChannelArgument();
+     */
+    class Arguments {
+        public final StringBuilder nonValid;
+        public final StringBuilder noText;
+        public final ArrayList<String> newArguments;
+
+        public Arguments(@Nonnull StringBuilder nonValid, @Nonnull StringBuilder noText, @Nonnull ArrayList<String> newArguments) {
+            this.nonValid = nonValid;
+            this.noText = noText;
+            this.newArguments = newArguments;
+        }
+    }
+
+    /**
      * @param eventChannel Target guild
      * @param args List of arguments
      * @return a list of target channel IDs, along with
      * two StringBuilders with arguments that were invalid.
      */
-    @Nonnull default List<?> parseChannelArgument(TextChannel eventChannel, List<String> args) {
-
+    @Nonnull default Arguments parseChannelArgument(TextChannel eventChannel, List<String> args) {
         StringBuilder
                 // Channels that could not be found
                 nonValid = new StringBuilder(),
@@ -231,7 +246,7 @@ public interface Command extends Runnable {
             }
         }
 
-        return Arrays.asList(nonValid, noText, newArgs);
+        return new Arguments(nonValid, noText, newArgs);
     }
 
     /**
