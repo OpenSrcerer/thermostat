@@ -16,6 +16,9 @@
                 <configuration>
                     <source>15</source>
                     <target>15</target>
+                    <compilerArgs>
+                        <arg>-Xlint:unchecked</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
