@@ -2,6 +2,7 @@ package thermostat.preparedStatements;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import thermostat.Thermostat;
+import thermostat.util.Constants;
 
 import java.time.Instant;
 
@@ -29,7 +30,7 @@ public abstract class GenericEmbeds {
 
     public static EmbedBuilder resetPrefix() {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Thermostat's prefix has been reset to `" + Thermostat.prefix + "` .");
+        eb.setTitle("Thermostat's prefix has been reset to `" + Constants.DEFAULT_PREFIX + "` .");
         eb.setTimestamp(Instant.now());
         eb.setColor(0x00aeff);
         return eb;
@@ -44,12 +45,17 @@ public abstract class GenericEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder getPrefix(String authorID, String authorAvatarURL, String prefix) {
+    public static EmbedBuilder getPrefix(String authorID, String authorAvatarURL, String prefix, String guildName) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("My prefix in this server is: " + "`" + prefix + "`");
-        eb.setDescription("You can give me a new one using `" + prefix + "prefix set <prefix>`!\n " +
-                "Reset it to the default using `" + prefix + "prefix reset`!\n" +
-                "If you need help, launch a help menu with " + prefix + "info");
+        eb.setTitle("❓ Are you confused? Need help? Read our handy dandy wiki.",
+                "https://github.com/OpenSrcerer/thermostat/wiki"
+        );
+        eb.addField("🎯 My prefix in " + guildName + " is: " + "`" + prefix + "`",
+                "Reset it to the default using <@" + Constants.THERMOSTAT_USER_ID + "> --reset`if you need to!", false
+        );
+        eb.addField("💖 Like the bot? Please give it an upvote!",
+                "Thank you for your support! Vote for Thermostat with `" + prefix + "vote`", false
+        );
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, authorAvatarURL);
         eb.setColor(0x00aeff);
@@ -148,15 +154,6 @@ public abstract class GenericEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder noChannels() {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("No channels are currently being monitored!");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Thermostat", Thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0x00aeff);
-        return eb;
-    }
-
     public static EmbedBuilder getMonitor() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("`th!monitor`");
@@ -196,8 +193,8 @@ public abstract class GenericEmbeds {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("ℹ┇Other Commands");
         eb.addField("⬆ Menu", "Go back to the Main Menu", false);
-        eb.addField(prefix + "info", "`Syntax:" + prefix + "info.`", false);
-        eb.addField("@Thermostat prefix", "Syntax: <@!" + Thermostat.thermo.getSelfUser().getId() + "> `prefix.`", false);
+        eb.addField(prefix + "info", "`Syntax:`" + prefix + "info.`", false);
+        eb.addField("@Thermostat prefix", "Syntax: <@!" + Constants.THERMOSTAT_USER_ID + "> `prefix.`", false);
         eb.addField(prefix + "chart", "Syntax: `" + prefix + "chart <charttype>.`", false);
         eb.addField(prefix + "vote", "Syntax: `" + prefix + "vote.`", false);
         eb.addField(prefix + "invite", "Syntax: `" + prefix + "invite.`", false);

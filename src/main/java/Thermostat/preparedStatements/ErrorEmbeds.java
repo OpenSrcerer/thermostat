@@ -2,7 +2,7 @@ package thermostat.preparedStatements;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import thermostat.Thermostat;
+import thermostat.util.Constants;
 
 import java.time.Instant;
 import java.util.EnumSet;
@@ -24,7 +24,7 @@ public abstract class ErrorEmbeds {
         }
 
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + commandId, Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + commandId, Constants.THERMOSTAT_AVATAR_URL);
         eb.setColor(0xff0000);
         return eb;
     }
@@ -47,7 +47,7 @@ public abstract class ErrorEmbeds {
         eb.setTitle("You have an error in your input:");
         eb.addField("`" + error + "`", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + commandId, Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + commandId, Constants.THERMOSTAT_AVATAR_URL);
         eb.setColor(0x36393f);
         return eb;
     }
@@ -59,7 +59,7 @@ public abstract class ErrorEmbeds {
         eb.addField("Suggested fix: ", errFix, false);
         eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + commandId, Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + commandId, Constants.THERMOSTAT_AVATAR_URL);
         eb.setColor(0x36393f);
         return eb;
     }
@@ -70,7 +70,7 @@ public abstract class ErrorEmbeds {
         eb.addField("Error details:", error, false);
         eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + commandId, Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + commandId, Constants.THERMOSTAT_AVATAR_URL);
         eb.setColor(0x36393f);
         return eb;
     }
@@ -81,27 +81,17 @@ public abstract class ErrorEmbeds {
         eb.addField("Error details:", error, false);
         eb.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         eb.setTimestamp(Instant.now());
-        eb.setFooter(Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter(Constants.THERMOSTAT_AVATAR_URL);
         eb.setColor(0x36393f);
         return eb;
     }
 
-
     public static EmbedBuilder incorrectPrefix(long commandId) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("The prefix you have inserted is not valid.");
+        eb.setTitle("The prefix you have inserted is not valid.\nThe maximum length is 5.");
         eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + commandId, Thermostat.thermo.getSelfUser().getAvatarUrl());
+        eb.setFooter("Command ID: " + commandId, Constants.THERMOSTAT_AVATAR_URL);
         eb.setColor(0xff0000);
-        return eb;
-    }
-
-    public static EmbedBuilder insertPrefix(long commandId) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Please insert a prefix.");
-        eb.setTimestamp(Instant.now());
-        eb.setFooter("Command ID: " + commandId, Thermostat.thermo.getSelfUser().getAvatarUrl());
-        eb.setColor(0xffff00);
         return eb;
     }
 }

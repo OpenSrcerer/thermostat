@@ -1,7 +1,6 @@
 package thermostat.commands.informational;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,6 @@ import thermostat.util.enumeration.MenuType;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Class that manages the th!info command. Sends
@@ -89,16 +87,25 @@ public class InfoCommand implements Command {
             } else if (argument.equalsIgnoreCase(CommandType.INFO.getAlias1())) {
                 builder = HelpEmbeds.expandedHelpInfo(prefix);
             } else {
-                sendGenericInfoMenu();
+                ResponseDispatcher.commandFailed(
+                        this,
+                        ErrorEmbeds.inputError(
+                                "Invalid command was given. Please insert a valid command name as an argument.",
+                                this.commandId),
+                        "User failed to provide a proper command for help."
+                );
                 return;
             }
 
             ResponseDispatcher.commandSucceeded(this, builder);
+        } else {
+            sendGenericInfoMenu();
         }
     }
 
     private void sendGenericInfoMenu() {
-        Consumer<Message> consumer = message -> {
+        Messages.sendMessage(data.getChannel(), GenericEmbeds.getInfoSelection(),
+        message -> {
             try {
                 Messages.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 new ReactionMenu(
@@ -109,9 +116,7 @@ public class InfoCommand implements Command {
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getCause().toString(), this.getId()), ex);
             }
-        };
-
-        Messages.sendMessage(data.getChannel(), GenericEmbeds.getInfoSelection(), consumer);
+        });
     }
 
     @Override
