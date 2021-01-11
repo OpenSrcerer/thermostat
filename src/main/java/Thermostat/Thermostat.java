@@ -8,11 +8,12 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import thermostat.commands.events.Ready;
-import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
+import thermostat.util.Constants;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Thermostat
@@ -35,17 +37,25 @@ public abstract class Thermostat {
     /**
      * Pool of threads used by every non JDA related action in this application.
      */
-    public static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
+    public static final ScheduledExecutorService executor;
+
+    static {
+        ThreadFactory threadFactory = new ThreadFactory() {
+            private int counter = 1;
+
+            @Override
+            public Thread newThread(@NotNull Runnable r) {
+                return new Thread(r, "CommandDispatch-" + counter++);
+            }
+        };
+
+        executor = Executors.newScheduledThreadPool(4, threadFactory);
+    }
 
     /**
-     * Static JDA instance for thermostat.
+     * Singular JDA instance for thermostat.
      */
     public static JDA thermo;
-
-    /**
-     * Thermostat's default prefix.
-     */
-    public static String prefix;
 
     /**
      * Start Thermostat and initialize all needed variables.
@@ -54,9 +64,7 @@ public abstract class Thermostat {
      */
     protected static void initializeThermostat() throws Exception, Error {
         String[] config = initializeTokens();
-        DataSource.initializeDataSource();
 
-        prefix = config[0];
         thermo = JDABuilder
                 .create(
                         config[1],
@@ -78,8 +86,10 @@ public abstract class Thermostat {
                 .addEventListeners(new Ready())
                 .build();
 
-        MiscellaneousDispatcher.initApis(config[2], config[3]);
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("fast loading..."));
+        DataSource.initializeDataSource();
+        Constants.setConstants(config[0], thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
+        // MiscellaneousDispatcher.initApis(config[2], config[3]);
     }
 
     /**
