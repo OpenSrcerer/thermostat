@@ -13,6 +13,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import static thermostat.util.ArgumentParser.hasArguments;
+import static thermostat.util.ArgumentParser.parseArguments;
+
 public class BanCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(BanCommand.class);
 

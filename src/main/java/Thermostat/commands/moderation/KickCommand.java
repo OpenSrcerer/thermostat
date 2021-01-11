@@ -12,6 +12,9 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
+import static thermostat.util.ArgumentParser.hasArguments;
+import static thermostat.util.ArgumentParser.parseArguments;
+
 public class KickCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(KickCommand.class);
 
