@@ -8,10 +8,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.dispatchers.MenuDispatcher;
-import thermostat.dispatchers.SynapseDispatcher;
 import thermostat.commands.CommandTrigger;
 import thermostat.commands.utility.WordFilterCommand;
+import thermostat.dispatchers.MenuDispatcher;
+import thermostat.dispatchers.SynapseDispatcher;
 
 import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
@@ -52,11 +52,9 @@ public class Ready extends ListenerAdapter {
             SynapseDispatcher.initializeSynapses();
             getConnectedGuilds();
             thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat", "https://github.com/opensrcerer/thermostat"));
-
         } catch (Exception ex) {
             shutdownThermostat();
             lgr.error("Thermostat could not initialize. Details:", ex);
-            return;
         }
     }
 

@@ -28,7 +28,6 @@ public abstract class DataSource {
     public static void initializeDataSource() {
         HikariConfig config = new HikariConfig("/db.properties");
         ds = new HikariDataSource(config);
-        ds.setLeakDetectionThreshold(100);
     }
 
     public static Connection getConnection() throws SQLException {
@@ -49,21 +48,21 @@ public abstract class DataSource {
      * @param <X> Type of result to expect from Database.
      */
     @FunctionalInterface
-    public interface ConnectionCallback<X> {
+    public interface DatabaseAction<X> {
         X doInConnection(Connection conn) throws SQLException;
     }
 
     /**
      * Perform an action on the database.
-     * @param callback Action to perform.
+     * @param action Action to perform.
      * @param <X> Type of result to expect.
      * @return Database's result in given type.
      * @throws SQLException If something went wrong while
      * performing transaction.
      */
-    public static <X> X execute(ConnectionCallback<X> callback) throws SQLException {
+    public static <X> X execute(DatabaseAction<X> action) throws SQLException {
         try (Connection conn = getConnection()) {
-            return callback.doInConnection(conn);
+            return action.doInConnection(conn);
         }
     }
 

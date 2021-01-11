@@ -7,6 +7,10 @@ import org.slf4j.LoggerFactory;
  * Runs a sole instance of Thermostat.
  */
 public final class Run {
+
+    /**
+     * Logger for this class.
+     */
     public static final Logger lgr = LoggerFactory.getLogger(Run.class);
 
     public static void main(String[] args) {

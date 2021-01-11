@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.mySQL.DataSource;
+import thermostat.util.Constants;
 import thermostat.util.Functions;
 import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
@@ -56,6 +57,7 @@ public final class CommandTrigger extends ListenerAdapter {
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(event.getMessage().getContentRaw().split("\\s+")));
         Functions.checkGuildAndChannelThenSet(event.getGuild().getId(), event.getChannel().getId());
 
+        // Cache Candidate
         // Checks for whether the channel has the offensive-word filter activated.
         if (DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS JOIN CHANNELS ON " +
                 "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
@@ -189,7 +191,7 @@ public final class CommandTrigger extends ListenerAdapter {
         // Null check 2: If prefix is NULL in database
         // Fallback to default prefix
         if (prefix == null) {
-            prefix = Thermostat.prefix;
+            prefix = Constants.DEFAULT_PREFIX;
         }
 
         if (!isCached) {
