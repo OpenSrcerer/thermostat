@@ -210,10 +210,10 @@ public class Synapse {
     public void monitorChannels(Logger lgr) {
         OffsetDateTime timeNow = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(millis);
         Guild synapseGuild = Thermostat.thermo.getGuildById(this.getGuildId());
-        int slowmodedChannels = 0;
+        final StringBuilder adjusted = new StringBuilder(), notAdjusted = new StringBuilder();
 
         if (synapseGuild == null) {
-            lgr.info("Guild was null during periodic slowmode dispatch.\n ID: " + this.getGuildId());
+            lgr.info("[Slowmode Dispatch] Guild was null - ID: " + this.getGuildId());
             return;
         }
 
@@ -222,12 +222,12 @@ public class Synapse {
         for (Map.Entry<String, LinkedList<OffsetDateTime>> channelData : monitoredChannels.entrySet()) {
             TextChannel channel = synapseGuild.getTextChannelById(channelData.getKey());
             if (channel == null) {
-                lgr.info("Channel was null during periodic slowmode dispatch.\n" +
-                        "Guild Name: " + synapseGuild.getName() + "\nChannel ID: " + channelData.getKey());
+                lgr.info("[Slowmode Dispatch] Channel was null." +
+                        " - Guild: " + synapseGuild.getName() + " - Channel ID: " + channelData.getKey());
+                notAdjusted.append(channelData.getKey()).append(" ");
                 continue;
             } else if (channelData.getValue().size() < 10) {
-                lgr.info("Channel shown below had below 10 messages sent after Thermostat's bootup.\n" +
-                        "Guild Name: " + synapseGuild.getName() + "\nChannel ID: " + channel.getName());
+                notAdjusted.append(channelData.getKey()).append(" ");
                 continue;
             }
 
@@ -239,13 +239,15 @@ public class Synapse {
                         calculateAverageTime(channelData.getValue()),
                         millis.between(channelData.getValue().get(0), timeNow)
                 );
-                ++slowmodedChannels;
+                adjusted.append(channel.getName()).append(" ");
             }
         }
 
+        lgr.info("[Synapse Stats - " + synapseGuild.getName() + "] - Adjusted: [" + adjusted.toString() +
+                "] - Not Adjusted: [" + notAdjusted + "]");
         // If none of the channels were slowmoded
         // deactivate the Synapse for the whole Guild
-        if (slowmodedChannels == 0) {
+        if (adjusted.isEmpty()) {
             state = SynapseState.INACTIVE;
             lgr.info("Synapse deactivated for " + synapseGuild.getName());
         }
