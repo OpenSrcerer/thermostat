@@ -88,7 +88,7 @@ public final class Messages {
      * @param channel Channel to send the message in.
      * @param msg     The message to send.
      */
-    public static void sendMessage(TextChannel channel, String msg) throws InsufficientPermissionsException {
+    public static void sendMessage(TextChannel channel, String msg) {
         EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
                 channel.getGuild().getSelfMember(), channel,
                 CommandType.SEND_MESSAGE_TEXT.getThermoPerms()
@@ -96,8 +96,6 @@ public final class Messages {
 
         if (missingPermissions.isEmpty()) {
             channel.sendMessage(msg).queue();
-        } else {
-            throw new InsufficientPermissionsException(missingPermissions);
         }
     }
 

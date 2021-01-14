@@ -2,7 +2,6 @@ package thermostat.dispatchers;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
@@ -10,12 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.CommandTrigger;
-import thermostat.util.entities.ReactionMenu;
-import thermostat.util.enumeration.MenuType;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
 import thermostat.preparedStatements.ErrorEmbeds;
 import thermostat.preparedStatements.GenericEmbeds;
+import thermostat.util.entities.InsufficientPermissionsException;
+import thermostat.util.entities.ReactionMenu;
+import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -67,18 +67,38 @@ public class MenuDispatcher extends ListenerAdapter {
     }
 
     /**
+     * Invalidate a menu and then remove it from the cache.
+     * @param messageId Id of menu's message.
+     */
+    private static void expungeMenu(String messageId) {
+        ReactionMenu menu = getMenu(messageId);
+
+        if (menu != null) {
+            menu.invalidate();
+            cache.remove(messageId);
+        }
+    }
+
+    /**
      * Tries to retrieve a menu on a Reaction being added to a message.
      * @param event Event where the reaction was added.
      */
     public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent event) {
         ReactionMenu menu = getMenu(event.getMessageId());
 
-        if (menu != null) {
-            if (menu.getMenuType() == MenuType.UNMONITORALL) {
-                matchUnMonitorAllReaction(menu, event);
-            } else {
-                matchInfoReaction(menu, event);
+        try {
+            if (menu != null) {
+                if (menu.getMenuType() == MenuType.UNMONITORALL) {
+                    matchUnMonitorAllReaction(menu, event);
+                } else {
+                    matchInfoReaction(menu, event);
+                }
             }
+        } catch (InsufficientPermissionsException ex) {
+            Messages.sendMessage(event.getChannel(), ErrorEmbeds.errPermission(ex.getPermissionSet()));
+            expungeMenu(event.getMessageId());
+        } catch (Exception ex) {
+            Messages.sendMessage(event.getChannel(), ErrorEmbeds.error(ex.getMessage()));
         }
     }
 
@@ -101,67 +121,61 @@ public class MenuDispatcher extends ListenerAdapter {
      * @param reactionMenu The monitored message.
      * @param event The event of the reaction being added.
      */
-    public void matchInfoReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) {
+    public void matchInfoReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws InsufficientPermissionsException, IllegalStateException {
         if (!reactionMenu.getOwnerId().equals(event.getUserId())) {
             return;
         }
 
         String prefix = CommandTrigger.getGuildPrefix(event.getGuild().getId());
 
-        try {
-            reactionMenu.resetDestructionTimer(event.getChannel());
-            Messages.clearReactions(event.getChannel(), event.getMessageId());
+        reactionMenu.resetDestructionTimer(event.getChannel());
+        Messages.clearReactions(event.getChannel(), event.getMessageId());
 
-            switch (event.getReactionEmote().getEmoji()) {
-                case "🌡":
-                    // Monitored Functions Menu
-                    if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                        Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getMonitorInfo(prefix).build());
-                        reactionMenu.setMenuType(MenuType.MONITOR);
-                        Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
-                    }
-                    break;
-                case "🔧":
-                    // Informational Menu
-                    if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                        Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getUtilityInfo(prefix).build());
-                        reactionMenu.setMenuType(MenuType.UTILITY);
-                        Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
-                    }
-                    break;
-                case "ℹ":
-                    // Informational Menu
-                    if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                        Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getOtherInfo(prefix).build());
-                        reactionMenu.setMenuType(MenuType.OTHER);
-                        Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
-                    }
-                    break;
-                case "⬆":
-                    // Exit Menu
-                    if (reactionMenu.getMenuType() != MenuType.SELECTION) {
-                        Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getInfoSelection().build());
-                        reactionMenu.setMenuType(MenuType.SELECTION);
-                        Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
-                    }
-                    break;
-                case "❌":
-                    // Close Menu
-                    reactionMenu.invalidate();
-                    Messages.deleteMessage(event.getChannel(), event.getMessageId());
-                    break;
-                // This case is unreachable.
-                default:
-                    break;
-            }
-        } catch (IllegalStateException ex) {
-            lgr.warn("Illegal Reaction State", ex);
-        } catch (InsufficientPermissionException ex) {
-            lgr.warn("Missing Permissions:", ex);
+        switch (event.getReactionEmote().getEmoji()) {
+            case "🌡":
+                // Monitored Functions Menu
+                if (reactionMenu.getMenuType() == MenuType.SELECTION) {
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getMonitorInfo(prefix).build());
+                    reactionMenu.setMenuType(MenuType.MONITOR);
+                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
+                }
+                break;
+            case "🔧":
+                // Informational Menu
+                if (reactionMenu.getMenuType() == MenuType.SELECTION) {
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getUtilityInfo(prefix).build());
+                    reactionMenu.setMenuType(MenuType.UTILITY);
+                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
+                }
+                break;
+            case "ℹ":
+                // Informational Menu
+                if (reactionMenu.getMenuType() == MenuType.SELECTION) {
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getOtherInfo(prefix).build());
+                    reactionMenu.setMenuType(MenuType.OTHER);
+                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
+                }
+                break;
+            case "⬆":
+                // Exit Menu
+                if (reactionMenu.getMenuType() != MenuType.SELECTION) {
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getInfoSelection().build());
+                    reactionMenu.setMenuType(MenuType.SELECTION);
+                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
+                }
+                break;
+            case "❌":
+                // Close Menu
+                reactionMenu.invalidate();
+                Messages.deleteMessage(event.getChannel(), event.getMessageId());
+                break;
+            // This case is unreachable.
+            default:
+                break;
         }
     }
 
-    public void matchUnMonitorAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) {
+    public void matchUnMonitorAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws SQLException, InsufficientPermissionsException {
         if (
                 !reactionMenu.getOwnerId().equals(event.getUserId()) ||
                 reactionMenu.getMenuType() != MenuType.UNMONITORALL ||
@@ -175,27 +189,21 @@ public class MenuDispatcher extends ListenerAdapter {
                 reactionMenu.getMenuType() == MenuType.UNMONITORALL &&
                 event.getReactionEmote().getEmoji().equals("☑")
         ) {
-            try {
-                DataSource.execute(conn -> {
-                        PreparedStatement pst =
-                                conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
-                                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                                "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
-                        pst.setString(1, event.getGuild().getId());
+            DataSource.execute(conn -> {
+                    PreparedStatement pst =
+                            conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
+                            "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                            "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
+                    pst.setString(1, event.getGuild().getId());
 
-                        ResultSet rs = pst.executeQuery();
+                    ResultSet rs = pst.executeQuery();
 
-                        while (rs.next()) {
-                            Create.Monitor(event.getGuild().getId(), rs.getString(1), 0);
-                        }
-                        return null;
+                    while (rs.next()) {
+                        Create.Monitor(event.getGuild().getId(), rs.getString(1), 0);
                     }
-                );
-                Messages.sendMessage(event.getChannel(), GenericEmbeds.allRemoved(event.getUser().getAsTag(), event.getUser().getAvatarUrl()));
-            } catch (SQLException ex) {
-                lgr.error(ex.getMessage(), ex);
-                Messages.sendMessage(event.getChannel(), ErrorEmbeds.error(ex.getLocalizedMessage()));
-            }
+                    return null;
+                }
+            );
 
             reactionMenu.invalidate();
             Messages.deleteMessage(event.getChannel(), event.getMessageId());
