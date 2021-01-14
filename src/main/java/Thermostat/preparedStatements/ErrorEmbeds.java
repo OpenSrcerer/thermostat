@@ -5,10 +5,10 @@ import net.dv8tion.jda.api.Permission;
 import thermostat.util.Constants;
 
 import java.time.Instant;
-import java.util.EnumSet;
+import java.util.Set;
 
 public abstract class ErrorEmbeds {
-    public static EmbedBuilder errPermission(EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions, long commandId) {
+    public static EmbedBuilder errPermission(Set<Permission> thermoPermissions, Set<Permission> memberPermissions, long commandId) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❌ Error encountered! Details:");
 
@@ -29,7 +29,7 @@ public abstract class ErrorEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder errPermission(EnumSet<Permission> thermoPermissions) {
+    public static EmbedBuilder errPermission(Set<Permission> thermoPermissions) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("❌ Error encountered! Details:");
 
