@@ -51,7 +51,7 @@ public abstract class GenericEmbeds {
                 "https://github.com/OpenSrcerer/thermostat/wiki"
         );
         eb.addField("🎯 My prefix in " + guildName + " is: " + "`" + prefix + "`",
-                "Reset it to the default using <@" + Constants.THERMOSTAT_USER_ID + "> --reset`if you need to!", false
+                "Reset it to the default using <@" + Constants.THERMOSTAT_USER_ID + "> `--reset` if you need to!", false
         );
         eb.addField("💖 Like the bot? Please give it an upvote!",
                 "Thank you for your support! Vote for Thermostat with `" + prefix + "vote`", false

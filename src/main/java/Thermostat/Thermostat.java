@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import thermostat.commands.events.Ready;
+import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 
@@ -89,7 +90,7 @@ public abstract class Thermostat {
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("fast loading..."));
         DataSource.initializeDataSource();
         Constants.setConstants(config[0], thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
-        // MiscellaneousDispatcher.initApis(config[2], config[3]);
+        MiscellaneousDispatcher.initApis(config[2], config[3]);
     }
 
     /**
