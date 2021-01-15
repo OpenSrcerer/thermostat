@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import thermostat.dispatchers.SynapseDispatcher;
+import thermostat.util.GuildCache;
 import thermostat.util.entities.Synapse;
 import thermostat.util.enumeration.SynapseState;
 import thermostat.mySQL.Delete;
@@ -24,11 +24,11 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
-        Synapse synapse = SynapseDispatcher.getSynapse(event.getGuild().getId());
+        Synapse synapse = GuildCache.getSynapse(event.getGuild().getId());
 
         // Create a new Synapse for the guild where the message was sent.
-        if (synapse.getGuildId().equals("0")) {
-            synapse = SynapseDispatcher.addSynapse(event.getGuild().getId());
+        if (synapse == null) {
+            synapse = GuildCache.setSynapse(event.getGuild().getId());
         }
 
         // Re-activate Synapse if it was disabled due to inactivity.
@@ -46,7 +46,7 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onTextChannelDelete(@NotNull TextChannelDeleteEvent event) {
-        SynapseDispatcher.getSynapse(event.getGuild().getId()).removeChannel(event.getChannel().getId());
+        GuildCache.getSynapse(event.getGuild().getId()).removeChannel(event.getChannel().getId());
     }
 
     /**
@@ -54,7 +54,7 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
-        SynapseDispatcher.removeSynapse(event.getGuild().getId());
+        GuildCache.expungeGuild(event.getGuild().getId());
         Delete.Guild(event.getGuild().getId());
     }
 
@@ -63,6 +63,6 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onUnavailableGuildLeave(@NotNull UnavailableGuildLeaveEvent event) {
-        SynapseDispatcher.removeSynapse(event.getGuildId());
+        GuildCache.expungeGuild(event.getGuildId());
     }
 }

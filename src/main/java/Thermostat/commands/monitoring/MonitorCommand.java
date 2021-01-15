@@ -137,7 +137,9 @@ public class MonitorCommand implements Command {
                         MenuType.UNMONITORALL, data.getMember().getId(),
                         message.getId(), data.getChannel()
                 );
-                ResponseDispatcher.commandSucceeded(this, null);
+                ResponseDispatcher.commandSucceeded(this, GenericEmbeds.allRemoved(
+                        getEvent().getAuthor().getId(), getEvent().getAuthor().getAvatarUrl()
+                ));
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getLocalizedMessage(), this.getId()), ex);
             }

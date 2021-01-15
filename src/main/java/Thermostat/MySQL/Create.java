@@ -2,7 +2,7 @@ package thermostat.mySQL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.dispatchers.SynapseDispatcher;
+import thermostat.util.GuildCache;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -73,9 +73,9 @@ public abstract class Create {
                     Integer.toString(monitor), CHANNEL_ID, GUILD_ID);
 
             if (monitor == 1) {
-                SynapseDispatcher.getSynapse(GUILD_ID).addChannel(CHANNEL_ID);
+                GuildCache.getSynapse(GUILD_ID).addChannel(CHANNEL_ID);
             } else {
-                SynapseDispatcher.getSynapse(GUILD_ID).removeChannel(CHANNEL_ID);
+                GuildCache.getSynapse(GUILD_ID).removeChannel(CHANNEL_ID);
             }
         } catch (SQLException ex) {
             lgr.warn(ex.getMessage(), ex);
