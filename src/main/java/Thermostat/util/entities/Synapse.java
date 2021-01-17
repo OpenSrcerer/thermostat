@@ -6,11 +6,15 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.util.enumeration.SynapseState;
+import thermostat.commands.monitoring.SynapseMonitor;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.Delete;
+import thermostat.util.enumeration.SynapseState;
 
 import javax.annotation.Nonnull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -23,16 +27,18 @@ import java.util.stream.Collectors;
  * changes. One Synapse is attached to one Guild.
  */
 public class Synapse {
-
+    // ***************************************************************
+    // **                       VARIABLES                           **
+    // ***************************************************************
     /**
      * Logger for Synapse operations.
      */
     private static final Logger lgr = LoggerFactory.getLogger(Synapse.class);
 
     /**
-     * Represents whether the Synapse is working or not.
+     * The ChronoUnit that the Synapse uses to measure message time.
      */
-    private SynapseState state = SynapseState.ACTIVE;
+    private static final ChronoUnit millis = ChronoUnit.MILLIS;
 
     /**
      * The ID of the Guild that the Synapse owes to.
@@ -46,9 +52,19 @@ public class Synapse {
     private final Map<String, LinkedList<OffsetDateTime>> monitoredChannels;
 
     /**
-     * The ChronoUnit that the Synapse uses to measure message time.
+     * Maximum size for the LinkedList that contains dates to the monitored
+     * channels for each channel.
      */
-    private static final ChronoUnit millis = ChronoUnit.MILLIS;
+    private int messageCachingSize;
+
+    /**
+     * Represents whether the Synapse is working or not.
+     */
+    private SynapseState state = SynapseState.ACTIVE;
+
+    // ***************************************************************
+    // **                CONSTRUCTOR/GETTERS/SETTERS                **
+    // ***************************************************************
 
     /**
      * Create a new Synapse that checks a Guild periodically.
@@ -57,6 +73,82 @@ public class Synapse {
     public Synapse(@Nonnull String guildId) {
         this.guildId = guildId;
         this.monitoredChannels = initializeMonitoredChannels(guildId);
+
+        try {
+            setMessageCachingSize();
+        } catch (SQLException ex) {
+            lgr.warn("Failed to retrieve caching size for " + this.guildId + ". Defaulting to 10.");
+            messageCachingSize = 10;
+        }
+    }
+
+    /**
+     * Adds a new channel in synapse's monitoring cache.
+     * @param channelId ID of channel to monitor.
+     */
+    public void addChannel(String channelId) {
+        monitoredChannels.put(channelId, new LinkedList<>());
+    }
+
+    /**
+     * Removes a TextChannel from the monitoredChannels
+     * ArrayList (only used when a TextChannel is unmonitored/removed).
+     */
+    public void removeChannel(String channelId) {
+        monitoredChannels.keySet().removeIf(channel -> channel.equals(channelId));
+    }
+
+    /**
+     * Gives back all the monitored channels for this Synapse.
+     * @return Monitored TextChannel Map for this Synapse
+     */
+    public Set<String> getChannels() {
+        return monitoredChannels.keySet();
+    }
+
+    /**
+     * Getter for the Guild the Synapse monitors.
+     * @return ID of Guild that Synapse monitors.
+     */
+    public String getGuildId() {
+        return guildId;
+    }
+
+    /**
+     * @return The caching state of the Synapse.
+     */
+    public SynapseState getState() {
+        return state;
+    }
+
+    /**
+     * Set the state of the Synapse.
+     * @param state New state of Synapse.
+     */
+    public synchronized void setState(SynapseState state) {
+        this.state = state;
+    }
+
+    // ***************************************************************
+    // **                      MONITORING METHODS                   **
+    // ***************************************************************
+
+    /**
+     * Adds a new message's creation time in the last
+     * 10 messages cache.
+     * @param channelId ID of channel that the message belongs to.
+     * @param messageTime Creation time of message.
+     */
+    public synchronized void addMessage(String channelId, OffsetDateTime messageTime) {
+        if (monitoredChannels.get(channelId) == null) {
+            return;
+        }
+
+        monitoredChannels.get(channelId).addFirst(messageTime);
+
+        if (monitoredChannels.get(channelId).size() == messageCachingSize) {
+            new SynapseMonitor(this);
+        }
     }
 
     @Nonnull
@@ -84,6 +176,45 @@ public class Synapse {
         }
 
         return monChannels;
+    }
+
+    /**
+     * Set the caching size for the message date Linked List.
+     * Retrieves the size from the database. Called upon for first initialization.
+     * Default: 10
+     */
+    public void setMessageCachingSize() throws SQLException {
+        this.messageCachingSize = DataSource.execute(conn ->
+        {
+            PreparedStatement statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
+            statement.setString(1, guildId);
+            ResultSet rs = statement.executeQuery();
+            return rs.getInt(1);
+        });
+    }
+
+    /**
+     * Set the caching size for the message date Linked List.
+     * Trims list of message dates if cache is smaller than current size.
+     * @param newSize New cache size.
+     */
+    public synchronized void setMessageCachingSize(int newSize) {
+        if (newSize < messageCachingSize) {
+            int cacheDifference = messageCachingSize - newSize;
+
+            // Trim unneeded messages to match new size
+            for (Map.Entry<String, LinkedList<OffsetDateTime>> entry : monitoredChannels.entrySet()) {
+                // if list has more elements than the new size
+                if (entry.getValue().size() > newSize) {
+                    // remove all unnecessary ones
+                    for (int index = 0; index < cacheDifference; ++index) {
+                        entry.getValue().remove();
+                    }
+                }
+            }
+        }
+
+        this.messageCachingSize = newSize;
     }
 
     /**
@@ -241,6 +372,8 @@ public class Synapse {
                 );
                 adjusted.append(channel.getName()).append(" ");
             }
+
+            channelData.getValue().clear();
         }
 
         lgr.info("[Synapse Stats - " + synapseGuild.getName() + "] - Adjusted: [" + adjusted.toString() +
@@ -251,69 +384,5 @@ public class Synapse {
             state = SynapseState.INACTIVE;
             lgr.info("Synapse deactivated for " + synapseGuild.getName());
         }
-    }
-
-    /**
-     * Adds a new message's creation time in the last
-     * 10 messages cache.
-     * @param channelId ID of channel that the message belongs to.
-     * @param messageTime Creation time of message.
-     */
-    public void addMessage(String channelId, OffsetDateTime messageTime) {
-        if (monitoredChannels.get(channelId) == null) {
-            return;
-        }
-
-        if (monitoredChannels.get(channelId).size() == 10) {
-            monitoredChannels.get(channelId).removeLast();
-        }
-        monitoredChannels.get(channelId).addFirst(messageTime);
-    }
-
-    /**
-     * Adds a new channel in synapse's monitoring cache.
-     * @param channelId ID of channel to monitor.
-     */
-    public void addChannel(String channelId) {
-        monitoredChannels.put(channelId, new LinkedList<>());
-    }
-
-    /**
-     * Removes a TextChannel from the monitoredChannels
-     * ArrayList (only used when a TextChannel is unmonitored/removed).
-     */
-    public void removeChannel(String channelId) {
-        monitoredChannels.keySet().removeIf(channel -> channel.equals(channelId));
-    }
-
-    /**
-     * Gives back all the monitored channels for this Synapse.
-     * @return Monitored TextChannel Map for this Synapse
-     */
-    public Set<String> getChannels() {
-        return monitoredChannels.keySet();
-    }
-
-    /**
-     * Getter for the Guild the Synapse monitors.
-     * @return ID of Guild that Synapse monitors.
-     */
-    public String getGuildId() {
-        return guildId;
-    }
-
-    /**
-     * Set the state of the Synapse.
-     * @param state New state of Synapse.
-     */
-    public synchronized void setState(SynapseState state) {
-        this.state = state;
-    }
-
-    /**
-     * @return The caching state of the Synapse.
-     */
-    public SynapseState getState() {
-        return state;
     }
 }

@@ -1,18 +1,14 @@
 package thermostat.util;
 
-import thermostat.Thermostat;
-import thermostat.commands.monitoring.SynapseMonitor;
 import thermostat.mySQL.DataSource;
 import thermostat.util.entities.CachedGuild;
 import thermostat.util.entities.Synapse;
-import thermostat.util.enumeration.SynapseState;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A cache utility class that stores
@@ -48,6 +44,7 @@ public class GuildCache {
             return null;
         });
 
+        /* TO BE REMOVED
         Runnable monitorAction = () -> {
             Synapse synapse;
             for (Map.Entry<String, CachedGuild> guild : cache.entrySet()) {
@@ -60,7 +57,7 @@ public class GuildCache {
             }
         };
 
-        Thermostat.executor.scheduleAtFixedRate(monitorAction, 0, 8, TimeUnit.SECONDS);
+        Thermostat.executor.scheduleAtFixedRate(monitorAction, 0, 8, TimeUnit.SECONDS);*/
     }
 
     /**
