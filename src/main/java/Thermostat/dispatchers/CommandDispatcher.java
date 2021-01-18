@@ -3,7 +3,7 @@ package thermostat.dispatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
 import thermostat.commands.Command;
 
 import javax.annotation.Nonnull;

@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.preparedStatements.DynamicEmbeds;
-import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.Embeds.DynamicEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
+import thermostat.Embeds.HelpEmbeds;
 import thermostat.util.Functions;
 import thermostat.util.enumeration.CommandType;
 

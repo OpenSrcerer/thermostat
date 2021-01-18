@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.commands.informational.InfoCommand;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.preparedStatements.GenericEmbeds;
+import thermostat.Embeds.GenericEmbeds;
 import thermostat.util.Functions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;

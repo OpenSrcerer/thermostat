@@ -36,7 +36,7 @@ public class ArgumentParser {
                 }
 
                 options = new ArrayList<>();
-                params.put(arg.substring(1), options);
+                params.put(arg.substring(1).toLowerCase(), options);
             } else if (options != null) {
                 options.add(arg);
             } else {

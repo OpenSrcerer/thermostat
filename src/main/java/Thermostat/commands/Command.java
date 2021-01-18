@@ -10,7 +10,7 @@ import thermostat.Thermostat;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
-import thermostat.preparedStatements.ErrorEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;

@@ -7,8 +7,8 @@ import thermostat.commands.Command;
 import thermostat.commands.CommandTrigger;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.preparedStatements.GenericEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
+import thermostat.Embeds.GenericEmbeds;
 import thermostat.util.Constants;
 import thermostat.util.Functions;
 import thermostat.util.enumeration.CommandType;
@@ -70,7 +70,7 @@ public class PrefixCommand implements Command {
         try {
             parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            // cmdfailed (error in arguments)
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 

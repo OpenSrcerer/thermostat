@@ -9,10 +9,9 @@ import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.Create;
 import thermostat.mySQL.DataSource;
-import thermostat.preparedStatements.DynamicEmbeds;
-import thermostat.preparedStatements.ErrorEmbeds;
-import thermostat.preparedStatements.GenericEmbeds;
-import thermostat.preparedStatements.HelpEmbeds;
+import thermostat.Embeds.DynamicEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
+import thermostat.Embeds.GenericEmbeds;
 import thermostat.util.Functions;
 import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
@@ -21,7 +20,10 @@ import thermostat.util.enumeration.MenuType;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+
+import static thermostat.util.ArgumentParser.parseArguments;
 
 /**
  * Adds channels to the database provided in
@@ -49,83 +51,94 @@ public class MonitorCommand implements Command {
     }
 
     /**
-     * Command form: th!monitor <true/false> [channel(s)/category(ies)]
+     * Command form: th!monitor
+     * Switches:
+     * --on
+     * --off
+     * --all
+     * -c
      */
     @Override
     public void run() {
-        if (arguments.isEmpty()) {
+        final Map<String, List<String>> parameters;
+
+        try {
+            parameters = parseArguments(arguments);
+        } catch (Exception ex) {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            return;
+        }
+
+        List<String> channels = parameters.get("c");
+        final List<String> onSwitch = parameters.get("-on");
+        final List<String> offSwitch = parameters.get("-off");
+        final List<String> allSwitch = parameters.get("-all");
+
+        if (offSwitch == null && onSwitch == null) {
             ResponseDispatcher.commandFailed(this,
-                    HelpEmbeds.helpMonitor(prefix),
-                    "User did not provide any arguments.");
-            return;
-        } else if (arguments.size() >= 2) {
-            if (arguments.get(1).equalsIgnoreCase("all")) {
-                arguments.subList(0, 1).clear();
-                unMonitorAll();
-                return;
-            }
-        }
-
-        int monitor = Functions.convertToBooleanInteger(arguments.get(0));
-        if (monitor == -1) {
-            ResponseDispatcher.commandFailed(
-                    this, ErrorEmbeds.inputError("Please provide a correct action. Example: `" + prefix + "monitor on`", this.commandId),
-                    "User did not provide a correct action."
-            );
-            return;
-        }
-
-        String message1, message2;
-        arguments.remove(0);
-
-        StringBuilder nonValid,
-                noText,
-                complete = new StringBuilder(),
-                monitored = new StringBuilder();
-
-        // #1 - Retrieve target channels
-        {
-            Arguments results = parseChannelArgument(data.getChannel(), arguments);
-
-            nonValid = results.nonValid;
-            noText = results.noText;
-            arguments = results.newArguments;
-        }
-
-        // #2 - Monitor target channels
-        for (String arg : arguments) {
-            if (DataSource.queryInt("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", arg) == monitor) {
-                monitored.append("<#").append(arg).append("> ");
-            } else {
-                Create.Monitor(data.getGuild().getId(), arg, monitor);
-                complete.append("<#").append(arg).append("> ");
-            }
-        }
-
-        // switch message depending on user action
-        if (monitor == 1) {
-            message1 = "Successfully monitored:";
-            message2 = "Channels that were already being monitored:";
+                    ErrorEmbeds.inputError("You must insert at least an --on/--off switch.", this.commandId),
+                    "User did not provide any on/off arguments.");
+        } else if (allSwitch != null) {
+            unMonitorAll();
         } else {
-            message1 = "Successfully unmonitored:";
-            message2 = "Channels that were already not being monitored:";
-        }
+            // Initialization necessary for compiler
+            int monitor = 0;
+            if (onSwitch != null) {
+                monitor = 1;
+            } else if (offSwitch != null) {
+                monitor = 0;
+            }
 
-        // #6 - Send the results embed to manager
-        ResponseDispatcher.commandSucceeded(this,
-                DynamicEmbeds.dynamicEmbed(
-                        Arrays.asList(
-                                message1,
-                                complete.toString(),
-                                message2,
-                                monitored.toString(),
-                                "Channels that were not valid or found:",
-                                nonValid.toString(),
-                                "Categories with no Text Channels:",
-                                noText.toString()
-                        ), data.getMember().getUser(), commandId
-                )
-        );
+            final StringBuilder nonValid,
+                    noText,
+                    complete = new StringBuilder(),
+                    monitored = new StringBuilder();
+
+            // #1 - Retrieve target channels
+            {
+                Arguments results = parseChannelArgument(data.getChannel(), channels);
+
+                nonValid = results.nonValid;
+                noText = results.noText;
+                channels = results.newArguments;
+            }
+
+            // #2 - Monitor target channels
+            for (final String channel : channels) {
+                if (DataSource.queryInt("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel) == monitor) {
+                    monitored.append("<#").append(channel).append("> ");
+                } else {
+                    Create.Monitor(data.getGuild().getId(), channel, monitor);
+                    complete.append("<#").append(channel).append("> ");
+                }
+            }
+
+            // switch message depending on user action
+            final String message1, message2;
+            if (monitor == 1) {
+                message1 = "Successfully monitored:";
+                message2 = "Channels that were already being monitored:";
+            } else {
+                message1 = "Successfully unmonitored:";
+                message2 = "Channels that were already not being monitored:";
+            }
+
+            // #6 - Send the results embed to manager
+            ResponseDispatcher.commandSucceeded(this,
+                    DynamicEmbeds.dynamicEmbed(
+                            Arrays.asList(
+                                    message1,
+                                    complete.toString(),
+                                    message2,
+                                    monitored.toString(),
+                                    "Channels that were not valid or found:",
+                                    nonValid.toString(),
+                                    "Categories with no Text Channels:",
+                                    noText.toString()
+                            ), data.getMember().getUser(), commandId
+                    )
+            );
+        }
     }
 
     private void unMonitorAll() {
