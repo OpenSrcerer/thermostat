@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.time.Instant;
 
-public abstract class HelpEmbeds {
+public final class HelpEmbeds {
     public static EmbedBuilder expandedHelpInfo(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n `" + prefix + "info [command]`");
@@ -108,24 +108,7 @@ public abstract class HelpEmbeds {
     public static EmbedBuilder expandedHelpFilter(String prefix) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Command Usage:\n ```" + prefix + "filter <on/off> [channel(s)/category(ies)]```");
-        eb.setDescription("**Alias: " + prefix + "fi** ⇨ [EXPERIMENTAL] Enables/Disables curse-word filtering for a channel.");
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0x00aeff);
-        return eb;
-    }
-
-    public static EmbedBuilder helpChart(String prefix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
-        eb.addField("Chart Types (Name - CmdName): ", "★ Slowmode Frequency - (slowfreq)", false);
-        eb.setTimestamp(Instant.now());
-        eb.setColor(0x00aeff);
-        return eb;
-    }
-
-    public static EmbedBuilder helpMonitor(String prefix) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Command Usage:\n `" + prefix + "monitor <on/off> [channel(s)/category(ies)]`");
+        eb.setDescription("**Alias: " + prefix + "fi** ⇨ [WIP] Enables/Disables curse-word filtering for a channel.");
         eb.setTimestamp(Instant.now());
         eb.setColor(0x00aeff);
         return eb;
