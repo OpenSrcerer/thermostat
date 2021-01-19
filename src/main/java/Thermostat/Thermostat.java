@@ -4,21 +4,19 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.exceptions.ParsingException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.api.utils.data.DataObject;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import thermostat.commands.events.Ready;
 import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -87,7 +85,7 @@ public abstract class Thermostat {
                 .addEventListeners(new Ready())
                 .build();
 
-        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("fast loading..."));
+        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("loading..."));
         DataSource.initializeDataSource();
         Constants.setConstants(config[0], thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
         MiscellaneousDispatcher.initApis(config[2], config[3]);
@@ -97,9 +95,9 @@ public abstract class Thermostat {
      * Reads the config.json file and parses the data into a usable
      * array of strings.
      * @return Array of configuration tokens.
-     * @throws Exception If I/O operations had an issue.
+     * @throws ParsingException If I/O operations had an issue.
      */
-    private static String[] initializeTokens() throws Exception {
+    private static String[] initializeTokens() throws ParsingException {
         String[] tokens = new String[4];
 
         InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
@@ -109,16 +107,12 @@ public abstract class Thermostat {
             return tokens;
         }
 
-        JSONParser parser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) parser.parse(
-                new InputStreamReader(configFile, StandardCharsets.UTF_8
-                )
-        );
+        DataObject config = DataObject.fromJson(configFile);
 
-        tokens[0] = jsonObject.get("Prefix").toString();
-        tokens[1] = jsonObject.get("Token").toString();
-        tokens[2] = jsonObject.get("DBLToken").toString();
-        tokens[3] = jsonObject.get("BoatsToken").toString();
+        tokens[0] = config.getString("Prefix");
+        tokens[1] = config.getString("Token");
+        tokens[2] = config.getString("DBLToken");
+        tokens[3] = config.getString("BoatsToken");
 
         return tokens;
     }
