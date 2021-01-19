@@ -7,10 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,6 +64,23 @@ public abstract class DataSource {
     }
 
     /**
+     * Return an action that performs an update on the database.
+     * @param sql SQL Code to run.
+     * @param args Arguments to set.
+     * @return An action that takes in arguments but returns nothing.
+     */
+    public static DataSource.DatabaseAction<Void> getAction(String sql, String... args) {
+        return conn -> {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            for (int index = 0; index < args.length; ++index) {
+                statement.setString(index + 1, args[index]);
+            }
+            statement.executeUpdate();
+            return null;
+        };
+    }
+
+    /**
      * Queries DB for a string array.
      *
      * @param Query A string containing a query that will be
@@ -76,6 +90,7 @@ public abstract class DataSource {
      * if the provided query did not return any results.
      */
     @Nonnull
+    @Deprecated
     public static Map<String, Integer> queryMap(String Query, String argument) throws SQLException {
         Map<String, Integer> resultMap = new LinkedHashMap<>();
 
@@ -108,6 +123,7 @@ public abstract class DataSource {
      * if the provided query did not return any results.
      */
     @Nullable
+    @Deprecated
     public static ArrayList<String> queryStringArray(String Query, String argument) {
         ArrayList<String> resultArray = null;
 
@@ -134,6 +150,7 @@ public abstract class DataSource {
         return resultArray;
     }
 
+    @Deprecated
     public static boolean queryBool(String Query, List<String> args) {
         try (
                 Connection conn = getConnection();
@@ -159,6 +176,7 @@ public abstract class DataSource {
     /**
      * Same as above, returns single int value.
      */
+    @Deprecated
     public static float querySens(String Query, String argument) {
         float retVal = 0;
 
@@ -187,6 +205,7 @@ public abstract class DataSource {
     /**
      * Same as above.
      */
+    @Deprecated
     public static int queryInt(String Query, String argument) {
         int retVal = -1;
 
@@ -215,6 +234,7 @@ public abstract class DataSource {
     /**
      * Same as above.
      */
+    @Deprecated
     public static List<Integer> queryInts(String Query, String argument) {
         List<Integer> retVal = new ArrayList<>();
 
@@ -243,6 +263,7 @@ public abstract class DataSource {
      * Same as above, returns single String value.
      */
     @Nullable
+    @Deprecated
     public static String queryString(String Query, String argument) throws SQLException {
         String retString;
 
@@ -275,6 +296,7 @@ public abstract class DataSource {
      * if the provided query did not return any results.
      */
     @Nonnull
+    @Deprecated
     public static List<Object> getSettingsPackage(String channelId) throws SQLException {
         List<Object> resultArray;
 
@@ -315,6 +337,7 @@ public abstract class DataSource {
      *              executed.
      * @throws SQLException Error while executing update.
      */
+    @Deprecated
     public static void update(String Query, String... args) throws SQLException {
         try (
              Connection conn = getConnection();
@@ -327,6 +350,7 @@ public abstract class DataSource {
         }
     }
 
+    @Deprecated
     public static void update(String Query, String argument) throws SQLException {
         try (
              Connection conn = getConnection();
@@ -344,6 +368,7 @@ public abstract class DataSource {
      *              executed.
      * @return True if ResultSet had data on it, false if it was empty.
      */
+    @Deprecated
     public static boolean checkDatabaseForData(String Query, String argument) throws SQLException {
         try (
                 Connection conn = getConnection();
