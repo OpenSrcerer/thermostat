@@ -3,11 +3,11 @@ package thermostat.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Embeds.DynamicEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.Embeds.DynamicEmbeds;
-import thermostat.Embeds.ErrorEmbeds;
 import thermostat.util.Functions;
 import thermostat.util.enumeration.CommandType;
 
@@ -15,39 +15,62 @@ import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+
+import static thermostat.util.ArgumentParser.hasArguments;
+import static thermostat.util.ArgumentParser.parseArguments;
 
 @SuppressWarnings("ConstantConditions")
 public class SensitivityCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(SensitivityCommand.class);
 
-    private final GuildMessageReceivedEvent data;
-    private List<String> arguments;
+    private GuildMessageReceivedEvent data = null;
+    private Map<String, List<String>> parameters = null;
     private final String prefix;
     private final long commandId;
 
     public SensitivityCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = data;
-        this.arguments = arguments;
-        this.prefix = prefix;
         this.commandId = Functions.getCommandId();
+        this.prefix = prefix;
+
+        try {
+            this.parameters = parseArguments(arguments);
+        } catch (Exception ex) {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            return;
+        }
 
         if (validateEvent(data)) {
-            checkPermissionsAndQueue(this);
+            this.data = data;
+        } else {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            return;
         }
+
+        checkPermissionsAndQueue(this);
     }
 
     /**
-     * Command form: th!sensitivity <sensitivity> [channel(s)/category(ies)]
+     * Command form: th!sensitivity
+     * -s <sensitivity>
+     * -c <channels/categories>
      */
     @Override
     public void run() {
-        if (arguments.isEmpty()) {
+        List<String> channels = parameters.get("c");
+        final List<String> sensitivity = parameters.get("s");
+
+        if (!hasArguments(sensitivity)) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("No arguments provided. Please insert a sensitivity value.", commandId),
+                    ErrorEmbeds.inputError("Please insert a sensitivity value.", commandId),
                     "User did not provide arguments.");
             return;
         }
 
+        sensitivityAction(channels, sensitivity.get(0));
+    }
+
+    private void sensitivityAction(List<String> channels, String sensitivity) {
         StringBuilder nonValid,
                 noText,
                 complete = new StringBuilder(),
@@ -56,34 +79,33 @@ public class SensitivityCommand implements Command {
 
         // #1 - Parse sensitivity argument
         try {
-            offset = Float.parseFloat(arguments.get(0));
-            arguments.remove(0);
+            offset = Float.parseFloat(sensitivity);
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("Sensitivity value must be between 0 and 10 (inclusive).", commandId),
+                    ErrorEmbeds.inputError("Sensitivity value must be between -10 and 10 (inclusive).", commandId),
                     "User provided an incorrect sensitivity value.");
             return;
         }
 
         // #2 - Retrieve target channels
         {
-            Arguments results = parseChannelArgument(data.getChannel(), arguments);
+            Arguments results = parseChannelArgument(data.getChannel(), channels);
 
             nonValid = results.nonValid;
             noText = results.noText;
-            arguments = results.newArguments;
+            channels = results.newArguments;
         }
 
         // #3 - Perform appropriate action
-        for (String arg : arguments) {
+        for (String channel : channels) {
             try {
-                addIfNotInDb(data.getGuild().getId(), arg);
+                addIfNotInDb(data.getGuild().getId(), channel);
                 if (offset >= -10 && offset <= 10) {
                     DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?",
-                            Float.toString(1f + offset / 20f), arg);
-                    complete.append("<#").append(arg).append("> ");
+                            Float.toString(1f + offset / 20f), channel);
+                    complete.append("<#").append(channel).append("> ");
                 } else {
-                    badSensitivity.append("<#").append(arg).append("> ");
+                    badSensitivity.append("<#").append(channel).append("> ");
                 }
 
             } catch (SQLException ex) {
