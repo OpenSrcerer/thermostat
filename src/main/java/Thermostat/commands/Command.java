@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.CommandDispatcher;
-import thermostat.mySQL.Create;
+import thermostat.mySQL.PreparedActions;
 import thermostat.mySQL.DataSource;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.util.enumeration.CommandType;
@@ -64,7 +64,7 @@ public interface Command extends Runnable {
     default void addIfNotInDb(String guildId, String channelId) throws SQLException {
         if (!DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNELS JOIN GUILDS ON " +
                 "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", channelId)) {
-            Create.Channel(guildId, channelId, 0);
+            PreparedActions.createChannel(guildId, channelId, 0);
         }
     }
 
@@ -72,7 +72,7 @@ public interface Command extends Runnable {
         for (String channelId : channelIds) {
             if (!DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNELS JOIN GUILDS ON " +
                     "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", channelId)) {
-                Create.Channel(guildId, channelId, 0);
+                PreparedActions.createChannel(guildId, channelId, 0);
             }
         }
     }
@@ -151,11 +151,11 @@ public interface Command extends Runnable {
 
     /**
      * @param eventChannel Target guild
-     * @param args List of arguments
+     * @param rawChannels List of arguments
      * @return a list of target channel IDs, along with
      * two StringBuilders with arguments that were invalid.
      */
-    @Nonnull default Arguments parseChannelArgument(TextChannel eventChannel, List<String> args) {
+    @Nonnull default Arguments parseChannelArgument(TextChannel eventChannel, List<String> rawChannels) {
         StringBuilder
                 // Channels that could not be found
                 nonValid = new StringBuilder(),
@@ -165,24 +165,24 @@ public interface Command extends Runnable {
 
         // if no arguments were valid just add the event channel
         // as the target channel
-        if (args.isEmpty()) {
+        if (rawChannels.isEmpty()) {
             newArgs.add(eventChannel.getId());
         } else {
             // parses arguments into usable IDs, checks if channels exist
             // up to args.size(), last channel
-            for (int index = 0; index < args.size(); ++index) {
+            for (int index = 0; index < rawChannels.size(); ++index) {
 
                 // The argument gets parsed. If it's a mention, it gets formatted
                 // into an ID through the parseMention() function.
                 // All letters are removed, thus the usage of the
                 // originalArgument string.
-                String originalArgument = args.get(index);
-                args.set(index, parseMention(args.get(index), "#"));
+                String originalArgument = rawChannels.get(index);
+                rawChannels.set(index, parseMention(rawChannels.get(index), "#"));
 
                 // Category holder for null checking
-                Category channelContainer = eventChannel.getGuild().getCategoryById(args.get(index));
+                Category channelContainer = eventChannel.getGuild().getCategoryById(rawChannels.get(index));
 
-                if (args.get(index).isBlank()) {
+                if (rawChannels.get(index).isBlank()) {
                     nonValid.append("\"").append(originalArgument).append("\" ");
 
                 } else if (channelContainer != null) {
@@ -199,10 +199,10 @@ public interface Command extends Runnable {
                 }
 
                 // removes element from arguments if it's not a valid channel ID
-                else if (eventChannel.getGuild().getTextChannelById(args.get(index)) == null) {
+                else if (eventChannel.getGuild().getTextChannelById(rawChannels.get(index)) == null) {
                     nonValid.append("\"").append(originalArgument).append("\" ");
                 } else {
-                    newArgs.add(args.get(index));
+                    newArgs.add(rawChannels.get(index));
                 }
             }
         }

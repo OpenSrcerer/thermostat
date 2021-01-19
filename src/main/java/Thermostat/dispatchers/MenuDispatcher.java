@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.CommandTrigger;
-import thermostat.mySQL.Create;
+import thermostat.mySQL.PreparedActions;
 import thermostat.mySQL.DataSource;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.GenericEmbeds;
@@ -199,7 +199,7 @@ public class MenuDispatcher extends ListenerAdapter {
                     ResultSet rs = pst.executeQuery();
 
                     while (rs.next()) {
-                        Create.Monitor(event.getGuild().getId(), rs.getString(1), 0);
+                        PreparedActions.createMonitor(event.getGuild().getId(), rs.getString(1), 0);
                     }
                     return null;
                 }

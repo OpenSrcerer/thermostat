@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.mySQL.Create;
+import thermostat.mySQL.PreparedActions;
 import thermostat.mySQL.DataSource;
 
 import javax.annotation.Nonnull;
@@ -192,9 +192,9 @@ public abstract class Functions {
         try {
             // Check if guild and channel are in the database.
             if (!DataSource.checkDatabaseForData("SELECT * FROM GUILDS WHERE GUILD_ID = ?", guildId))
-                Create.Guild(guildId);
+                PreparedActions.createGuild(guildId);
             if (!DataSource.checkDatabaseForData("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?", channelId))
-                Create.Channel(guildId, channelId, 0);
+                PreparedActions.createChannel(guildId, channelId, 0);
 
         } catch (SQLException ex) {
             lgr.error("SQL Exception while setting guild ID: " + guildId + " and channel ID: " + channelId);

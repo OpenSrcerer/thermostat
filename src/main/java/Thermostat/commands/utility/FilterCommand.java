@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.mySQL.Create;
+import thermostat.mySQL.PreparedActions;
 import thermostat.Embeds.DynamicEmbeds;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.HelpEmbeds;
@@ -78,7 +78,7 @@ public class FilterCommand implements Command {
         // after checking whether the channel exists in the db
         try {
             addIfNotInDb(data.getGuild().getId(), arguments);
-            complete = Create.setFilter(Integer.toString(filtered), arguments);
+            complete = PreparedActions.setFilter(Integer.toString(filtered), arguments);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
