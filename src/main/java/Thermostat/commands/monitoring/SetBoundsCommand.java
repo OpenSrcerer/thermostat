@@ -3,17 +3,15 @@ package thermostat.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Embeds.DynamicEmbeds;
+import thermostat.Embeds.ErrorEmbeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.Embeds.DynamicEmbeds;
-import thermostat.Embeds.ErrorEmbeds;
-import thermostat.Embeds.HelpEmbeds;
 import thermostat.util.Functions;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static thermostat.mySQL.DataSource.getAction;
 import static thermostat.util.ArgumentParser.hasArguments;
 import static thermostat.util.ArgumentParser.parseArguments;
 import static thermostat.util.Functions.parseSlowmode;
@@ -34,10 +31,6 @@ public class SetBoundsCommand implements Command {
     private Map<String, List<String>> parameters = null;
     private final String prefix;
     private final long commandId;
-
-    private enum ActionType {
-        INVALID, MINIMUM, MAXIMUM
-    }
 
     public SetBoundsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.commandId = Functions.getCommandId();
@@ -70,8 +63,8 @@ public class SetBoundsCommand implements Command {
      */
     @Override
     public void run() {
-        List<String> channels = parameters.get("c");
-        final List<String> bound = parameters.get("b");
+        final List<String> channels = parameters.get("c");
+        final List<String> boundParameter = parameters.get("b");
         final List<String> minSwitch = parameters.get("-min");
         final List<String> maxSwitch = parameters.get("-max");
 
@@ -79,118 +72,127 @@ public class SetBoundsCommand implements Command {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("You need to insert a --min/--max switch.", this.commandId),
                     "User did not provide any on/off arguments.");
-        } else if (!hasArguments(bound)) {
+        }
+
+        if (!hasArguments(boundParameter)) {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("You need to insert a bound argument.", this.commandId),
                     "User did not provide a bound argument.");
         }
 
-        setBoundsAction(channels, bound.get(0), isSetMaximum(maxSwitch, minSwitch));
-    }
-
-    public void setBoundsAction(List<String> channels, String parameterBound, boolean isSetMaximum) {
-        StringBuilder nonValid,
-                noText,
-                minComplete = new StringBuilder(),
-                maxComplete = new StringBuilder();
-
-        // value given to us by user to assign as slowmode
-        int bound;
-
         // #2 - Check the [slowmode] argument
+        int bound;
         try {
-            bound = parseSlowmode(parameterBound);
+            bound = parseSlowmode(boundParameter.get(0));
 
             if (bound > 21600) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("Slowmode value \"" + parameterBound + "\" was incorrect.", commandId),
+                    ErrorEmbeds.inputError("Slowmode value \"" + boundParameter.get(0) + "\" was incorrect.", commandId),
                     "User provided an incorrect sensitivity value.");
             return;
         }
 
-        // #3 - Parse the optional <channels/categories> argument
+        setBoundsAction(channels, bound, isSetMaximum(maxSwitch, minSwitch));
+    }
+
+    public void setBoundsAction(final List<String> channels, final int bound, final boolean isSetMaximum) {
+        StringBuilder nonValid,
+                noText,
+                bothComplete = new StringBuilder(),
+                minComplete = new StringBuilder(),
+                maxComplete = new StringBuilder();
+
+        // #1 - Retrieve target channels
         {
             Arguments results = parseChannelArgument(data.getChannel(), channels);
+            channels.clear();
 
             nonValid = results.nonValid;
             noText = results.noText;
-            channels = results.newArguments;
-        }
-        // args now remains as a list of target channel(s).
-
-        // #4 - Perform the appropriate actions
-        int minimumSlow, maximumSlow;
-
-        for (String channel : channels) {
-            try {
-            {
-                addIfNotInDb(data.getGuild().getId(), channel);
-                List<Integer> channelSlowmodes = DataSource.queryInts("SELECT MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel);
-
-                DataSource.execute(conn -> {
-                    PreparedStatement statement = conn.prepareStatement("SELECT MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
-                    ResultSet rs = statement.executeQuery();
-
-                    rs.next();
-                    retVal.add(rs.getInt(1));
-                    retVal.add(rs.getInt(2));
-                    return
-                });
-
-                minimumSlow = channelSlowmodes.get(0);
-                maximumSlow = channelSlowmodes.get(1);
-            }
-                DataSource.DatabaseAction<Void> action = null;
-
-                // -- Setting a Maximum Slowmode --
-                // if the argument < the minimum (cannot happen)
-                // update both so they're equal
-                if (bound < minimumSlow && isSetMaximum) {
-                    action = getAction("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ?, MIN_SLOW = ? WHERE CHANNEL_ID = ?",
-                            Integer.toString(bound), Integer.toString(bound), channel);
-                    maxComplete.append("<#").append(channel).append("> ");
-                }
-                // if the argument >= the minimum
-                // set maximum normally
-                else if (bound >= minimumSlow && isSetMaximum) {
-                    action = getAction("UPDATE CHANNEL_SETTINGS SET MAX_SLOW = ? WHERE CHANNEL_ID = ?",
-                            Integer.toString(bound), channel);
-                    maxComplete.append("<#").append(channel).append("> ");
-                }
-                // -- Setting a Minimum Slowmode --
-                // if the argument > the maximum (cannot happen)
-                // update both so they're equal
-                else if (bound > maximumSlow) {
-                    action = getAction("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = ?, MAX_SLOW = ? WHERE CHANNEL_ID = ?",
-                            Integer.toString(bound), Integer.toString(bound), channel);
-                    minComplete.append("<#").append(channel).append("> ");
-                }
-                // if the argument <= the maximum
-                // set minimum normally
-                else if (bound <= maximumSlow) {
-                    action = getAction("UPDATE CHANNEL_SETTINGS SET MIN_SLOW = ? WHERE CHANNEL_ID = ?",
-                            Integer.toString(bound), channel);
-                    minComplete.append("<#").append(channel).append("> ");
-                }
-
-                // Finally execute the action
-                DataSource.execute(action);
-
-            } catch (SQLException ex) {
-                ResponseDispatcher.commandFailed(this,
-                        ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
-                        ex);
-                return;
-            }
+            channels.addAll(results.newArguments);
         }
 
-        // #5 - Send the results embed to dispatch
+        // #2 - Perform database changes
+        try {
+            DataSource.execute(conn -> {
+                boolean threeArguments;
+                int minimumSlow, maximumSlow;
+                StringBuilder sql = new StringBuilder();
+
+                for (String channel : channels) {
+                    threeArguments = false;
+
+                    {
+                        PreparedStatement statement = conn.prepareStatement("SELECT MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
+                        ResultSet rs = statement.executeQuery();
+                        rs.next();
+
+                        minimumSlow = rs.getInt(1);
+                        maximumSlow = rs.getInt(2);
+                    }
+
+                    PreparedStatement statement;
+
+                    // ----- WARNING -----
+                    // SQL is inserted in specific position
+                    // Heads up if changing query
+                    sql.setLength(0);
+                    sql.append("UPDATE CHANNEL_SETTINGS SET  WHERE CHANNEL_ID = ?;");
+
+                    // if the argument < the minimum OR argument > the maximum
+                    // update both so they're equal
+                    if (bound < minimumSlow && isSetMaximum || bound > maximumSlow && !isSetMaximum) {
+                        threeArguments = true;
+                        sql.insert(28, "MIN_SLOW = ?, MAX_SLOW = ?");
+                        bothComplete.append("<#").append(channel).append("> ");
+                    }
+                    // if the argument >= the minimum
+                    // set maximum normally
+                    else if (bound >= minimumSlow && isSetMaximum) {
+                        sql.insert(28, "MAX_SLOW = ?");
+                        maxComplete.append("<#").append(channel).append("> ");
+                    }
+                    // if the argument <= the maximum
+                    // set minimum normally
+                    else if (bound <= maximumSlow) {
+                        sql.insert(28, "MIN_SLOW = ?");
+                        minComplete.append("<#").append(channel).append("> ");
+                    }
+
+                    // Prepare the statement using the compiled SQL
+                    statement = conn.prepareStatement(sql.toString());
+
+                    // Add arguments to the SQL statement
+                    statement.setInt(1, bound);
+
+                    if (threeArguments) {
+                        statement.setInt(2, bound);
+                        statement.setString(3, channel);
+                    } else {
+                        statement.setString(2, channel);
+                    }
+
+                    // Finally execute the action
+                    statement.executeUpdate();
+                }
+                return null;
+            });
+        } catch (SQLException ex) {
+            ResponseDispatcher.commandFailed(this,
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ex);
+            return;
+        }
+
+        // #3 - Send the results embed to dispatch
         ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
+                                "Channels that had both slowmode bounds changed to " + bound + ":",
+                                bothComplete.toString(),
                                 "Channels given a maximum slowmode of " + bound + ":",
                                 maxComplete.toString(),
                                 "Channels given a minimum slowmode of " + bound + ":",
@@ -215,7 +217,7 @@ public class SetBoundsCommand implements Command {
             return false;
         }
 
-        // Impossible
+        // Impossible.
         throw new IllegalArgumentException("maxSwitch and minSwitch were null.");
     }
 
