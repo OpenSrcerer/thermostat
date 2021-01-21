@@ -12,7 +12,7 @@ import thermostat.util.Functions;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
-import java.sql.SQLException;
+import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +57,11 @@ public class SensitivityCommand implements Command {
      */
     @Override
     public void run() {
-        List<String> channels = parameters.get("c");
+        final List<String> channels = parameters.get("c");
         final List<String> sensitivity = parameters.get("s");
+        final float offset;
 
+        // Check that sensitivity has arguments
         if (!hasArguments(sensitivity)) {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("Please insert a sensitivity value.", commandId),
@@ -67,19 +69,13 @@ public class SensitivityCommand implements Command {
             return;
         }
 
-        sensitivityAction(channels, sensitivity.get(0));
-    }
-
-    private void sensitivityAction(List<String> channels, String sensitivity) {
-        StringBuilder nonValid,
-                noText,
-                complete = new StringBuilder(),
-                badSensitivity = new StringBuilder();
-        final float offset;
-
-        // #1 - Parse sensitivity argument
+        // Parse sensitivity argument
         try {
-            offset = Float.parseFloat(sensitivity);
+            offset = Float.parseFloat(sensitivity.get(0));
+
+            if (offset >= -10 && offset <= 10) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.inputError("Sensitivity value must be between -10 and 10 (inclusive).", commandId),
@@ -87,43 +83,49 @@ public class SensitivityCommand implements Command {
             return;
         }
 
-        // #2 - Retrieve target channels
+        sensitivityAction(channels, offset);
+    }
+
+    private void sensitivityAction(final List<String> channels, final float offset) {
+        StringBuilder nonValid,
+                noText,
+                complete = new StringBuilder(),
+                badSensitivity = new StringBuilder();
+
+        // #1 - Retrieve target channels
         {
             Arguments results = parseChannelArgument(data.getChannel(), channels);
+            channels.clear();
 
             nonValid = results.nonValid;
             noText = results.noText;
-            channels = results.newArguments;
+            channels.addAll(results.newArguments);
         }
 
-        // #3 - Perform appropriate action
-        for (String channel : channels) {
-            try {
-                addIfNotInDb(data.getGuild().getId(), channel);
-                if (offset >= -10 && offset <= 10) {
-                    DataSource.update("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?",
-                            Float.toString(1f + offset / 20f), channel);
+        // #2 - Perform appropriate action
+        try {
+            DataSource.execute(conn -> {
+                for (String channel : channels) {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?");
+                    statement.setFloat(1, 1f + offset / 20f);
+                    statement.setString(2, channel);
                     complete.append("<#").append(channel).append("> ");
-                } else {
-                    badSensitivity.append("<#").append(channel).append("> ");
                 }
-
-            } catch (SQLException ex) {
-                ResponseDispatcher.commandFailed(this,
-                        ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
-                        ex);
-                return;
-            }
+                return null;
+            });
+        } catch (Exception ex) {
+            ResponseDispatcher.commandFailed(this,
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ex);
+            return;
         }
 
-        // #4 - Send embed results to user
+        // #3 - Send embed results to user
         ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
                                 "Channels given a new sensitivity of " + offset + ":",
                                 complete.toString(),
-                                "Offset value was not appropriate:",
-                                badSensitivity.toString(),
                                 "Channels that were not valid or found:",
                                 nonValid.toString(),
                                 "Categories with no Text Channels:",

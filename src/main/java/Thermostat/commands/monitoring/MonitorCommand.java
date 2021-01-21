@@ -86,7 +86,7 @@ public class MonitorCommand implements Command {
         monitorAction(channels, getMonitorValue(onSwitch, offSwitch));
     }
 
-    private void monitorAction(List<String> channels, int monitor) {
+    private void monitorAction(final List<String> channels, final int monitor) {
         final StringBuilder nonValid,
                 noText,
                 complete = new StringBuilder(),
