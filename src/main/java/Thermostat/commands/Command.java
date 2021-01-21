@@ -5,16 +5,13 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
+import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.CommandDispatcher;
-import thermostat.mySQL.PreparedActions;
-import thermostat.mySQL.DataSource;
-import thermostat.Embeds.ErrorEmbeds;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -53,29 +50,6 @@ public interface Command extends Runnable {
      * @return Command's ID
      */
     long getId();
-
-    /**
-     * Adds channel to database if it's not found.
-     * @param guildId Id of guild.
-     * @param channelId Id of channel.
-     * @throws SQLException If something goes wrong
-     * in the SQL transaction.
-     */
-    default void addIfNotInDb(String guildId, String channelId) throws SQLException {
-        if (!DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNELS JOIN GUILDS ON " +
-                "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", channelId)) {
-            PreparedActions.createChannel(guildId, channelId, 0);
-        }
-    }
-
-    default void addIfNotInDb(String guildId, List<String> channelIds) throws SQLException {
-        for (String channelId : channelIds) {
-            if (!DataSource.checkDatabaseForData("SELECT CHANNEL_ID FROM CHANNELS JOIN GUILDS ON " +
-                    "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?", channelId)) {
-                PreparedActions.createChannel(guildId, channelId, 0);
-            }
-        }
-    }
 
     /**
      * Adds a given Command to the Request Manager queue if
