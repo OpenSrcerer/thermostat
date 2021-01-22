@@ -33,8 +33,8 @@ import java.util.*;
  * Used to filter out slurs.
  */
 @SuppressWarnings("ConstantConditions")
-public class WordFilterCommand implements Command {
-    private static final Logger lgr = LoggerFactory.getLogger(WordFilterCommand.class);
+public class WordFilter implements Command {
+    private static final Logger lgr = LoggerFactory.getLogger(WordFilter.class);
 
     private static List<String> badWords, niceWords;
     private static final Random random = new Random();
@@ -43,7 +43,7 @@ public class WordFilterCommand implements Command {
     private final List<String> message;
     private final long commandId;
 
-    public WordFilterCommand(@Nonnull GuildMessageReceivedEvent data) {
+    public WordFilter(@Nonnull GuildMessageReceivedEvent data) {
         this.data = data;
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
         this.commandId = Functions.getCommandId();
