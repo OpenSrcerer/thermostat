@@ -19,7 +19,7 @@ import thermostat.commands.other.InviteCommand;
 import thermostat.commands.other.PrefixCommand;
 import thermostat.commands.other.VoteCommand;
 import thermostat.commands.utility.FilterCommand;
-import thermostat.commands.utility.WordFilterCommand;
+import thermostat.commands.utility.WordFilter;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
@@ -63,7 +63,7 @@ public final class CommandTrigger extends ListenerAdapter {
                 "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
                 "AND CHANNELS.CHANNEL_ID = ?",
                 Arrays.asList(event.getGuild().getId(), event.getChannel().getId()))) {
-            new WordFilterCommand(event);
+            new WordFilter(event);
         }
 
         if (

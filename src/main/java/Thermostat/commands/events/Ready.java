@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.commands.CommandTrigger;
-import thermostat.commands.utility.WordFilterCommand;
+import thermostat.commands.utility.WordFilter;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.util.GuildCache;
 
@@ -64,7 +64,7 @@ public class Ready extends ListenerAdapter {
         niceWords = retrieveWordFile(file1);
         badWords = retrieveWordFile(file2);
 
-        WordFilterCommand.setWordArrays(niceWords, badWords);
+        WordFilter.setWordArrays(niceWords, badWords);
         lgr.info("Loaded word files " + file1 + " and " + file2);
     }
 

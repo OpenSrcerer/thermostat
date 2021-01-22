@@ -77,7 +77,6 @@ public class FilterCommand implements Command {
         // individually enable filtering in every channel
         // after checking whether the channel exists in the db
         try {
-            addIfNotInDb(data.getGuild().getId(), arguments);
             complete = PreparedActions.setFilter(Integer.toString(filtered), arguments);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
