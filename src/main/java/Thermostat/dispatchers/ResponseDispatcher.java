@@ -77,4 +77,15 @@ public final class ResponseDispatcher {
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
     }
+
+    /**
+     *
+     * @param command Command that failed.
+     * @param embed Embed to send.
+     */
+    public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed) {
+        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. (Replied with help Embed).");
+        if (embed != null)
+            Messages.sendMessage(command.getEvent().getChannel(), embed);
+    }
 }
