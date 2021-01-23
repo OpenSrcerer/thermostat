@@ -7,7 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +40,25 @@ public abstract class DataSource {
     public static void closeDataSource() {
         if (ds != null) {
             ds.close();
+        }
+    }
+
+    /**
+     * Creates database entries for guilds/channels if they do not exist.
+     * @param guildId ID of the guild to check.
+     * @param channelId Channel of the guild to check.
+     */
+    public static void syncDatabase(final Connection conn, final String guildId, final String channelId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement("SELECT * FROM GUILDS WHERE GUILD_ID = ?");
+        statement.setString(1, guildId);
+        if (!statement.executeQuery().next()) {
+            PreparedActions.createGuild(conn, guildId);
+        }
+
+        statement = conn.prepareStatement("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?");
+        statement.setString(1, channelId);
+        if (!statement.executeQuery().next()) {
+            PreparedActions.createChannel(conn, guildId, channelId, 0);
         }
     }
 
