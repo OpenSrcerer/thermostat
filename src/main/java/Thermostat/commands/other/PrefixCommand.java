@@ -10,7 +10,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.GenericEmbeds;
 import thermostat.util.Constants;
-import thermostat.util.Functions;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
@@ -27,20 +27,30 @@ import static thermostat.util.ArgumentParser.parseArguments;
 public class PrefixCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(PrefixCommand.class);
 
-    private final GuildMessageReceivedEvent data;
-    private final List<String> arguments;
+    private GuildMessageReceivedEvent data;
+    private Map<String, List<String>> parameters;
     private final String prefix;
     private final long commandId;
 
     public PrefixCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = data;
-        this.arguments = arguments;
+        this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
-        this.commandId = Functions.getCommandId();
+
+        try {
+            this.parameters = parseArguments(arguments);
+        } catch (Exception ex) {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            return;
+        }
 
         if (validateEvent(data)) {
-            checkPermissionsAndQueue(this);
+            this.data = data;
+        } else {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            return;
         }
+
+        checkPermissionsAndQueue(this);
     }
 
     /**
@@ -48,8 +58,11 @@ public class PrefixCommand implements Command {
      */
     @Override
     public void run() {
+        List<String> prefixParameters = parameters.get("p");
+        List<String> resetSwitch = parameters.get("-reset");
+
         try {
-            pxAction(data, prefix);
+            prefixAction(prefixParameters, resetSwitch);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
                     ErrorEmbeds.error(ex.getLocalizedMessage(), "Please try again.", this.commandId),
@@ -60,23 +73,9 @@ public class PrefixCommand implements Command {
 
     /**
      * Code to run when the command is called.
-     *
-     * @param data CommandData object that stores information about the command triggerer.
      * @throws SQLException If some error went wrong with the DB conn.
      */
-    private void pxAction(@Nonnull GuildMessageReceivedEvent data, @Nonnull String prefix) throws SQLException {
-        final Map<String, List<String>> parameters;
-
-        try {
-            parameters = parseArguments(arguments);
-        } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
-            return;
-        }
-
-        List<String> prefixParameters = parameters.get("p");
-        List<String> resetSwitch = parameters.get("-reset");
-
+    private void prefixAction(final List<String> prefixParameters, final List<String> resetSwitch) throws SQLException {
         // --reset switch
         if (resetSwitch != null) {
             DataSource.execute(conn -> {
