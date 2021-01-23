@@ -70,7 +70,7 @@ public class Synapse {
      * Create a new Synapse that checks a Guild periodically.
      * @param guildId ID of Guild to check.
      */
-    public Synapse(@Nonnull String guildId) {
+    public Synapse(@Nonnull String guildId) throws SQLException {
         this.guildId = guildId;
         this.monitoredChannels = initializeMonitoredChannels(guildId);
 
@@ -152,12 +152,22 @@ public class Synapse {
     }
 
     @Nonnull
-    private static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(String guildId) {
+    private static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(String guildId) throws SQLException {
         Map<String, LinkedList<OffsetDateTime>> monChannels = new HashMap<>();
 
-        ArrayList<String> databaseMonitoredChannels = DataSource.queryStringArray("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
-                "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1", guildId);
+        ArrayList<String> databaseMonitoredChannels = DataSource.execute(conn -> {
+            ArrayList<String> channels = new ArrayList<>();
+            PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                    "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                    "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                channels.add(rs.getString(1));
+            }
+
+            return channels;
+        });
 
         Guild guild = Thermostat.thermo.getGuildById(guildId);
         if (guild == null || databaseMonitoredChannels == null) {
@@ -224,51 +234,54 @@ public class Synapse {
      * @param time    Int representing the adjustment time.
      */
     private static void putSlowmode(TextChannel channel, int time) {
-        // gets the maximum and minimum slowmode values
-        // from the database.
-        int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
-        int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+        DataSource.execute(conn -> {
+            // gets the maximum and minimum slowmode values
+            // from the database.
+            int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+            int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
 
-        int slowmodeToSet;
+            int slowmodeToSet;
 
-        try {
-            // gets the current slowmode in the channel
-            int slow = channel.getSlowmode();
+            try {
+                // gets the current slowmode in the channel
+                int slow = channel.getSlowmode();
 
-            // if slowmode and the added time exceed the max slowmode
-            if (slow + time > max && max > 0) {
-                // sets to max DATABASE slowmode value and exits
-                slowmodeToSet = max;
-            } else // if it's less than minimum DB value
-                // sets it to that minimum value
-                // otherwise just sets it
-                if (slow + time > TextChannel.MAX_SLOWMODE) {
-                    // sets to max DISCORD slowmode value
-                    slowmodeToSet = TextChannel.MAX_SLOWMODE;
-                } else slowmodeToSet = Math.max(slow + time, min);
+                // if slowmode and the added time exceed the max slowmode
+                if (slow + time > max && max > 0) {
+                    // sets to max DATABASE slowmode value and exits
+                    slowmodeToSet = max;
+                } else // if it's less than minimum DB value
+                    // sets it to that minimum value
+                    // otherwise just sets it
+                    if (slow + time > TextChannel.MAX_SLOWMODE) {
+                        // sets to max DISCORD slowmode value
+                        slowmodeToSet = TextChannel.MAX_SLOWMODE;
+                    } else slowmodeToSet = Math.max(slow + time, min);
 
-            channel.getManager().setSlowmode(slowmodeToSet)
-                    .queue(null, throwable ->
-                            lgr.info("Failed to set slowmode on channel "
-                                    + channel.getName() + " of Guild " +
-                                    channel.getGuild().getName() +
-                                    ". Cause:" + throwable.getMessage()
-                            )
-                    );
+                channel.getManager().setSlowmode(slowmodeToSet)
+                        .queue(null, throwable ->
+                                lgr.info("Failed to set slowmode on channel "
+                                        + channel.getName() + " of Guild " +
+                                        channel.getGuild().getName() +
+                                        ". Cause:" + throwable.getMessage()
+                                )
+                        );
 
-            // Adds +1 when slowmode turns on for the first time. (Charting)
-            if (slow == min && slowmodeToSet > min) {
-                DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?",
-                        channel.getId(), channel.getGuild().getId());
+                // Adds +1 when slowmode turns on for the first time. (Charting)
+                if (slow == min && slowmodeToSet > min) {
+                    DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?",
+                            channel.getId(), channel.getGuild().getId());
+                }
+
+            } catch (Exception ex) {
+                lgr.info("Failed to set slowmode on channel "
+                        + channel.getName() + " of Guild " +
+                        channel.getGuild().getName() +
+                        ". Cause:", ex
+                );
             }
-
-        } catch (Exception ex) {
-            lgr.info("Failed to set slowmode on channel "
-                    + channel.getName() + " of Guild " +
-                    channel.getGuild().getName() +
-                    ". Cause:", ex
-            );
-        }
+            return null;
+        });
     }
 
     /**
