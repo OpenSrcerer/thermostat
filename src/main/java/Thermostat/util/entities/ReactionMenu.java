@@ -68,8 +68,8 @@ public class ReactionMenu {
             Messages.deleteMessage(channel, messageId);
             MenuDispatcher.removeMenu(messageId);
 
-            if (this.getMenuType() == MenuType.UNMONITORALL) {
-                Messages.sendMessage(channel, GenericEmbeds.missedPrompt());
+            switch (this.getMenuType()) {
+                case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, GenericEmbeds.missedPrompt());
             }
         }, 200, TimeUnit.SECONDS);
     }
