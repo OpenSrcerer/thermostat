@@ -3,6 +3,8 @@ package thermostat.mySQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.util.GuildCache;
+import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.enumeration.DBActionType;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,7 +27,7 @@ public final class PreparedActions {
      * @param guildId Guild that is about to be added to DB.
      */
     public static void createGuild(Connection conn, String guildId) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement("INSERT INTO GUILDS (GUILD_ID, GUILD_ENABLE) VALUES (?, 0);");
+        PreparedStatement statement = conn.prepareStatement("INSERT INTO GUILDS (GUILD_ID) VALUES (?);");
         statement.setString(1, guildId);
         statement.executeUpdate();
     }
@@ -52,60 +54,58 @@ public final class PreparedActions {
     }
 
     /**
-     * Changes a channel's monitor value on the database.
-     *
-     * @param conn      Connection to use for monitoring.
+     * Changes a channel's filtered/monitored value on the database.
+     * @param conn      Connection to use for this action.
+     * @param value     The value to give to the field in the database.
      * @param guildId   The ID of the Guild that the channel resides in.
-     * @param channelId The Channel's id.
-     * @param monitor   Whether the channel should be initialized as
-     *                  monitored (inits with 1 or 0).
+     * @param channels  The ID of every channel.
      */
-    public static void createMonitor(Connection conn, String guildId, String channelId, int monitor) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement("SELECT * FROM CHANNELS JOIN GUILDS ON " +
-                "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) WHERE CHANNEL_ID = ?");
-        statement.setString(1, channelId);
-
-        if (!statement.executeQuery().next()) {
-            PreparedActions.createChannel(conn, guildId, channelId, monitor);
-            return;
-        }
-
-        statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
-                        "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
-                        "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
-                        "SET MONITORED = ? WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?" +
-                        " AND GUILDS.GUILD_ID = ?");
-        statement.setString(1, Integer.toString(monitor));
-        statement.setString(2, channelId);
-        statement.setString(3, guildId);
-
-        if (monitor == 1) {
-            GuildCache.getSynapse(guildId).addChannel(channelId);
-        } else {
-            GuildCache.getSynapse(guildId).removeChannel(channelId);
-        }
-    }
-
-    public static StringBuilder setFilter(Connection conn, String filtered, List<String> channels) throws SQLException {
+    public static StringBuilder modifyChannel(final Connection conn, final DBActionType action, final int value, final String guildId, final List<String> channels) throws SQLException {
         StringBuilder builder = new StringBuilder();
 
-        PreparedStatement statement;
+        PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
+                "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
+                "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
+                "SET " + action.sqlAction + " WHERE CHANNEL_SETTINGS.CHANNEL_ID IN (?)" +
+                " AND GUILDS.GUILD_ID = ?");
 
-            for (String channel : channels) {
-                if (filtered.equals("0")) {
-                    statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET FILTERED = ?, WEBHOOK_ID = 0, WEBHOOK_TOKEN = 0 WHERE CHANNEL_ID = ?");
-                    statement.setString(1, filtered);
-                    statement.setString(2, channel);
-                } else {
-                    statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET FILTERED = ? WHERE CHANNEL_ID = ?");
-                    statement.setString(1, filtered);
-                    statement.setString(2, channel);
-                }
-                statement.executeUpdate();
-                builder.append("<#").append(channel).append("> ");
+        statement.setInt(1, value);
+        statement.setString(2, MiscellaneousFunctions.toQueryString(channels));
+        statement.setString(3, guildId);
+
+        statement.executeUpdate();
+
+        for (String channel : channels) {
+            builder.append("<#").append(channel).append("> ");
+
+            // Add channel to synapse cache.
+            if (action.equals(DBActionType.MONITOR) && value == 1) {
+                GuildCache.getSynapse(guildId).addChannel(channel);
+            } else {
+                GuildCache.getSynapse(guildId).removeChannel(channel);
             }
+        }
 
         return builder;
+    }
+
+    /**
+     * Retrieve whether a channel is filtered or not from the database.
+     * @param conn Connection to apply this action to.
+     * @param guildId ID of guild where the channel is in.
+     * @param channelId ID of channel to check.
+     * @return A boolean that shows whether the channel is filtered.
+     * @throws SQLException Something went wrong while communicating with the database.
+     */
+    public static boolean isFiltered(final Connection conn, final String guildId, final String channelId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement("SELECT FILTERED FROM CHANNEL_SETTINGS JOIN CHANNELS ON " +
+                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
+                "AND CHANNELS.CHANNEL_ID = ?");
+        statement.setString(1, guildId);
+        statement.setString(2, channelId);
+        ResultSet rs = statement.executeQuery();
+        rs.next();
+        return rs.getBoolean(1);
     }
 
     /**
