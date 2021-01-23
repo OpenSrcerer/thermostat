@@ -8,7 +8,7 @@ import thermostat.Embeds.ErrorEmbeds;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.Embeds.DynamicEmbeds;
-import thermostat.util.Functions;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
 
@@ -34,7 +34,7 @@ public class GetMonitorCommand implements Command {
 
     public GetMonitorCommand(@Nonnull GuildMessageReceivedEvent data) {
         this.data = data;
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);

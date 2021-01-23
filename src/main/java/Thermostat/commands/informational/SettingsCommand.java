@@ -10,7 +10,7 @@ import thermostat.Embeds.HelpEmbeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.util.Functions;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static thermostat.util.ArgumentParser.parseArguments;
-import static thermostat.util.Functions.parseMention;
+import static thermostat.util.ArgumentParser.parseMention;
 
 /**
  * Command that when called, shows an embed
@@ -37,7 +37,7 @@ public class SettingsCommand implements Command {
     private final long commandId;
 
     public SettingsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
 
         try {

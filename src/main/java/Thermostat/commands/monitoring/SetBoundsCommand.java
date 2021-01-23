@@ -8,7 +8,8 @@ import thermostat.Embeds.ErrorEmbeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.util.Functions;
+import thermostat.util.ArgumentParser;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 import static thermostat.util.ArgumentParser.hasArguments;
 import static thermostat.util.ArgumentParser.parseArguments;
-import static thermostat.util.Functions.parseSlowmode;
+import static thermostat.util.ArgumentParser.parseSlowmode;
 
 @SuppressWarnings("ConstantConditions")
 public class SetBoundsCommand implements Command {
@@ -33,7 +34,7 @@ public class SetBoundsCommand implements Command {
     private final long commandId;
 
     public SetBoundsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
 
         try {
@@ -107,7 +108,7 @@ public class SetBoundsCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            Arguments results = parseChannelArgument(data.getChannel(), channels);
+            ArgumentParser.Arguments results = ArgumentParser.parseChannelArgument(data.getChannel(), channels);
             channels.clear();
 
             nonValid = results.nonValid;
@@ -182,7 +183,7 @@ public class SetBoundsCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }

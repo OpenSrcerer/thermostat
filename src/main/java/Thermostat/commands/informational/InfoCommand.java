@@ -10,7 +10,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.GenericEmbeds;
 import thermostat.Embeds.HelpEmbeds;
-import thermostat.util.Functions;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.MenuType;
@@ -41,9 +41,8 @@ public class InfoCommand implements Command {
     private final long commandId;
 
     public InfoCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = data;
         this.prefix = prefix;
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
         
         if (!arguments.isEmpty()) {
             argument = arguments.get(0);
@@ -51,9 +50,9 @@ public class InfoCommand implements Command {
             argument = "";
         }
 
-        if (validateEvent(data)) {
-            checkPermissionsAndQueue(this);
-        }
+        this.data = null;
+
+        checkPermissionsAndQueue(this);
     }
 
     /**

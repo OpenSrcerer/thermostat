@@ -1,8 +1,6 @@
 package thermostat.commands;
 
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Category;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import thermostat.Embeds.ErrorEmbeds;
@@ -12,11 +10,8 @@ import thermostat.dispatchers.CommandDispatcher;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 
-import static thermostat.util.Functions.parseMention;
 import static thermostat.util.PermissionComputer.getMissingPermissions;
 
 public interface Command extends Runnable {
@@ -50,6 +45,18 @@ public interface Command extends Runnable {
      * @return Command's ID
      */
     long getId();
+
+    /**
+     * Checks if GuildMessageReceivedEvent is valid.
+     * An event is valid when its Member object is not null.
+     * @return true is event is valid, false otherwise.
+     */
+    default boolean validateEvent(GuildMessageReceivedEvent event) {
+        if (event.getMember() == null)
+            return false;
+
+        return !event.getMember().getUser().isBot();
+    }
 
     /**
      * Adds a given Command to the Request Manager queue if
@@ -105,94 +112,5 @@ public interface Command extends Runnable {
                             }
                         }
                 );
-    }
-
-    /**
-     * A class that encapsulates returning values
-     * for parseChannelArgument();
-     */
-    class Arguments {
-        public final StringBuilder nonValid;
-        public final StringBuilder noText;
-        public final ArrayList<String> newArguments;
-
-        public Arguments(@Nonnull StringBuilder nonValid, @Nonnull StringBuilder noText, @Nonnull ArrayList<String> newArguments) {
-            this.nonValid = nonValid;
-            this.noText = noText;
-            this.newArguments = newArguments;
-        }
-    }
-
-    /**
-     * @param eventChannel Target guild
-     * @param rawChannels List of arguments
-     * @return a list of target channel IDs, along with
-     * two StringBuilders with arguments that were invalid.
-     */
-    @Nonnull default Arguments parseChannelArgument(TextChannel eventChannel, List<String> rawChannels) {
-        StringBuilder
-                // Channels that could not be found
-                nonValid = new StringBuilder(),
-                // Channels that are valid, but are not text channels
-                noText = new StringBuilder();
-        ArrayList<String> newArgs = new ArrayList<>();
-
-        // if no arguments were valid just add the event channel
-        // as the target channel
-        if (rawChannels.isEmpty()) {
-            newArgs.add(eventChannel.getId());
-        } else {
-            // parses arguments into usable IDs, checks if channels exist
-            // up to args.size(), last channel
-            for (int index = 0; index < rawChannels.size(); ++index) {
-
-                // The argument gets parsed. If it's a mention, it gets formatted
-                // into an ID through the parseMention() function.
-                // All letters are removed, thus the usage of the
-                // originalArgument string.
-                String originalArgument = rawChannels.get(index);
-                rawChannels.set(index, parseMention(rawChannels.get(index), "#"));
-
-                // Category holder for null checking
-                Category channelContainer = eventChannel.getGuild().getCategoryById(rawChannels.get(index));
-
-                if (rawChannels.get(index).isBlank()) {
-                    nonValid.append("\"").append(originalArgument).append("\" ");
-
-                } else if (channelContainer != null) {
-                    // firstly creates an immutable list of the channels in the category
-                    List<TextChannel> TextChannels = channelContainer.getTextChannels();
-                    // if list is empty add that it is in msg
-                    if (TextChannels.isEmpty()) {
-                        noText.append("<#").append(originalArgument).append("> ");
-                    }
-                    // iterates through every channel and adds its' id to the arg list
-                    for (TextChannel it : TextChannels) {
-                        newArgs.add(0, it.getId());
-                    }
-                }
-
-                // removes element from arguments if it's not a valid channel ID
-                else if (eventChannel.getGuild().getTextChannelById(rawChannels.get(index)) == null) {
-                    nonValid.append("\"").append(originalArgument).append("\" ");
-                } else {
-                    newArgs.add(rawChannels.get(index));
-                }
-            }
-        }
-
-        return new Arguments(nonValid, noText, newArgs);
-    }
-
-    /**
-     * Checks if GuildMessageReceivedEvent is valid.
-     * An event is valid when its Member object is not null.
-     * @return true is event is valid, false otherwise.
-     */
-    default boolean validateEvent(GuildMessageReceivedEvent event) {
-        if (event.getMember() == null)
-            return false;
-
-        return !event.getMember().getUser().isBot();
     }
 }

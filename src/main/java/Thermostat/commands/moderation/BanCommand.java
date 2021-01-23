@@ -3,7 +3,8 @@ package thermostat.commands.moderation;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.Functions;
+import thermostat.util.ArgumentParser;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
 
@@ -28,7 +29,7 @@ public class BanCommand implements Command {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
@@ -55,7 +56,7 @@ public class BanCommand implements Command {
         if (hasArguments(users)) {
             Calendar calendar = null;
             if (hasArguments(time)) {
-                calendar = Functions.parseTime(String.join("", time));
+                calendar = ArgumentParser.parseTime(String.join("", time));
             }
 
             banMembers(users, calendar);

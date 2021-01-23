@@ -127,9 +127,9 @@ public abstract class GenericEmbeds {
         return eb;
     }
 
-    public static EmbedBuilder allRemoved(String authorID, String authorAvatarURL) {
+    public static EmbedBuilder allRemoved(String authorID, String authorAvatarURL, String action) {
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("All channels are no longer being monitored.");
+        eb.setTitle("All channels are no longer being " + action + ".");
         eb.setTimestamp(Instant.now());
         eb.setFooter("Requested by " + authorID, authorAvatarURL);
         eb.setColor(0x00ff00);

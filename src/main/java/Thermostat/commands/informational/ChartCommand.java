@@ -12,7 +12,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.GenericEmbeds;
 import thermostat.util.ThermosCharts;
-import thermostat.util.Functions;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
 
@@ -38,7 +38,7 @@ public class ChartCommand implements Command {
     private final long commandId;
 
     public ChartCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
 
         try {
@@ -149,7 +149,7 @@ public class ChartCommand implements Command {
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }

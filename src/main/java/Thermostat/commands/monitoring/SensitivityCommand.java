@@ -8,7 +8,8 @@ import thermostat.Embeds.ErrorEmbeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.util.Functions;
+import thermostat.util.ArgumentParser;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
@@ -30,7 +31,7 @@ public class SensitivityCommand implements Command {
     private final long commandId;
 
     public SensitivityCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
 
         try {
@@ -94,7 +95,7 @@ public class SensitivityCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            Arguments results = parseChannelArgument(data.getChannel(), channels);
+            ArgumentParser.Arguments results = ArgumentParser.parseChannelArgument(data.getChannel(), channels);
             channels.clear();
 
             nonValid = results.nonValid;
@@ -115,7 +116,7 @@ public class SensitivityCommand implements Command {
             });
         } catch (Exception ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }

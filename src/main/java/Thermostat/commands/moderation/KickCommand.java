@@ -3,7 +3,7 @@ package thermostat.commands.moderation;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.Functions;
+import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
 
@@ -27,7 +27,7 @@ public class KickCommand implements Command {
         this.data = data;
         this.arguments = arguments;
         this.prefix = prefix;
-        this.commandId = Functions.getCommandId();
+        this.commandId = MiscellaneousFunctions.getCommandId();
 
         if (validateEvent(data)) {
             checkPermissionsAndQueue(this);
