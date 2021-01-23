@@ -5,16 +5,15 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import thermostat.Messages;
-import thermostat.commands.CommandTrigger;
-import thermostat.mySQL.PreparedActions;
-import thermostat.mySQL.DataSource;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.GenericEmbeds;
+import thermostat.Messages;
+import thermostat.commands.CommandTrigger;
+import thermostat.mySQL.DataSource;
+import thermostat.mySQL.PreparedActions;
 import thermostat.util.entities.InsufficientPermissionsException;
 import thermostat.util.entities.ReactionMenu;
+import thermostat.util.enumeration.DBActionType;
 import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
@@ -22,7 +21,9 @@ import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,10 +31,6 @@ import java.util.Map;
  * incoming events until a timer runs out.
  */
 public class MenuDispatcher extends ListenerAdapter {
-    /**
-     * Logger for MenuDispatcher.
-     */
-    private static final Logger lgr = LoggerFactory.getLogger(MenuDispatcher.class);
 
     /**
      * ReactionMenu cache that is accessed through the message ID.
@@ -88,10 +85,10 @@ public class MenuDispatcher extends ListenerAdapter {
 
         try {
             if (menu != null) {
-                if (menu.getMenuType() == MenuType.UNMONITORALL) {
-                    matchUnMonitorAllReaction(menu, event);
-                } else {
-                    matchInfoReaction(menu, event);
+                switch (menu.getMenuType()) {
+                    case UNMONITORALL -> matchUnMonitorAllReaction(menu, event);
+                    case UNFILTERALL -> matchUnFilterAllReaction(menu, event);
+                    case SELECTION -> matchInfoReaction(menu, event);
                 }
             }
         } catch (InsufficientPermissionsException ex) {
@@ -132,77 +129,101 @@ public class MenuDispatcher extends ListenerAdapter {
         Messages.clearReactions(event.getChannel(), event.getMessageId());
 
         switch (event.getReactionEmote().getEmoji()) {
-            case "🌡":
+            case "🌡" -> {
                 // Monitored Functions Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
                     Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getMonitorInfo(prefix).build());
                     reactionMenu.setMenuType(MenuType.MONITOR);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
-                break;
-            case "🔧":
+            }
+            case "🔧" -> {
                 // Informational Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
                     Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getUtilityInfo(prefix).build());
                     reactionMenu.setMenuType(MenuType.UTILITY);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
-                break;
-            case "ℹ":
+            }
+            case "ℹ" -> {
                 // Informational Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
                     Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getOtherInfo(prefix).build());
                     reactionMenu.setMenuType(MenuType.OTHER);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
-                break;
-            case "⬆":
+            }
+            case "⬆" -> {
                 // Exit Menu
                 if (reactionMenu.getMenuType() != MenuType.SELECTION) {
                     Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getInfoSelection().build());
                     reactionMenu.setMenuType(MenuType.SELECTION);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 }
-                break;
-            case "❌":
+            }
+            case "❌" -> {
                 // Close Menu
                 reactionMenu.invalidate();
                 Messages.deleteMessage(event.getChannel(), event.getMessageId());
-                break;
-            // This case is unreachable.
-            default:
-                break;
+            }
         }
     }
 
     public void matchUnMonitorAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws SQLException, InsufficientPermissionsException {
         if (
                 !reactionMenu.getOwnerId().equals(event.getUserId()) ||
-                reactionMenu.getMenuType() != MenuType.UNMONITORALL ||
                 !event.getReactionEmote().getEmoji().equals("☑")
         ) {
             return;
         }
 
-        if (
-
-                reactionMenu.getMenuType() == MenuType.UNMONITORALL &&
-                event.getReactionEmote().getEmoji().equals("☑")
-        ) {
+        if (event.getReactionEmote().getEmoji().equals("☑")) {
             DataSource.execute(conn -> {
-                    PreparedStatement pst =
-                            conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
+                List<String> channels = new ArrayList<>();
+                    PreparedStatement pst = conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
                             "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                             "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
                     pst.setString(1, event.getGuild().getId());
-
                     ResultSet rs = pst.executeQuery();
 
                     while (rs.next()) {
-                        PreparedActions.createMonitor(event.getGuild().getId(), rs.getString(1), 0);
+                        channels.add(rs.getString(1));
                     }
+
+                    PreparedActions.modifyChannel(conn, DBActionType.MONITOR, 0, event.getGuild().getId(), channels);
                     return null;
                 }
+            );
+
+            reactionMenu.invalidate();
+            Messages.deleteMessage(event.getChannel(), event.getMessageId());
+        }
+    }
+
+    public void matchUnFilterAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws SQLException, InsufficientPermissionsException {
+        if (
+                !reactionMenu.getOwnerId().equals(event.getUserId()) ||
+                !event.getReactionEmote().getEmoji().equals("☑")
+        ) {
+            return;
+        }
+
+        if (event.getReactionEmote().getEmoji().equals("☑")) {
+            DataSource.execute(conn -> {
+                List<String> channels = new ArrayList<>();
+                        PreparedStatement pst = conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
+                                        "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                                        "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1");
+                        pst.setString(1, event.getGuild().getId());
+
+                        ResultSet rs = pst.executeQuery();
+                        while (rs.next()) {
+                            channels.add(rs.getString(1));
+                        }
+
+                        PreparedActions.modifyChannel(conn, DBActionType.UNFILTER, 0, event.getGuild().getId(), channels);
+                        return null;
+                    }
             );
 
             reactionMenu.invalidate();
