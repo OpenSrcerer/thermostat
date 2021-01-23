@@ -1,42 +1,62 @@
 package thermostat.commands.utility;
 
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.Embeds.GenericEmbeds;
+import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.mySQL.PreparedActions;
+import thermostat.mySQL.DataSource;
 import thermostat.Embeds.DynamicEmbeds;
 import thermostat.Embeds.ErrorEmbeds;
 import thermostat.Embeds.HelpEmbeds;
-import thermostat.util.Functions;
+import thermostat.mySQL.PreparedActions;
+import thermostat.util.ArgumentParser;
+import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.DBActionType;
+import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
-import static thermostat.util.Functions.convertToBooleanInteger;
+import static thermostat.util.ArgumentParser.parseArguments;
 
 @SuppressWarnings("ConstantConditions")
 public class FilterCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(FilterCommand.class);
 
-    private final GuildMessageReceivedEvent data;
-    private List<String> arguments;
+    private GuildMessageReceivedEvent data;
+    private Map<String, List<String>> parameters;
     private final String prefix;
     private final long commandId;
 
     public FilterCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = data;
-        this.arguments = arguments;
+        this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
-        this.commandId = Functions.getCommandId();
+
+        try {
+            this.parameters = parseArguments(arguments);
+        } catch (Exception ex) {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            return;
+        }
 
         if (validateEvent(data)) {
-            checkPermissionsAndQueue(this);
+            this.data = data;
+        } else {
+            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            return;
         }
+
+        checkPermissionsAndQueue(this);
     }
 
     /**
@@ -44,54 +64,57 @@ public class FilterCommand implements Command {
      */
     @Override
     public void run() {
-        if (arguments.isEmpty()) {
+        final List<String> channels = parameters.get("c");
+        final List<String> onSwitch = parameters.get("-on");
+        final List<String> offSwitch = parameters.get("-off");
+        final List<String> allSwitch = parameters.get("-all");
+
+        if (offSwitch == null && onSwitch == null) {
             ResponseDispatcher.commandFailed(this,
-                    HelpEmbeds.helpFilter(prefix),
+                    HelpEmbeds.expandedHelpFilter(prefix),
                     "User did not provide arguments.");
+        } else if (allSwitch != null) {
+            unFilterAll();
         }
 
-        int filtered = convertToBooleanInteger(arguments.get(0));
-        if (filtered == -1) {
-            ResponseDispatcher.commandFailed(
-                    this, ErrorEmbeds.inputError("Please provide a correct action. Example: `" + prefix + "filter on`", this.commandId),
-                    "User did not provide a correct action."
-            );
-            return;
-        }
+        filterAction(channels, MiscellaneousFunctions.getMonitorValue(onSwitch, offSwitch));
+    }
 
-        String message;
-        arguments.remove(0);
-        StringBuilder nonValid,
+    private void filterAction(final List<String> channels, final int filter) {
+        DBActionType type = filter == 1 ? DBActionType.FILTER : DBActionType.UNFILTER;
+        final StringBuilder nonValid,
                 noText,
                 complete;
 
+        // #1 - Parse Target Channels
         {
-            Arguments results = parseChannelArgument(data.getChannel(), arguments);
+            ArgumentParser.Arguments results = ArgumentParser.parseChannelArgument(data.getChannel(), channels);
+            channels.clear();
 
             nonValid = results.nonValid;
             noText = results.noText;
-            arguments = results.newArguments;
+            channels.addAll(results.newArguments);
         }
-        // arguments now remains as a list of target channel(s).
 
-        // individually enable filtering in every channel
-        // after checking whether the channel exists in the db
+        // #2 - Filter Target Channels
         try {
-            complete = PreparedActions.setFilter(Integer.toString(filtered), arguments);
+            complete = DataSource.execute(conn -> PreparedActions.modifyChannel(conn, type, filter, data.getGuild().getId(), channels));
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), Functions.getCommandId()),
+                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }
 
-        // switch message depending on user action
-        if (filtered == 1) {
+        // #3 - Switch message depending on user action
+        final String message;
+        if (filter == 1) {
             message = "Enabled filtering on:";
         } else {
             message = "Disabled filtering on:";
         }
 
+        // #4 - Send the results embed to manager
         ResponseDispatcher.commandSucceeded(this,
                 DynamicEmbeds.dynamicEmbed(
                         Arrays.asList(
@@ -104,6 +127,31 @@ public class FilterCommand implements Command {
                         ),
                         data.getMember().getUser(), commandId
                 )
+        );
+    }
+
+    private void unFilterAll() {
+        // add reaction & start message listener
+        Consumer<Message> consumer = message -> {
+            try {
+                Messages.addReaction(message, "☑");
+                new ReactionMenu(
+                        MenuType.UNFILTERALL, data.getMember().getId(),
+                        message.getId(), data.getChannel()
+                );
+                ResponseDispatcher.commandSucceeded(this, GenericEmbeds.allRemoved(
+                        getEvent().getAuthor().getId(), getEvent().getAuthor().getAvatarUrl(),
+                        "filtered"
+                ));
+            } catch (Exception ex) {
+                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getLocalizedMessage(), this.getId()), ex);
+            }
+        };
+
+        Messages.sendMessage(
+                data.getChannel(),
+                GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()),
+                consumer
         );
     }
 
