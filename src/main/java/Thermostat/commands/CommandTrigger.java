@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.mySQL.DataSource;
+import thermostat.mySQL.PreparedActions;
 import thermostat.util.Constants;
-import thermostat.util.Functions;
 import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
 import thermostat.commands.informational.SettingsCommand;
@@ -55,15 +55,21 @@ public final class CommandTrigger extends ListenerAdapter {
         String prefix = getGuildPrefix(event.getGuild().getId());
         // gets given arguments and passes them to a list
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(event.getMessage().getContentRaw().split("\\s+")));
-        Functions.checkGuildAndChannelThenSet(event.getGuild().getId(), event.getChannel().getId());
 
-        // Cache Candidate
-        // Checks for whether the channel has the offensive-word filter activated.
-        if (DataSource.queryBool("SELECT FILTERED FROM CHANNEL_SETTINGS JOIN CHANNELS ON " +
-                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
-                "AND CHANNELS.CHANNEL_ID = ?",
-                Arrays.asList(event.getGuild().getId(), event.getChannel().getId()))) {
-            new WordFilter(event);
+        try {
+            DataSource.execute(conn -> {
+                DataSource.syncDatabase(conn, event.getGuild().getId(), event.getChannel().getId());
+
+                // Make sure to implement cache checks before communicating with the database.
+                // TBD - Bookmark
+                // Checks for whether the channel has the offensive-word filter activated.
+                if (PreparedActions.isFiltered(conn, event.getGuild().getId(), event.getChannel().getId())) {
+                    new WordFilter(event);
+                }
+
+                return null;
+            });
+        } catch (SQLException ignored) {
         }
 
         if (
@@ -162,7 +168,7 @@ public final class CommandTrigger extends ListenerAdapter {
                         arguments.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias2())
         ) {
             arguments.remove(0);
-            new VoteCommand(event, arguments, prefix);
+            new VoteCommand(event, prefix);
         }
     }
 
