@@ -6,15 +6,21 @@ import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import thermostat.mySQL.PreparedActions;
 import thermostat.util.GuildCache;
 import thermostat.util.entities.Synapse;
 import thermostat.util.enumeration.SynapseState;
-import thermostat.mySQL.Delete;
 
 /**
  * Manages all JDA Events that relate to Synapses.
  */
 public class SynapseEvents extends ListenerAdapter {
+    /**
+     * Logger for SynapseEvents.
+     */
+    private static final Logger lgr = LoggerFactory.getLogger(SynapseEvents.class);
 
     /**
      * Lazy-loader for Synapses that is tied to a GuildMessageReceivedEvent.
@@ -28,7 +34,12 @@ public class SynapseEvents extends ListenerAdapter {
 
         // Create a new Synapse for the guild where the message was sent.
         if (synapse == null) {
-            synapse = GuildCache.setSynapse(event.getGuild().getId());
+            try {
+                synapse = GuildCache.setSynapse(event.getGuild().getId());
+            } catch (Exception ex) {
+                lgr.info("Failure in creating a new Synapse for Guild " + event.getGuild().getId() + ".", ex);
+                return;
+            }
         }
 
         // Re-activate Synapse if it was disabled due to inactivity.
@@ -55,7 +66,7 @@ public class SynapseEvents extends ListenerAdapter {
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
         GuildCache.expungeGuild(event.getGuild().getId());
-        Delete.Guild(event.getGuild().getId());
+        PreparedActions.deleteGuild(event.getGuild().getId());
     }
 
     /**

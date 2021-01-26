@@ -91,7 +91,7 @@ public class GuildCache {
      * @param guildId ID of guild.
      * @return Newly set synapse.
      */
-    public static Synapse setSynapse(String guildId) throws RuntimeException {
+    public static Synapse setSynapse(String guildId) throws RuntimeException, SQLException {
         CachedGuild guild = cache.get(guildId);
         if (guild != null) {
             return guild.setSynapse(guildId);

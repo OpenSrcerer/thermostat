@@ -10,6 +10,7 @@ import thermostat.util.entities.Synapse;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 
 public class SynapseMonitor implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(SynapseMonitor.class);
@@ -37,7 +38,13 @@ public class SynapseMonitor implements Command {
 
     @Override
     public void run() {
-        synapse.monitorChannels(lgr);
+        try {
+            synapse.monitorChannels(lgr);
+        } catch (SQLException ex) {
+            lgr.info("Failure in monitoring Guild " + synapse.getGuildId() + ".", ex);
+            return;
+        }
+
         lgr.info(this.toString());
     }
 

@@ -8,10 +8,12 @@ import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.commands.monitoring.SynapseMonitor;
 import thermostat.mySQL.DataSource;
-import thermostat.mySQL.Delete;
+import thermostat.mySQL.PreparedActions;
 import thermostat.util.enumeration.SynapseState;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -139,7 +141,7 @@ public class Synapse {
      * @param channelId ID of channel that the message belongs to.
      * @param messageTime Creation time of message.
      */
-    public synchronized void addMessage(String channelId, OffsetDateTime messageTime) {
+    public synchronized void addMessage(final String channelId, final OffsetDateTime messageTime) {
         if (monitoredChannels.get(channelId) == null) {
             return;
         }
@@ -151,39 +153,45 @@ public class Synapse {
         }
     }
 
+    /**
+     * Initializes monitored channels Map for a Synapse.
+     * @param guildId ID of Synapse's guild.
+     * @return A monitor Map for a Synapse.
+     * @throws SQLException If something went wrong while connecting to the database.
+     */
     @Nonnull
-    private static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(String guildId) throws SQLException {
+    private static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(final String guildId) throws SQLException {
         Map<String, LinkedList<OffsetDateTime>> monChannels = new HashMap<>();
 
-        ArrayList<String> databaseMonitoredChannels = DataSource.execute(conn -> {
-            ArrayList<String> channels = new ArrayList<>();
-            PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
-                    "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                    "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
-            ResultSet rs = statement.executeQuery();
+         DataSource.execute(conn -> {
+             ArrayList<String> databaseMonitoredChannels = new ArrayList<>();
+             PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                     "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                     "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
+             ResultSet rs = statement.executeQuery();
 
-            while (rs.next()) {
-                channels.add(rs.getString(1));
-            }
+             while (rs.next()) {
+                 databaseMonitoredChannels.add(rs.getString(1));
+             }
 
-            return channels;
+             Guild guild = Thermostat.thermo.getGuildById(guildId);
+             if (guild == null || databaseMonitoredChannels.isEmpty()) {
+                 return null;
+             }
+
+             // Get all channel ids from list of text channels
+             List<String> channelsInGuild = guild.getTextChannels().stream().map(ISnowflake::getId).collect(Collectors.toList());
+
+             for (final String channel : databaseMonitoredChannels) {
+                 if (channelsInGuild.contains(channel)) {
+                     monChannels.put(channel, new LinkedList<>());
+                 } else {
+                     PreparedActions.deleteChannel(conn, guildId, channel);
+                 }
+             }
+
+             return null;
         });
-
-        Guild guild = Thermostat.thermo.getGuildById(guildId);
-        if (guild == null || databaseMonitoredChannels == null) {
-            return new HashMap<>();
-        }
-
-        // Get all channel ids from list of text channels
-        List<String> channelsInGuild = guild.getTextChannels().stream().map(ISnowflake::getId).collect(Collectors.toList());
-
-        for (String channel : databaseMonitoredChannels) {
-            if (channelsInGuild.contains(channel)) {
-                monChannels.put(channel, new LinkedList<>());
-            } else {
-                Delete.Channel(guildId, channel);
-            }
-        }
 
         return monChannels;
     }
@@ -194,8 +202,7 @@ public class Synapse {
      * Default: 10
      */
     public void setMessageCachingSize() throws SQLException {
-        this.messageCachingSize = DataSource.execute(conn ->
-        {
+        this.messageCachingSize = DataSource.execute(conn -> {
             PreparedStatement statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
             statement.setString(1, guildId);
             ResultSet rs = statement.executeQuery();
@@ -228,100 +235,88 @@ public class Synapse {
     }
 
     /**
-     * A function that adjusts the slowmode for the given channel.
+     * Adjusts the slowmode for the given channel.
      *
      * @param channel TextChannel that will have the slowmode adjusted.
      * @param time    Int representing the adjustment time.
      */
-    private static void putSlowmode(TextChannel channel, int time) {
-        DataSource.execute(conn -> {
-            // gets the maximum and minimum slowmode values
-            // from the database.
-            int min = DataSource.queryInt("SELECT MIN_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
-            int max = DataSource.queryInt("SELECT MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+    private static void putSlowmode(@Nullable final Connection conn, final TextChannel channel, final int time, final int min, final int max) throws SQLException {
+        int slowmodeToSet;
 
-            int slowmodeToSet;
+        // gets the current slowmode in the channel
+        int slow = channel.getSlowmode();
 
-            try {
-                // gets the current slowmode in the channel
-                int slow = channel.getSlowmode();
+        // if slowmode and the added time exceed the max slowmode
+        if (slow + time > max && max > 0) {
+            // Set slowmode to the maximum value taken from the database.
+            slowmodeToSet = max;
+        } else if (slow + time > TextChannel.MAX_SLOWMODE) {
+            // sets to max DISCORD slowmode value
+            slowmodeToSet = TextChannel.MAX_SLOWMODE;
+        } else {
+            slowmodeToSet = Math.max(slow + time, min);
+        }
 
-                // if slowmode and the added time exceed the max slowmode
-                if (slow + time > max && max > 0) {
-                    // sets to max DATABASE slowmode value and exits
-                    slowmodeToSet = max;
-                } else // if it's less than minimum DB value
-                    // sets it to that minimum value
-                    // otherwise just sets it
-                    if (slow + time > TextChannel.MAX_SLOWMODE) {
-                        // sets to max DISCORD slowmode value
-                        slowmodeToSet = TextChannel.MAX_SLOWMODE;
-                    } else slowmodeToSet = Math.max(slow + time, min);
+        channel.getManager().setSlowmode(slowmodeToSet).queue();
 
-                channel.getManager().setSlowmode(slowmodeToSet)
-                        .queue(null, throwable ->
-                                lgr.info("Failed to set slowmode on channel "
-                                        + channel.getName() + " of Guild " +
-                                        channel.getGuild().getName() +
-                                        ". Cause:" + throwable.getMessage()
-                                )
-                        );
-
-                // Adds +1 when slowmode turns on for the first time. (Charting)
-                if (slow == min && slowmodeToSet > min) {
-                    DataSource.update("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?",
-                            channel.getId(), channel.getGuild().getId());
-                }
-
-            } catch (Exception ex) {
-                lgr.info("Failed to set slowmode on channel "
-                        + channel.getName() + " of Guild " +
-                        channel.getGuild().getName() +
-                        ". Cause:", ex
-                );
-            }
-            return null;
-        });
+        // Adds +1 when slowmode turns on for the first time. (Charting)
+        if (slow == min && slowmodeToSet > min && conn != null) {
+            PreparedStatement statement = conn.prepareStatement("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?");
+            statement.setString(1, channel.getId());
+            statement.setString(2, channel.getGuild().getId());
+            statement.executeUpdate();
+        }
     }
 
     /**
-     * Calculates the slowmode for a certain channel. See function above.
-     *
+     * Calculates the slowmode for a certain channel.
      * @param channel          The channel that will have the slowmode adjusted.
      * @param averageDelay     The average delay between the past 25 messages.
      * @param firstMessageTime How long it has passed since the last message was sent.
      */
-    private static void slowmodeSwitch(TextChannel channel, Long averageDelay, Long firstMessageTime) {
-        if (channel == null) {
-            return;
-        }
+    private static void slowmodeSwitch(@Nullable final TextChannel channel, final long averageDelay, final long firstMessageTime) throws SQLException {
+        DataSource.execute(conn -> {
+            if (channel == null) {
+                return null;
+            }
 
-        float offset = DataSource.querySens("SELECT SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?", channel.getId());
+            // gets the maximum and minimum slowmode values
+            // from the database.
+            PreparedStatement statement = conn.prepareStatement("SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
+            statement.setString(1, channel.getId());
+            ResultSet rs = statement.executeQuery();
+            rs.next();
 
-        // accounting for each delay of the messages
-        // this function picks an appropriate slowmode
-        // adjustment number for each case.
-        if ((averageDelay <= 100 * offset) && (firstMessageTime > 0 && firstMessageTime <= 1000)) {
-            putSlowmode(channel, 20);
-        } else if ((averageDelay <= 250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
-            putSlowmode(channel, 10);
-        } else if ((averageDelay <= 500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
-            putSlowmode(channel, 6);
-        } else if ((averageDelay <= 750 * offset) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
-            putSlowmode(channel, 4);
-        } else if ((averageDelay <= 1000 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 2);
-        } else if ((averageDelay <= 1250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 1);
-        } else if ((averageDelay <= 1500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
-            putSlowmode(channel, 0);
-        } else if ((firstMessageTime > 0 && firstMessageTime <= 10000) || (averageDelay < 2000 && averageDelay >= 1500)) {
-            putSlowmode(channel, -1);
-        } else if ((firstMessageTime > 10000 && firstMessageTime <= 30000) || (averageDelay < 2500 && averageDelay >= 2000)) {
-            putSlowmode(channel, -2);
-        } else if ((firstMessageTime > 30000 && firstMessageTime <= 60000) || averageDelay >= 2500) {
-            putSlowmode(channel, -4);
-        }
+            int min = rs.getInt(1);
+            int max = rs.getInt(2);
+            float offset = rs.getFloat(3);
+
+            // accounting for each delay of the messages
+            // this function picks an appropriate slowmode
+            // adjustment number for each case.
+            if ((averageDelay <= 100 * offset) && (firstMessageTime > 0 && firstMessageTime <= 1000)) {
+                putSlowmode(conn, channel, 20, min, max);
+            } else if ((averageDelay <= 250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
+                putSlowmode(conn, channel, 10, min, max);
+            } else if ((averageDelay <= 500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
+                putSlowmode(conn, channel, 6, min, max);
+            } else if ((averageDelay <= 750 * offset) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
+                putSlowmode(conn, channel, 4, min, max);
+            } else if ((averageDelay <= 1000 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+                putSlowmode(conn, channel, 2, min, max);
+            } else if ((averageDelay <= 1250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+                putSlowmode(conn, channel, 1, min, max);
+            } else if ((averageDelay <= 1500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+                putSlowmode(conn, channel, 0, min, max);
+            } else if ((firstMessageTime > 0 && firstMessageTime <= 10000) || (averageDelay < 2000 && averageDelay >= 1500)) {
+                putSlowmode(conn, channel, -1, min, max);
+            } else if ((firstMessageTime > 10000 && firstMessageTime <= 30000) || (averageDelay < 2500 && averageDelay >= 2000)) {
+                putSlowmode(conn, channel, -2, min, max);
+            } else if ((firstMessageTime > 30000 && firstMessageTime <= 60000) || averageDelay >= 2500) {
+                putSlowmode(conn, channel, -4, min, max);
+            }
+            return null;
+        });
     }
 
     /**
@@ -351,7 +346,7 @@ public class Synapse {
      * every message.
      * @param lgr Logger to use for logging.
      */
-    public void monitorChannels(Logger lgr) {
+    public void monitorChannels(Logger lgr) throws SQLException {
         OffsetDateTime timeNow = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(millis);
         Guild synapseGuild = Thermostat.thermo.getGuildById(this.getGuildId());
         final StringBuilder adjusted = new StringBuilder(), notAdjusted = new StringBuilder();
@@ -376,7 +371,7 @@ public class Synapse {
             }
 
             if (millis.between(channelData.getValue().get(0), timeNow) > 60000) {
-                putSlowmode(channel, Integer.MIN_VALUE);
+                putSlowmode(null, channel, Integer.MIN_VALUE, 0, 0);
             } else {
                 slowmodeSwitch(
                         channel,

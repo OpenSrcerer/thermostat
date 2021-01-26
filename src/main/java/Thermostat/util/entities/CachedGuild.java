@@ -1,6 +1,7 @@
 package thermostat.util.entities;
 
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 
 /**
  * Cache object. Struct-like, merely for storage.
@@ -38,7 +39,7 @@ public class CachedGuild {
      * @param guildId Guild's ID.
      * @return Newly set synapse.
      */
-    public Synapse setSynapse(String guildId) {
+    public Synapse setSynapse(String guildId) throws SQLException {
         this.synapse = new Synapse(guildId);
         return this.synapse;
     }
