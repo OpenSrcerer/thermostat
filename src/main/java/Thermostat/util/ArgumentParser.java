@@ -44,7 +44,7 @@ public class ArgumentParser {
             } else if (options != null) {
                 options.add(arg);
             } else {
-                // throw new IllegalArgumentException("Illegal argument usage: " + arg + ".");
+                throw new IllegalArgumentException("Illegal argument usage: " + arg + ".");
             }
         }
 
