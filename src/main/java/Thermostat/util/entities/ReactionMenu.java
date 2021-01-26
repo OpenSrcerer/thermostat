@@ -5,7 +5,7 @@ import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.util.enumeration.MenuType;
-import thermostat.Embeds.GenericEmbeds;
+import thermostat.embeds.GenericEmbeds;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.ScheduledFuture;

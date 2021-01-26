@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds.ErrorEmbeds;
+import thermostat.embeds.ErrorEmbeds;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;

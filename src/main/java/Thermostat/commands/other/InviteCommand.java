@@ -3,7 +3,7 @@ package thermostat.commands.other;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Embeds.GenericEmbeds;
+import thermostat.embeds.GenericEmbeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.util.MiscellaneousFunctions;

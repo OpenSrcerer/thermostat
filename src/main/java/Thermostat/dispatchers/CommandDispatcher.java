@@ -3,7 +3,7 @@ package thermostat.dispatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.Embeds.ErrorEmbeds;
+import thermostat.embeds.ErrorEmbeds;
 import thermostat.commands.Command;
 
 import javax.annotation.Nonnull;
@@ -33,21 +33,15 @@ public final class CommandDispatcher {
 
             while (true) {
                 try {
-                    if (backOff) {
-                        Thread.sleep (1000);
-                        backOff = false;
-                    }
-
                     if (Thread.interrupted()) {
                         return;
                     }
 
                     commands.take().run();
                 } catch (Exception ex) {
-                    lgr.error("Thread interrupted while waiting for request.", ex);
-                    backOff = true;
+                    lgr.error(Thread.currentThread().getName() + " encountered an exception:", ex);
                 } catch (Error err) {
-                    lgr.error("Java error thrown!", err);
+                    lgr.error("An Error was thrown. Shutting down Thermostat. Details:", err);
                     Thermostat.shutdownThermostat();
                 }
             }

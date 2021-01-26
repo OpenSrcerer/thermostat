@@ -5,8 +5,8 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
-import thermostat.Embeds.ErrorEmbeds;
-import thermostat.Embeds.GenericEmbeds;
+import thermostat.embeds.ErrorEmbeds;
+import thermostat.embeds.GenericEmbeds;
 import thermostat.Messages;
 import thermostat.commands.CommandTrigger;
 import thermostat.mySQL.DataSource;
