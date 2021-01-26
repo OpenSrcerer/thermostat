@@ -13,7 +13,7 @@ public enum DBActionType {
     /**
      * A String that contains the Action that the enum represents.
      */
-    public String sqlAction;
+    public final String sqlAction;
 
     DBActionType(final @Nonnull String sqlAction) {
         this.sqlAction = sqlAction;
