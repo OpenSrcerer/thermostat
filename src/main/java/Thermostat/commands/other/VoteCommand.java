@@ -3,7 +3,7 @@ package thermostat.commands.other;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.GenericEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.commands.informational.InfoCommand;
 import thermostat.dispatchers.ResponseDispatcher;
@@ -39,7 +39,7 @@ public class VoteCommand implements Command {
      */
     @Override
     public void run() {
-        ResponseDispatcher.commandSucceeded(this, GenericEmbeds.getVote(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()));
+        ResponseDispatcher.commandSucceeded(this, Embeds.getVote(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()));
     }
 
     @Override

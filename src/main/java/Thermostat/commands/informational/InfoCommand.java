@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.embeds.ErrorEmbeds;
-import thermostat.embeds.GenericEmbeds;
-import thermostat.embeds.HelpEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
@@ -64,31 +62,31 @@ public class InfoCommand implements Command {
             EmbedBuilder builder;
 
             if (argument.equalsIgnoreCase(CommandType.CHART.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpChart(prefix);
+                builder = Embeds.expandedHelpChart(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.GETMONITOR.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpGetMonitor(prefix);
+                builder = Embeds.expandedHelpGetMonitor(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.SETTINGS.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpSettings(prefix);
+                builder = Embeds.expandedHelpSettings(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.MONITOR.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpMonitor(prefix);
+                builder = Embeds.expandedHelpMonitor(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.SENSITIVITY.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpSensitivity(prefix);
+                builder = Embeds.expandedHelpSensitivity(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.SETBOUNDS.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpSetBounds(prefix);
+                builder = Embeds.expandedHelpSetBounds(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.INVITE.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpInvite(prefix);
+                builder = Embeds.expandedHelpInvite(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.PREFIX.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpPrefix(prefix);
+                builder = Embeds.expandedHelpPrefix(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.VOTE.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpVote(prefix);
+                builder = Embeds.expandedHelpVote(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.FILTER.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpFilter(prefix);
+                builder = Embeds.expandedHelpFilter(prefix);
             } else if (argument.equalsIgnoreCase(CommandType.INFO.getAlias1())) {
-                builder = HelpEmbeds.expandedHelpInfo(prefix);
+                builder = Embeds.expandedHelpInfo(prefix);
             } else {
                 ResponseDispatcher.commandFailed(
                         this,
-                        ErrorEmbeds.inputError(
+                        Embeds.inputError(
                                 "Invalid command was given. Please insert a valid command name as an argument.",
                                 this.commandId),
                         "User failed to provide a proper command for help."
@@ -103,7 +101,7 @@ public class InfoCommand implements Command {
     }
 
     private void sendGenericInfoMenu() {
-        Messages.sendMessage(data.getChannel(), GenericEmbeds.getInfoSelection(),
+        Messages.sendMessage(data.getChannel(), Embeds.getInfoSelection(),
         message -> {
             try {
                 Messages.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
@@ -113,7 +111,7 @@ public class InfoCommand implements Command {
                 );
                 ResponseDispatcher.commandSucceeded(this, null);
             } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getCause().toString(), this.getId()), ex);
+                ResponseDispatcher.commandFailed(this, Embeds.error(ex.getCause().toString(), this.getId()), ex);
             }
         });
     }

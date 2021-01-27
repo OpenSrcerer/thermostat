@@ -3,7 +3,7 @@ package thermostat.dispatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.embeds.ErrorEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 
 import javax.annotation.Nonnull;
@@ -63,7 +63,7 @@ public final class CommandDispatcher {
             lgr.error("Request queue was interrupted!");
             ResponseDispatcher.commandFailed(
                     command,
-                    ErrorEmbeds.error(ex.getCause().toString(), command.getId()),
+                    Embeds.error(ex.getCause().toString(), command.getId()),
                     ex
             );
         }

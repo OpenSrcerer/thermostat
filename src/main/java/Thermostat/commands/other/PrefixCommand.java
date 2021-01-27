@@ -6,9 +6,8 @@ import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
 import thermostat.commands.CommandTrigger;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
-import thermostat.embeds.ErrorEmbeds;
-import thermostat.embeds.GenericEmbeds;
 import thermostat.util.Constants;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
@@ -39,14 +38,14 @@ public class PrefixCommand implements Command {
         try {
             this.parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 
         if (validateEvent(data)) {
             this.data = data;
         } else {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
             return;
         }
 
@@ -65,7 +64,7 @@ public class PrefixCommand implements Command {
             prefixAction(prefixParameters, resetSwitch);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), "Please try again.", this.commandId),
+                    Embeds.error(ex.getLocalizedMessage(), "Please try again.", this.commandId),
                     "SQL Error thrown while issuing prefix change."
             );
         }
@@ -84,7 +83,7 @@ public class PrefixCommand implements Command {
                 return null;
             });
             CommandTrigger.updateEntry(data.getGuild().getId(), Constants.DEFAULT_PREFIX);
-            ResponseDispatcher.commandSucceeded(this, GenericEmbeds.resetPrefix());
+            ResponseDispatcher.commandSucceeded(this, Embeds.resetPrefix());
             return;
         }
 
@@ -101,7 +100,7 @@ public class PrefixCommand implements Command {
                 });
                 CommandTrigger.updateEntry(data.getGuild().getId(), newPrefix);
                 ResponseDispatcher.commandSucceeded(
-                        this, GenericEmbeds.setPrefix(
+                        this, Embeds.setPrefix(
                                 data.getMember().getUser().getAsTag(),
                                 data.getMember().getUser().getAvatarUrl(),
                                 newPrefix
@@ -109,7 +108,7 @@ public class PrefixCommand implements Command {
                 );
             } else if (newPrefix.equalsIgnoreCase(prefix)) {
                 ResponseDispatcher.commandFailed(this,
-                        GenericEmbeds.samePrefix(prefix),
+                        Embeds.samePrefix(prefix),
                         "User inserted the same prefix."
                 );
             } else {
@@ -120,7 +119,7 @@ public class PrefixCommand implements Command {
             }
         } else {
             ResponseDispatcher.commandSucceeded(
-                    this, GenericEmbeds.getPrefix(
+                    this, Embeds.getPrefix(
                             data.getMember().getUser().getAsTag(),
                             data.getMember().getUser().getAvatarUrl(),
                             prefix, data.getGuild().getName()

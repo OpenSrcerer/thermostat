@@ -4,8 +4,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.MenuDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.util.enumeration.MenuType;
-import thermostat.embeds.GenericEmbeds;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.ScheduledFuture;
@@ -69,7 +69,7 @@ public class ReactionMenu {
             MenuDispatcher.removeMenu(messageId);
 
             switch (this.getMenuType()) {
-                case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, GenericEmbeds.missedPrompt());
+                case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, Embeds.missedPrompt());
             }
         }, 200, TimeUnit.SECONDS);
     }

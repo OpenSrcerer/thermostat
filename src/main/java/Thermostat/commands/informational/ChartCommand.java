@@ -6,11 +6,9 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.HelpEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.embeds.ErrorEmbeds;
-import thermostat.embeds.GenericEmbeds;
 import thermostat.util.ThermosCharts;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
@@ -44,14 +42,14 @@ public class ChartCommand implements Command {
         try {
             this.parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 
         if (validateEvent(data)) {
             this.data = data;
         } else {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
             return;
         }
 
@@ -72,7 +70,7 @@ public class ChartCommand implements Command {
         // prefix removed (sends info msg)
         if (!hasArguments(chartType)) {
             ResponseDispatcher.commandFailed(this,
-                    HelpEmbeds.expandedHelpChart(prefix),
+                    Embeds.expandedHelpChart(prefix),
                     "User did not provide arguments."
             );
             return;
@@ -81,7 +79,7 @@ public class ChartCommand implements Command {
         switch (chartType.get(0).toLowerCase()) {
             case "slowfreq" -> sendFrequencyChart();
             default -> ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("Chart \"" + chartType.get(0) + "\" does not exist.", commandId),
+                    Embeds.inputError("Chart \"" + chartType.get(0) + "\" does not exist.", commandId),
                     "User provided an incorrect chart type."
             );
         }
@@ -105,7 +103,7 @@ public class ChartCommand implements Command {
             });
         } catch (Exception ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), commandId),
+                    Embeds.error(ex.getLocalizedMessage(), commandId),
                     "Exception thrown while querying slowmode data.");
             return;
         }
@@ -114,7 +112,7 @@ public class ChartCommand implements Command {
         // in this guild.
         if (top5slowmode.isEmpty()) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
+                    Embeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
                             "Get some channels slowmoded with `th!monitor`.", commandId),
                     "Channels were never slowmoded in this guild.");
             return;
@@ -149,14 +147,14 @@ public class ChartCommand implements Command {
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
+                    Embeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }
 
         //noinspection ConstantConditions
         ResponseDispatcher.commandSucceeded(this,
-                GenericEmbeds.chartHolder(data.getMember().getUser().getAsTag(),
+                Embeds.chartHolder(data.getMember().getUser().getAsTag(),
                         data.getMember().getUser().getAvatarUrl(),
                         data.getGuild().getName()
                 ), inputStream

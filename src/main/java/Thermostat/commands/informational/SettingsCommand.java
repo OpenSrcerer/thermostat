@@ -4,9 +4,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.ErrorEmbeds;
-import thermostat.embeds.GenericEmbeds;
-import thermostat.embeds.HelpEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
@@ -43,14 +41,14 @@ public class SettingsCommand implements Command {
         try {
             this.parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 
         if (validateEvent(data)) {
             this.data = data;
         } else {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
             return;
         }
 
@@ -69,7 +67,7 @@ public class SettingsCommand implements Command {
 
         if (channels == null) {
             ResponseDispatcher.commandFailed(this,
-                    HelpEmbeds.expandedHelpSettings(prefix),
+                    Embeds.expandedHelpSettings(prefix),
                     "User did not provide a bound argument.");
             return;
         }
@@ -84,7 +82,7 @@ public class SettingsCommand implements Command {
             // if channel doesn't exist, show error msg
             if (channelId.isEmpty() || data.getGuild().getTextChannelById(channelId) == null) {
                 ResponseDispatcher.commandFailed(this,
-                        ErrorEmbeds.inputError("Channel \"" + channels.get(0) + "\" was not found.", commandId),
+                        Embeds.inputError("Channel \"" + channels.get(0) + "\" was not found.", commandId),
                         "Channel that user provided wasn't found.");
                 return;
             }
@@ -122,7 +120,7 @@ public class SettingsCommand implements Command {
 
                 if (settingsChannel != null) {
                     ResponseDispatcher.commandSucceeded(this,
-                            GenericEmbeds.channelSettings(settingsChannel.getName(),
+                            Embeds.channelSettings(settingsChannel.getName(),
                                     data.getMember().getUser().getAsTag(),
                                     data.getMember().getUser().getAvatarUrl(),
                                     min,
@@ -138,7 +136,7 @@ public class SettingsCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), commandId),
+                    Embeds.error(ex.getLocalizedMessage(), commandId),
                     ex);
         }
     }

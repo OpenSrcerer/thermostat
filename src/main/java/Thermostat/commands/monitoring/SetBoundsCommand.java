@@ -3,8 +3,7 @@ package thermostat.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.DynamicEmbeds;
-import thermostat.embeds.ErrorEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
@@ -40,14 +39,14 @@ public class SetBoundsCommand implements Command {
         try {
             this.parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 
         if (validateEvent(data)) {
             this.data = data;
         } else {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
             return;
         }
 
@@ -71,13 +70,13 @@ public class SetBoundsCommand implements Command {
 
         if (minSwitch == null && maxSwitch == null) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("You need to insert a --min/--max switch.", this.commandId),
+                    Embeds.inputError("You need to insert a --min/--max switch.", this.commandId),
                     "User did not provide any on/off arguments.");
         }
 
         if (!hasArguments(boundParameter)) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("You need to insert a bound argument.", this.commandId),
+                    Embeds.inputError("You need to insert a bound argument.", this.commandId),
                     "User did not provide a bound argument.");
         }
 
@@ -91,7 +90,7 @@ public class SetBoundsCommand implements Command {
             }
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("Slowmode value \"" + boundParameter.get(0) + "\" was incorrect.", commandId),
+                    Embeds.inputError("Slowmode value \"" + boundParameter.get(0) + "\" was incorrect.", commandId),
                     "User provided an incorrect sensitivity value.");
             return;
         }
@@ -183,14 +182,14 @@ public class SetBoundsCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
+                    Embeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }
 
         // #3 - Send the results embed to dispatch
         ResponseDispatcher.commandSucceeded(this,
-                DynamicEmbeds.dynamicEmbed(
+                Embeds.dynamicEmbed(
                         Arrays.asList(
                                 "Channels that had both slowmode bounds changed to " + bound + ":",
                                 bothComplete.toString(),

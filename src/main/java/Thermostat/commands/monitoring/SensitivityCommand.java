@@ -3,8 +3,7 @@ package thermostat.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.DynamicEmbeds;
-import thermostat.embeds.ErrorEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
@@ -37,14 +36,14 @@ public class SensitivityCommand implements Command {
         try {
             this.parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 
         if (validateEvent(data)) {
             this.data = data;
         } else {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
             return;
         }
 
@@ -65,7 +64,7 @@ public class SensitivityCommand implements Command {
         // Check that sensitivity has arguments
         if (!hasArguments(sensitivity)) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("Please insert a sensitivity value.", commandId),
+                    Embeds.inputError("Please insert a sensitivity value.", commandId),
                     "User did not provide arguments.");
             return;
         }
@@ -79,7 +78,7 @@ public class SensitivityCommand implements Command {
             }
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.inputError("Sensitivity value must be between -10 and 10 (inclusive).", commandId),
+                    Embeds.inputError("Sensitivity value must be between -10 and 10 (inclusive).", commandId),
                     "User provided an incorrect sensitivity value.");
             return;
         }
@@ -116,14 +115,14 @@ public class SensitivityCommand implements Command {
             });
         } catch (Exception ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
+                    Embeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
                     ex);
             return;
         }
 
         // #3 - Send embed results to user
         ResponseDispatcher.commandSucceeded(this,
-                DynamicEmbeds.dynamicEmbed(
+                Embeds.dynamicEmbed(
                         Arrays.asList(
                                 "Channels given a new sensitivity of " + offset + ":",
                                 complete.toString(),

@@ -4,10 +4,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.DynamicEmbeds;
-import thermostat.embeds.ErrorEmbeds;
-import thermostat.embeds.GenericEmbeds;
-import thermostat.embeds.HelpEmbeds;
+import thermostat.embeds.*;
 import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
@@ -49,14 +46,14 @@ public class MonitorCommand implements Command {
         try {
             this.parameters = parseArguments(arguments);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
             return;
         }
 
         if (validateEvent(data)) {
             this.data = data;
         } else {
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error("Event was not valid. Please try again."), "Event had a null member.");
+            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
             return;
         }
 
@@ -80,7 +77,7 @@ public class MonitorCommand implements Command {
 
         if (offSwitch == null && onSwitch == null) {
             ResponseDispatcher.commandFailed(this,
-                    HelpEmbeds.expandedHelpMonitor(prefix));
+                    Embeds.expandedHelpMonitor(prefix));
         } else if (allSwitch != null) {
             unMonitorAll();
         }
@@ -106,7 +103,7 @@ public class MonitorCommand implements Command {
             complete = DataSource.execute(conn -> PreparedActions.modifyChannel(conn, DBActionType.MONITOR, monitor, data.getGuild().getId(), channels));
         } catch (Exception ex) {
             // Issues with the database transaction
-            ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getLocalizedMessage(), commandId), ex);
+            ResponseDispatcher.commandFailed(this, Embeds.error(ex.getLocalizedMessage(), commandId), ex);
             return;
         }
 
@@ -120,7 +117,7 @@ public class MonitorCommand implements Command {
 
         // #4 - Send the results embed to manager
         ResponseDispatcher.commandSucceeded(this,
-                DynamicEmbeds.dynamicEmbed(
+                Embeds.dynamicEmbed(
                         Arrays.asList(
                                 message,
                                 complete.toString(),
@@ -142,18 +139,18 @@ public class MonitorCommand implements Command {
                         MenuType.UNMONITORALL, data.getMember().getId(),
                         message.getId(), data.getChannel()
                 );
-                ResponseDispatcher.commandSucceeded(this, GenericEmbeds.allRemoved(
+                ResponseDispatcher.commandSucceeded(this, Embeds.allRemoved(
                         getEvent().getAuthor().getId(), getEvent().getAuthor().getAvatarUrl(),
                         "monitored"
                 ));
             } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(this, ErrorEmbeds.error(ex.getLocalizedMessage(), this.getId()), ex);
+                ResponseDispatcher.commandFailed(this, Embeds.error(ex.getLocalizedMessage(), this.getId()), ex);
             }
         };
 
         Messages.sendMessage(
                 data.getChannel(),
-                GenericEmbeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()),
+                Embeds.promptEmbed(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()),
                 consumer
         );
     }

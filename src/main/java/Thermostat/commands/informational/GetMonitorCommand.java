@@ -4,10 +4,9 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.ErrorEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
-import thermostat.embeds.DynamicEmbeds;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
@@ -78,7 +77,7 @@ public class GetMonitorCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    ErrorEmbeds.error(ex.getLocalizedMessage(), this.commandId), ex
+                    Embeds.error(ex.getLocalizedMessage(), this.commandId), ex
                     );
         }
 
@@ -95,7 +94,7 @@ public class GetMonitorCommand implements Command {
 
         // #3 - Sends embed with information.
         ResponseDispatcher.commandSucceeded(this,
-                DynamicEmbeds.dynamicEmbed(
+                Embeds.dynamicEmbed(
                         Arrays.asList(
                                 "Channels currently being monitored:",
                                 monitoredString,

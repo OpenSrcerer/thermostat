@@ -5,8 +5,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
-import thermostat.embeds.ErrorEmbeds;
-import thermostat.embeds.GenericEmbeds;
+import thermostat.embeds.Embeds;
 import thermostat.Messages;
 import thermostat.commands.CommandTrigger;
 import thermostat.mySQL.DataSource;
@@ -92,10 +91,10 @@ public class MenuDispatcher extends ListenerAdapter {
                 }
             }
         } catch (InsufficientPermissionsException ex) {
-            Messages.sendMessage(event.getChannel(), ErrorEmbeds.errPermission(ex.getPermissionSet()));
+            Messages.sendMessage(event.getChannel(), Embeds.errPermission(ex.getPermissionSet()));
             expungeMenu(event.getMessageId());
         } catch (Exception ex) {
-            Messages.sendMessage(event.getChannel(), ErrorEmbeds.error(ex.getMessage()));
+            Messages.sendMessage(event.getChannel(), Embeds.error(ex.getMessage()));
         }
     }
 
@@ -132,7 +131,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "🌡" -> {
                 // Monitored Functions Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getMonitorInfo(prefix).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getMonitorInfo(prefix).build());
                     reactionMenu.setMenuType(MenuType.MONITOR);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
@@ -140,7 +139,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "🔧" -> {
                 // Informational Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getUtilityInfo(prefix).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getUtilityInfo(prefix).build());
                     reactionMenu.setMenuType(MenuType.UTILITY);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
@@ -148,7 +147,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "ℹ" -> {
                 // Informational Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getOtherInfo(prefix).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getOtherInfo(prefix).build());
                     reactionMenu.setMenuType(MenuType.OTHER);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
@@ -156,7 +155,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "⬆" -> {
                 // Exit Menu
                 if (reactionMenu.getMenuType() != MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), GenericEmbeds.getInfoSelection().build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getInfoSelection().build());
                     reactionMenu.setMenuType(MenuType.SELECTION);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 }
