@@ -2,6 +2,8 @@ package thermostat.util;
 
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import thermostat.util.entities.Arguments;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -209,18 +211,15 @@ public class ArgumentParser {
     }
 
     /**
-     * A class that encapsulates returning values
-     * for parseChannelArgument();
+     * Checks if GuildMessageReceivedEvent is valid.
+     * An event is valid when its Member object is not null.
+     * @return true is event is valid, false otherwise.
      */
-    public static class Arguments {
-        public final StringBuilder nonValid;
-        public final StringBuilder noText;
-        public final ArrayList<String> newArguments;
+    public static boolean validateEvent(GuildMessageReceivedEvent event) {
+        if (event.getMember() == null)
+            return false;
 
-        public Arguments(@Nonnull StringBuilder nonValid, @Nonnull StringBuilder noText, @Nonnull ArrayList<String> newArguments) {
-            this.nonValid = nonValid;
-            this.noText = noText;
-            this.newArguments = newArguments;
-        }
+        return !event.getMember().getUser().isBot();
     }
+
 }

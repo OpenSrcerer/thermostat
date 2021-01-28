@@ -13,6 +13,7 @@ import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
+import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
 
@@ -49,7 +50,7 @@ public class WordFilter implements Command {
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
         this.commandId = MiscellaneousFunctions.getCommandId();
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             checkThermoPermissionsAndQueue(this);
         }
     }

@@ -2,12 +2,11 @@ package thermostat.commands;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import thermostat.embeds.Embeds;
 import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.CommandDispatcher;
-import thermostat.util.enumeration.CommandType;
+import thermostat.embeds.Embeds;
+import thermostat.util.entities.CommandData;
 
 import javax.annotation.Nonnull;
 import java.util.EnumSet;
@@ -22,41 +21,10 @@ public interface Command extends Runnable {
     void run();
 
     /**
-     * Return the specific information
-     * about this Command.
-     * @return Event with specific case info.
+     * Get the Command's data package.
+     * @return The Command's information. (Event, Prefix, etc.)
      */
-    GuildMessageReceivedEvent getEvent();
-
-    /**
-     * Get CommandType of Command.
-     * @return type of Command.
-     */
-    CommandType getType();
-
-    /**
-     * Get specific Logger of Command.
-     * @return Command's Logger
-     */
-    Logger getLogger();
-
-    /**
-     * Gets the specific Command ID of a Command.
-     * @return Command's ID
-     */
-    long getId();
-
-    /**
-     * Checks if GuildMessageReceivedEvent is valid.
-     * An event is valid when its Member object is not null.
-     * @return true is event is valid, false otherwise.
-     */
-    default boolean validateEvent(GuildMessageReceivedEvent event) {
-        if (event.getMember() == null)
-            return false;
-
-        return !event.getMember().getUser().isBot();
-    }
+    CommandData getData();
 
     /**
      * Adds a given Command to the Request Manager queue if

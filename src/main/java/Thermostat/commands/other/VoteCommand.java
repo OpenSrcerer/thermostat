@@ -7,6 +7,7 @@ import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.commands.informational.InfoCommand;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
 
@@ -29,7 +30,7 @@ public class VoteCommand implements Command {
         this.prefix = prefix;
         this.commandId = MiscellaneousFunctions.getCommandId();
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             checkPermissionsAndQueue(this);
         }
     }

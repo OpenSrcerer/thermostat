@@ -8,6 +8,7 @@ import thermostat.commands.CommandTrigger;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
+import thermostat.util.ArgumentParser;
 import thermostat.util.Constants;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.CommandType;
@@ -42,7 +43,7 @@ public class PrefixCommand implements Command {
             return;
         }
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             this.data = data;
         } else {
             ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");

@@ -3,6 +3,7 @@ package thermostat.commands.moderation;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
@@ -24,7 +25,7 @@ public class MuteCommand implements Command {
         this.prefix = prefix;
         this.commandId = MiscellaneousFunctions.getCommandId();
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             checkPermissionsAndQueue(this);
         }
     }

@@ -31,7 +31,7 @@ public class BanCommand implements Command {
         this.prefix = prefix;
         this.commandId = MiscellaneousFunctions.getCommandId();
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             checkPermissionsAndQueue(this);
         }
     }

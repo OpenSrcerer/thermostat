@@ -85,6 +85,9 @@ public abstract class MiscellaneousFunctions {
         return returnString.substring(0, returnString.length() - 1);
     }
 
+    /**
+     * @return A pseudorandom identifier for a command that was run.
+     */
     public static long getCommandId() {
         return System.currentTimeMillis() * ThreadLocalRandom.current().nextLong(10000);
     }

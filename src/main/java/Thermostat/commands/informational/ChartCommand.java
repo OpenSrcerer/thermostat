@@ -13,6 +13,7 @@ import thermostat.util.ThermosCharts;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
@@ -24,32 +25,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
+import thermostat.util.entities.CommandData;
 import static thermostat.util.ArgumentParser.hasArguments;
-import static thermostat.util.ArgumentParser.parseArguments;
 
 public class ChartCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(ChartCommand.class);
-
-    private GuildMessageReceivedEvent data;
-    private Map<String, List<String>> parameters;
-    private final String prefix;
-    private final long commandId;
+    private final CommandData data;
 
     public ChartCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = MiscellaneousFunctions.getCommandId();
-        this.prefix = prefix;
+        this.data = new CommandData(data, arguments, prefix);
 
-        try {
-            this.parameters = parseArguments(arguments);
-        } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
-            return;
-        }
-
-        if (validateEvent(data)) {
-            this.data = data;
-        } else {
-            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
+        if (this.data.parameters == null) {
+            ResponseDispatcher.commandFailed(
+                    this,
+                    Embeds.getEmbed(EmbedType.CHART_HOLDER, this.data),
+                    "Bad arguments.");
             return;
         }
 
@@ -64,13 +54,13 @@ public class ChartCommand implements Command {
      */
     @Override
     public void run() {
-        final List<String> chartType = parameters.get("-type");
-        final List<String> channels = parameters.get("c");
+        final List<String> chartType = data.parameters.get("-type");
+        final List<String> channels = data.parameters.get("c");
 
         // prefix removed (sends info msg)
         if (!hasArguments(chartType)) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.expandedHelpChart(prefix),
+                    Embeds.getEmbed(EmbedType.HELP_CHART, data),
                     "User did not provide arguments."
             );
             return;
@@ -79,7 +69,7 @@ public class ChartCommand implements Command {
         switch (chartType.get(0).toLowerCase()) {
             case "slowfreq" -> sendFrequencyChart();
             default -> ResponseDispatcher.commandFailed(this,
-                    Embeds.inputError("Chart \"" + chartType.get(0) + "\" does not exist.", commandId),
+                    Embeds.inputError("Chart \"" + chartType.get(0) + "\" does not exist.", data.commandId),
                     "User provided an incorrect chart type."
             );
         }
@@ -93,7 +83,7 @@ public class ChartCommand implements Command {
             DataSource.execute(conn -> {
                 PreparedStatement statement = conn.prepareStatement("SELECT CHANNEL_ID, MANIPULATED FROM CHANNELS WHERE GUILD_ID = ?"
                         + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5");
-                statement.setString(1, data.getGuild().getId());
+                statement.setString(1, data.event.getGuild().getId());
                 ResultSet rs = statement.executeQuery();
 
                 while (rs.next()) {
@@ -103,7 +93,7 @@ public class ChartCommand implements Command {
             });
         } catch (Exception ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), commandId),
+                    Embeds.error(ex.getLocalizedMessage(), data.commandId),
                     "Exception thrown while querying slowmode data.");
             return;
         }
@@ -113,18 +103,18 @@ public class ChartCommand implements Command {
         if (top5slowmode.isEmpty()) {
             ResponseDispatcher.commandFailed(this,
                     Embeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
-                            "Get some channels slowmoded with `th!monitor`.", commandId),
+                            "Get some channels slowmoded with `th!monitor`.", data.commandId),
                     "Channels were never slowmoded in this guild.");
             return;
         }
 
         // #3 - Create chart and put data in it.
-        CategoryChart chart = ThermosCharts.getFrequencyChart(this.data.getGuild().getName());
+        CategoryChart chart = ThermosCharts.getFrequencyChart(data.event.getGuild().getName());
 
         // Add values to chart series
         for (Map.Entry<String, Integer> entry : top5slowmode.entrySet()) {
             String channelName = entry.getKey();
-            TextChannel channel = data.getGuild().getTextChannelById(entry.getKey());
+            TextChannel channel = data.event.getGuild().getTextChannelById(entry.getKey());
 
             if (channel != null) {
                 channelName = channel.getName();
@@ -152,32 +142,17 @@ public class ChartCommand implements Command {
             return;
         }
 
-        //noinspection ConstantConditions
         ResponseDispatcher.commandSucceeded(this,
-                Embeds.chartHolder(data.getMember().getUser().getAsTag(),
-                        data.getMember().getUser().getAvatarUrl(),
-                        data.getGuild().getName()
+                Embeds.getEmbed(
+                        EmbedType.CHART_HOLDER,
+                        data,
+                        data.event.getGuild().getName()
                 ), inputStream
         );
     }
 
     @Override
-    public GuildMessageReceivedEvent getEvent() {
+    public CommandData getData() {
         return data;
-    }
-
-    @Override
-    public CommandType getType() {
-        return CommandType.CHART;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return lgr;
-    }
-
-    @Override
-    public long getId() {
-        return commandId;
     }
 }

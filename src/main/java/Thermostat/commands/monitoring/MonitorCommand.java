@@ -12,6 +12,7 @@ import thermostat.mySQL.PreparedActions;
 import thermostat.mySQL.DataSource;
 import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.entities.Arguments;
 import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.DBActionType;
@@ -50,7 +51,7 @@ public class MonitorCommand implements Command {
             return;
         }
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             this.data = data;
         } else {
             ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
@@ -90,7 +91,7 @@ public class MonitorCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            ArgumentParser.Arguments results = ArgumentParser.parseChannelArgument(data.getChannel(), channels);
+            Arguments results = ArgumentParser.parseChannelArgument(data.getChannel(), channels);
             channels.clear();
 
             nonValid = results.nonValid;

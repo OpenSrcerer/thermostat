@@ -3,6 +3,8 @@ package thermostat.embeds;
 import net.dv8tion.jda.api.Permission;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 import thermostat.util.Constants;
+import thermostat.util.entities.CommandData;
+import thermostat.util.entities.SettingsData;
 import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
@@ -14,54 +16,52 @@ import java.util.Set;
  * Static builder methods for all Thermostat Embeds.
  */
 public final class Embeds {
-
-    public static ThermoEmbed getEmbed(final @Nonnull EmbedType type, @Nonnull final String prefix, @Nonnull final String commandId,
-                                       @Nullable final String ownerTag, @Nullable final String ownerAvatarUrl) {
-
-        ThermoEmbed embed = new ThermoEmbed(prefix, commandId, ownerTag, ownerAvatarUrl);
-        return matchTypeToOptions(type, embed, null);
+    @EverythingIsNonNull
+    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data) {
+        ThermoEmbed embed = new ThermoEmbed(data);
+        return matchTypeToOptions(type, embed, data, null);
     }
 
-    public static ThermoEmbed getEmbed(final @Nonnull EmbedType type, @Nonnull final String prefix, @Nonnull final String commandId,
-                                       @Nullable final String ownerTag, @Nullable final String ownerAvatarUrl,
-                                       @Nonnull final Object options) {
-
-        ThermoEmbed embed = new ThermoEmbed(prefix, commandId, ownerTag, ownerAvatarUrl);
-        return matchTypeToOptions(type, embed, options);
+    @EverythingIsNonNull
+    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data, final Object options) {
+        ThermoEmbed embed = new ThermoEmbed(data);
+        return matchTypeToOptions(type, embed, data, options);
     }
 
     @SuppressWarnings("unchecked")
-    public static ThermoEmbed matchTypeToOptions(final @Nonnull EmbedType type, @Nonnull final ThermoEmbed embed, @Nullable final Object options) {
+    public static ThermoEmbed matchTypeToOptions(@Nonnull final EmbedType type, @Nonnull final ThermoEmbed embed,
+                                                 @Nonnull final CommandData data, @Nullable final Object options) {
+        // Wtf do i use to show that an embed is an error embed
         if (options == null) {
             return switch (type) {
-                case SAME_PREFIX ->             samePrefix(embed, embed.prefix);
+                case SAME_PREFIX ->             samePrefix(embed, data.prefix);
                 case RESET_PREFIX ->            resetPrefix(embed);
-                case NEW_PREFIX ->              setPrefix(embed, embed.prefix);
+                case NEW_PREFIX ->              setPrefix(embed, data.prefix);
                 case GET_VOTE ->                getVote(embed);
                 case INVITE_SERVER ->           inviteServer(embed);
                 case MISSED_PROMPT ->           missedPrompt(embed);
                 case PROMPT ->                  promptEmbed(embed);
-                case HELP_INFO ->               helpInfo(embed, embed.prefix);
-                case HELP_INVITE ->             helpInvite(embed, embed.prefix);
-                case HELP_VOTE ->               helpVote(embed, embed.prefix);
-                case HELP_CHART ->              helpChart(embed, embed.prefix);
-                case HELP_GETMONITOR ->         helpGetMonitor(embed, embed.prefix);
-                case HELP_SETTINGS ->           helpSettings(embed, embed.prefix);
-                case HELP_MONITOR ->            helpMonitor(embed, embed.prefix);
-                case HELP_SENSITIVITY ->        helpSensitivity(embed, embed.prefix);
-                case HELP_SETBOUNDS ->          helpSetBounds(embed, embed.prefix);
-                case HELP_PREFIX ->             helpPrefix(embed, embed.prefix);
-                case HELP_FILTER ->             helpFilter(embed, embed.prefix);
-                case MONITOR_INFO ->            getMonitorInfo(embed, embed.prefix);
-                case UTILITY_INFO ->            getUtilityInfo(embed, embed.prefix);
-                case OTHER_INFO ->              getOtherInfo(embed, embed.prefix);
+                case HELP_INFO ->               helpInfo(embed, data.prefix);
+                case HELP_INVITE ->             helpInvite(embed, data.prefix);
+                case HELP_VOTE ->               helpVote(embed, data.prefix);
+                case HELP_CHART ->              helpChart(embed, data.prefix);
+                case HELP_GETMONITOR ->         helpGetMonitor(embed, data.prefix);
+                case HELP_SETTINGS ->           helpSettings(embed, data.prefix);
+                case HELP_MONITOR ->            helpMonitor(embed, data.prefix);
+                case HELP_SENSITIVITY ->        helpSensitivity(embed, data.prefix);
+                case HELP_SETBOUNDS ->          helpSetBounds(embed, data.prefix);
+                case HELP_PREFIX ->             helpPrefix(embed, data.prefix);
+                case HELP_FILTER ->             helpFilter(embed, data.prefix);
+                case MONITOR_INFO ->            getMonitorInfo(embed, data.prefix);
+                case UTILITY_INFO ->            getUtilityInfo(embed, data.prefix);
+                case OTHER_INFO ->              getOtherInfo(embed, data.prefix);
                 case SELECTION ->               getInfoSelection(embed);
                 default ->                      embed;
             };
         } else {
             return switch (type) {
                 case CHART_HOLDER ->            chartHolder(embed, (String) options);
-                case GET_PREFIX ->              getPrefix(embed, embed.prefix, (String) options);
+                case GET_PREFIX ->              getPrefix(embed, data.prefix, (String) options);
                 case CHANNEL_SETTINGS ->        channelSettings(embed, (SettingsData) options);
                 case ALL_REMOVED ->             allRemoved(embed, (String) options);
                 case ERR_PERMISSION ->          errPermission(embed, (Set<Permission>[]) options);
@@ -72,26 +72,6 @@ public final class Embeds {
                 case DYNAMIC ->                 dynamicEmbed(embed, (List<String>) options);
                 default ->                      embed;
             };
-        }
-    }
-
-    public class SettingsData {
-        protected final String channelName;
-        protected final int min;
-        protected final int max;
-        protected final float sensitivity;
-        protected final boolean monitor;
-        protected final boolean filter;
-
-        @EverythingIsNonNull
-        public SettingsData(final String channelName, final int min, final int max,
-                            final float sensitivity, final boolean monitor, final boolean filter) {
-            this.channelName = channelName;
-            this.min = min;
-            this.max = max;
-            this.sensitivity = sensitivity;
-            this.monitor = monitor;
-            this.filter = filter;
         }
     }
 

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import thermostat.embeds.Embeds;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.mySQL.DataSource;
+import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
 import thermostat.util.enumeration.CommandType;
@@ -35,7 +36,7 @@ public class GetMonitorCommand implements Command {
         this.data = data;
         this.commandId = MiscellaneousFunctions.getCommandId();
 
-        if (validateEvent(data)) {
+        if (ArgumentParser.validateEvent(data)) {
             checkPermissionsAndQueue(this);
         }
     }
