@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
+import thermostat.util.ArgumentParser;
 import thermostat.util.Constants;
 import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
@@ -52,6 +53,10 @@ public final class CommandTrigger extends ListenerAdapter {
      */
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+        if (!ArgumentParser.validateEvent(event)) {
+            return;
+        }
+
         String prefix = getGuildPrefix(event.getGuild().getId());
         // gets given arguments and passes them to a list
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(event.getMessage().getContentRaw().split("\\s+")));
