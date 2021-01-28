@@ -45,10 +45,10 @@ public enum EmbedType {
     // ***************************************************************
 
     ERR_PERMISSION,
-    ERR_PERMISSION_BLANK,
+    ERR_PERMISSION_THERMO,
     ERR_INPUT,
-    ERR_NOID,
-    ERR_ID_FIX,
+    ERR,
+    ERR_FIX,
 
     // ***************************************************************
     // **                           SPECIAL                         **

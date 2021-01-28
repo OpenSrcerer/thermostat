@@ -1,9 +1,9 @@
 package thermostat.dispatchers;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.embeds.ThermoEmbed;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,13 +15,14 @@ import java.util.function.Consumer;
  * set of functions to output data to the end user.
  */
 public final class ResponseDispatcher {
+
     /**
      * Notify the command was completed successfully by sending an embed
      * to the command event channel & logging it.
      * @param command Command that was completed.
      * @param embed Embed to send.
      */
-    public static void commandSucceeded(@Nonnull Command command, @Nullable EmbedBuilder embed) {
+    public static void commandSucceeded(@Nonnull Command command, @Nullable ThermoEmbed embed) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
@@ -35,7 +36,7 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param inputStream Stream to attach as a file to the embed.
      */
-    public static void commandSucceeded(@Nonnull Command command, @Nonnull EmbedBuilder embed, @Nonnull InputStream inputStream) {
+    public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull InputStream inputStream) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
         Messages.sendMessage(command.getEvent().getChannel(), inputStream, embed);
     }
@@ -48,7 +49,7 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param consumer Consumer to run after message is sent.
      */
-    public static void commandSucceeded(@Nonnull Command command,  @Nonnull EmbedBuilder embed, @Nonnull Consumer<Message> consumer) {
+    public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull Consumer<Message> consumer) {
         command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
         Messages.sendMessage(command.getEvent().getChannel(), embed, consumer);
     }
@@ -60,7 +61,7 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param reason Reason for failure.
      */
-    public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed, @Nonnull String reason) {
+    public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull String reason) {
         command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Reason:" + reason);
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
@@ -72,7 +73,7 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param throwable Details of the error.
      */
-    public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed, @Nonnull Throwable throwable) {
+    public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull Throwable throwable) {
         command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Details:", throwable);
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
@@ -83,7 +84,7 @@ public final class ResponseDispatcher {
      * @param command Command that failed.
      * @param embed Embed to send.
      */
-    public static void commandFailed(@Nonnull Command command, @Nullable EmbedBuilder embed) {
+    public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed) {
         command.getLogger().info("Command with ID [" + command.getId() + "] has failed. (Replied with help Embed).");
         if (embed != null)
             Messages.sendMessage(command.getEvent().getChannel(), embed);
