@@ -19,6 +19,17 @@ public class ThermoEmbed extends EmbedBuilder {
     private static final int embedColor = 0x00aeff;
 
     /**
+     * Create a new ThermoEmbed with basic parameters.
+     */
+    public ThermoEmbed() {
+        super();
+
+        setColor(embedColor);
+        setThumbnail(Constants.THERMOSTAT_AVATAR_URL);
+        setTimestamp(Instant.now());
+    }
+
+    /**
      * Create a new ThermoEmbed with parameters originating from a Command.
      * @param data The parameters from a command.
      */

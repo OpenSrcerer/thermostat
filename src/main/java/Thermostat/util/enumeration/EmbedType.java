@@ -54,20 +54,5 @@ public enum EmbedType {
     // **                           SPECIAL                         **
     // ***************************************************************
 
-    DYNAMIC;
-
-    // --- Constructor ---
-    /*
-    public final String title;
-    public final String description;
-
-    EmbedType() {
-        this.title = null;
-        this.description = null;
-    }
-
-    EmbedType(final String title, final String description) {
-        this.title = title;
-        this.description = title;
-    }*/
+    DYNAMIC
 }
