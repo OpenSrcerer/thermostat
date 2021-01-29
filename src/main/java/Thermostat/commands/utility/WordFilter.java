@@ -8,14 +8,14 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.Embeds;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
-import thermostat.util.ArgumentParser;
-import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -37,22 +37,17 @@ import java.util.*;
 @SuppressWarnings("ConstantConditions")
 public class WordFilter implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(WordFilter.class);
+    private final CommandData data;
+    private final List<String> message;
 
     private static List<String> badWords, niceWords;
     private static final Random random = new Random();
 
-    private final GuildMessageReceivedEvent data;
-    private final List<String> message;
-    private final long commandId;
-
     public WordFilter(@Nonnull GuildMessageReceivedEvent data) {
-        this.data = data;
+        this.data = new CommandData(data);
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
-        this.commandId = MiscellaneousFunctions.getCommandId();
 
-        if (ArgumentParser.validateEvent(data)) {
-            checkThermoPermissionsAndQueue(this);
-        }
+        checkThermoPermissionsAndQueue(this);
     }
 
     /**
@@ -73,7 +68,7 @@ public class WordFilter implements Command {
         if (messageWasChanged) {
             try {
                 DataSource.execute(conn -> {
-                    data.getMessage().delete()
+                    data.event.getMessage().delete()
                             .reason("Inappropriate Language Filter")
                             .queue();
 
@@ -94,7 +89,7 @@ public class WordFilter implements Command {
                                     return webhook;
                                 }).queue();
                     } else {
-                        updateWebhook(data.getAuthor(), webhookId)
+                        updateWebhook(data.event.getAuthor(), webhookId)
                                 .map(webhook -> {
                                     sendWebhookMessage(webhookId, webhookToken);
                                     ResponseDispatcher.commandSucceeded(this, null);
@@ -121,7 +116,7 @@ public class WordFilter implements Command {
         PreparedStatement statement = conn.prepareStatement("SELECT WEBHOOK_" + value + " FROM " +
                 "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                 "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?");
-        statement.setString(1, data.getChannel().getId());
+        statement.setString(1, data.event.getChannel().getId());
         ResultSet rs = statement.executeQuery();
         rs.next();
         return rs.getString(1);
@@ -168,7 +163,7 @@ public class WordFilter implements Command {
      * @return RestAction with the created webhook as a parameter
      */
     public RestAction<Webhook> createWebhook(final Connection conn) {
-        User user = data.getMember().getUser();
+        User user = data.event.getMember().getUser();
         String username = user.getName();
         String userAvatarURL;
 
@@ -179,7 +174,7 @@ public class WordFilter implements Command {
 
         Icon userAvatar = getUserIcon(userAvatarURL);
 
-        return data.getChannel()
+        return data.event.getChannel()
                 .createWebhook(username)
                 .map(
                         webhook -> {
@@ -193,12 +188,12 @@ public class WordFilter implements Command {
 
                                 statement.setString(1, webhook.getId());
                                 statement.setString(2, webhook.getToken());
-                                statement.setString(3, data.getChannel().getId());
+                                statement.setString(3, data.event.getChannel().getId());
 
                                 statement.executeUpdate();
                             } catch (SQLException ex) {
                                 ResponseDispatcher.commandFailed(this,
-                                        Embeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
+                                        Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
                                         ex);
                             }
                             return webhook;
@@ -234,11 +229,6 @@ public class WordFilter implements Command {
     }
 
     @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return data;
-    }
-
-    @Override
     public CommandType getType() {
         return CommandType.WORDFILTEREVENT;
     }
@@ -249,7 +239,7 @@ public class WordFilter implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
+    public CommandData getData() {
+        return data;
     }
 }

@@ -23,9 +23,9 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      */
     public static void commandSucceeded(@Nonnull Command command, @Nullable ThermoEmbed embed) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
         if (embed != null)
-            Messages.sendMessage(command.getEvent().getChannel(), embed);
+            Messages.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -37,8 +37,8 @@ public final class ResponseDispatcher {
      * @param inputStream Stream to attach as a file to the embed.
      */
     public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull InputStream inputStream) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
-        Messages.sendMessage(command.getEvent().getChannel(), inputStream, embed);
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
+        Messages.sendMessage(command.getData().event.getChannel(), inputStream, embed);
     }
 
     /**
@@ -50,8 +50,8 @@ public final class ResponseDispatcher {
      * @param consumer Consumer to run after message is sent.
      */
     public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull Consumer<Message> consumer) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] was successful.");
-        Messages.sendMessage(command.getEvent().getChannel(), embed, consumer);
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
+        Messages.sendMessage(command.getData().event.getChannel(), embed, consumer);
     }
 
     /**
@@ -62,9 +62,9 @@ public final class ResponseDispatcher {
      * @param reason Reason for failure.
      */
     public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull String reason) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Reason:" + reason);
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. Reason:" + reason);
         if (embed != null)
-            Messages.sendMessage(command.getEvent().getChannel(), embed);
+            Messages.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -74,9 +74,9 @@ public final class ResponseDispatcher {
      * @param throwable Details of the error.
      */
     public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull Throwable throwable) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. Details:", throwable);
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. Details:", throwable);
         if (embed != null)
-            Messages.sendMessage(command.getEvent().getChannel(), embed);
+            Messages.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -85,8 +85,8 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      */
     public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed) {
-        command.getLogger().info("Command with ID [" + command.getId() + "] has failed. (Replied with help Embed).");
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. (Replied with help Embed).");
         if (embed != null)
-            Messages.sendMessage(command.getEvent().getChannel(), embed);
+            Messages.sendMessage(command.getData().event.getChannel(), embed);
     }
 }

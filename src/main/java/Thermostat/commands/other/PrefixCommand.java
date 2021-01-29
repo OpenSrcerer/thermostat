@@ -8,45 +8,31 @@ import thermostat.commands.CommandTrigger;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
-import thermostat.util.ArgumentParser;
 import thermostat.util.Constants;
-import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import static thermostat.util.ArgumentParser.hasArguments;
-import static thermostat.util.ArgumentParser.parseArguments;
 
-@SuppressWarnings("ConstantConditions")
 public class PrefixCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(PrefixCommand.class);
-
-    private GuildMessageReceivedEvent data;
-    private Map<String, List<String>> parameters;
-    private final String prefix;
-    private final long commandId;
+    private final CommandData data;
 
     public PrefixCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = MiscellaneousFunctions.getCommandId();
-        this.prefix = prefix;
+        this.data = new CommandData(data, arguments, prefix);
 
-        try {
-            this.parameters = parseArguments(arguments);
-        } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
-            return;
-        }
-
-        if (ArgumentParser.validateEvent(data)) {
-            this.data = data;
-        } else {
-            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
+        if (this.data.parameters == null) {
+            ResponseDispatcher.commandFailed(
+                    this,
+                    Embeds.getEmbed(EmbedType.ERR, this.data),
+                    "Bad arguments.");
             return;
         }
 
@@ -58,14 +44,14 @@ public class PrefixCommand implements Command {
      */
     @Override
     public void run() {
-        List<String> prefixParameters = parameters.get("p");
-        List<String> resetSwitch = parameters.get("-reset");
+        List<String> prefixParameters = data.parameters.get("p");
+        List<String> resetSwitch = data.parameters.get("-reset");
 
         try {
             prefixAction(prefixParameters, resetSwitch);
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), "Please try again.", this.commandId),
+                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
                     "SQL Error thrown while issuing prefix change."
             );
         }
@@ -80,11 +66,11 @@ public class PrefixCommand implements Command {
         if (resetSwitch != null) {
             DataSource.execute(conn -> {
                 PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = ?;");
-                statement.setString(1, data.getGuild().getId());
+                statement.setString(1, data.event.getGuild().getId());
                 return null;
             });
-            CommandTrigger.updateEntry(data.getGuild().getId(), Constants.DEFAULT_PREFIX);
-            ResponseDispatcher.commandSucceeded(this, Embeds.resetPrefix());
+            CommandTrigger.updateEntry(data.event.getGuild().getId(), Constants.DEFAULT_PREFIX);
+            ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(EmbedType.RESET_PREFIX, data));
             return;
         }
 
@@ -92,46 +78,34 @@ public class PrefixCommand implements Command {
         if (hasArguments(prefixParameters)) {
             String newPrefix = prefixParameters.get(0);
 
-            if (Pattern.matches("[!-~]*", newPrefix) && newPrefix.length() <= 5 && !newPrefix.equalsIgnoreCase(prefix)) {
+            if (Pattern.matches("[!-~]*", newPrefix) && newPrefix.length() <= 5 && !newPrefix.equalsIgnoreCase(data.prefix)) {
                 DataSource.execute(conn -> {
                     PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET GUILD_PREFIX = ? WHERE GUILD_ID = ?;");
                     statement.setString(1, newPrefix);
-                    statement.setString(2, data.getGuild().getId());
+                    statement.setString(2, data.event.getGuild().getId());
                     return null;
                 });
-                CommandTrigger.updateEntry(data.getGuild().getId(), newPrefix);
+                CommandTrigger.updateEntry(data.event.getGuild().getId(), newPrefix);
                 ResponseDispatcher.commandSucceeded(
-                        this, Embeds.setPrefix(
-                                data.getMember().getUser().getAsTag(),
-                                data.getMember().getUser().getAvatarUrl(),
-                                newPrefix
-                        )
+                        this,
+                        Embeds.getEmbed(EmbedType.NEW_PREFIX, data, newPrefix)
                 );
-            } else if (newPrefix.equalsIgnoreCase(prefix)) {
+            } else if (newPrefix.equalsIgnoreCase(data.prefix)) {
                 ResponseDispatcher.commandFailed(this,
-                        Embeds.samePrefix(prefix),
+                        Embeds.getEmbed(EmbedType.SAME_PREFIX, data),
                         "User inserted the same prefix."
                 );
             } else {
                 ResponseDispatcher.commandFailed(this,
-                        ErrorEmbeds.incorrectPrefix(this.getId()),
-                        "User inserted an incorrect prefix."
+                        Embeds.getEmbed(EmbedType.ERR_INPUT, data, "You have inserted an invalid prefix."),
+                        "User inserted an invalid prefix."
                 );
             }
         } else {
-            ResponseDispatcher.commandSucceeded(
-                    this, Embeds.getPrefix(
-                            data.getMember().getUser().getAsTag(),
-                            data.getMember().getUser().getAvatarUrl(),
-                            prefix, data.getGuild().getName()
-                    )
+            ResponseDispatcher.commandSucceeded(this,
+                    Embeds.getEmbed(EmbedType.GET_PREFIX, data)
             );
         }
-    }
-
-    @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return data;
     }
 
     @Override
@@ -145,7 +119,7 @@ public class PrefixCommand implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
+    public CommandData getData() {
+        return data;
     }
 }

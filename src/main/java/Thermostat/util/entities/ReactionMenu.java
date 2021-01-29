@@ -5,6 +5,7 @@ import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.embeds.Embeds;
+import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ public class ReactionMenu {
     private MenuType menu;
 
     /**
-     * The original initiator of the mentu.
+     * The original initiator of the menu.
      */
     private final String ownerId;
 
@@ -69,7 +70,7 @@ public class ReactionMenu {
             MenuDispatcher.removeMenu(messageId);
 
             switch (this.getMenuType()) {
-                case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, Embeds.missedPrompt());
+                case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT));
             }
         }, 200, TimeUnit.SECONDS);
     }

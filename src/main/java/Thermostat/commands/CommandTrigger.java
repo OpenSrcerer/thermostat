@@ -148,7 +148,7 @@ public final class CommandTrigger extends ListenerAdapter {
                         arguments.get(0).equalsIgnoreCase(prefix + CommandType.INVITE.getAlias2())
         ) {
             arguments.remove(0);
-            new InviteCommand(event, arguments, prefix);
+            new InviteCommand(event, prefix);
         }
 
         // PrefixCommand has two checks, one for th!prefix

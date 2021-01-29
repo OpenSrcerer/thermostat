@@ -1,15 +1,13 @@
 package thermostat.commands.monitoring;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.dispatchers.CommandDispatcher;
-import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
+import thermostat.util.entities.CommandData;
 import thermostat.util.entities.Synapse;
 import thermostat.util.enumeration.CommandType;
 
-import javax.annotation.Nullable;
 import java.sql.SQLException;
 
 public class SynapseMonitor implements Command {
@@ -21,17 +19,17 @@ public class SynapseMonitor implements Command {
     private final Synapse synapse;
 
     /**
-     * ID of this Command.
+     * Data package for this command.
      */
-    private final long commandId;
+    private final CommandData data;
 
     /**
      * Create a new Monitor event for each Synapse.
      * @param synapse Synapse to take as an argument.
      */
     public SynapseMonitor(Synapse synapse) {
+        this.data = new CommandData(null);
         this.synapse = synapse;
-        this.commandId = MiscellaneousFunctions.getCommandId();
 
         CommandDispatcher.queueCommand(this);
     }
@@ -59,13 +57,7 @@ public class SynapseMonitor implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
-    }
-
-    @Nullable
-    @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return null;
+    public CommandData getData() {
+        return data;
     }
 }

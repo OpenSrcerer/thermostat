@@ -3,14 +3,15 @@ package thermostat.commands.monitoring;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.ArgumentParser;
-import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.entities.Arguments;
+import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
@@ -18,36 +19,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static thermostat.util.ArgumentParser.hasArguments;
-import static thermostat.util.ArgumentParser.parseArguments;
 import static thermostat.util.ArgumentParser.parseSlowmode;
 
-@SuppressWarnings("ConstantConditions")
 public class SetBoundsCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(SetBoundsCommand.class);
-
-    private GuildMessageReceivedEvent data = null;
-    private Map<String, List<String>> parameters = null;
-    private final String prefix;
-    private final long commandId;
+    private final CommandData data;
 
     public SetBoundsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = MiscellaneousFunctions.getCommandId();
-        this.prefix = prefix;
+        this.data = new CommandData(data, arguments, prefix);
 
-        try {
-            this.parameters = parseArguments(arguments);
-        } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
-            return;
-        }
-
-        if (ArgumentParser.validateEvent(data)) {
-            this.data = data;
-        } else {
-            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
+        if (this.data.parameters == null) {
+            ResponseDispatcher.commandFailed(
+                    this,
+                    Embeds.getEmbed(EmbedType.ERR, this.data),
+                    "Bad arguments.");
             return;
         }
 
@@ -64,20 +51,20 @@ public class SetBoundsCommand implements Command {
      */
     @Override
     public void run() {
-        final List<String> channels = parameters.get("c");
-        final List<String> boundParameter = parameters.get("b");
-        final List<String> minSwitch = parameters.get("-min");
-        final List<String> maxSwitch = parameters.get("-max");
+        final List<String> channels = data.parameters.get("c");
+        final List<String> boundParameter = data.parameters.get("b");
+        final List<String> minSwitch = data.parameters.get("-min");
+        final List<String> maxSwitch = data.parameters.get("-max");
 
         if (minSwitch == null && maxSwitch == null) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.inputError("You need to insert a --min/--max switch.", this.commandId),
-                    "User did not provide any on/off arguments.");
+                    Embeds.getEmbed(EmbedType.ERR_INPUT, data, "You need to insert a --min/--max switch."),
+                    "User did not provide a --min/--max switch.");
         }
 
         if (!hasArguments(boundParameter)) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.inputError("You need to insert a bound argument.", this.commandId),
+                    Embeds.getEmbed(EmbedType.ERR_INPUT, data, "You need to insert a bound argument."),
                     "User did not provide a bound argument.");
         }
 
@@ -91,7 +78,7 @@ public class SetBoundsCommand implements Command {
             }
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.inputError("Slowmode value \"" + boundParameter.get(0) + "\" was incorrect.", commandId),
+                    Embeds.getEmbed(EmbedType.ERR_INPUT, data, "Slowmode value \"" + boundParameter.get(0) + "\" was incorrect."),
                     "User provided an incorrect sensitivity value.");
             return;
         }
@@ -108,7 +95,7 @@ public class SetBoundsCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            Arguments results = ArgumentParser.parseChannelArgument(data.getChannel(), channels);
+            Arguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
             channels.clear();
 
             nonValid = results.nonValid;
@@ -183,14 +170,14 @@ public class SetBoundsCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
+                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
                     ex);
             return;
         }
 
         // #3 - Send the results embed to dispatch
         ResponseDispatcher.commandSucceeded(this,
-                Embeds.dynamicEmbed(
+                Embeds.getEmbed(EmbedType.DYNAMIC, data,
                         Arrays.asList(
                                 "Channels that had both slowmode bounds changed to " + bound + ":",
                                 bothComplete.toString(),
@@ -202,8 +189,7 @@ public class SetBoundsCommand implements Command {
                                 nonValid.toString(),
                                 "Categories with no Text Channels:",
                                 noText.toString()
-                        ),
-                        data.getMember().getUser(), commandId
+                        )
                 )
         );
     }
@@ -223,11 +209,6 @@ public class SetBoundsCommand implements Command {
     }
 
     @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return data;
-    }
-
-    @Override
     public CommandType getType() {
         return CommandType.SETBOUNDS;
     }
@@ -238,7 +219,7 @@ public class SetBoundsCommand implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
+    public CommandData getData() {
+        return data;
     }
 }

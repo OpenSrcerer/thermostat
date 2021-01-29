@@ -4,13 +4,13 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.Embeds;
-import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.mySQL.DataSource;
-import thermostat.util.ArgumentParser;
-import thermostat.util.MiscellaneousFunctions;
 import thermostat.commands.Command;
+import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
+import thermostat.mySQL.DataSource;
+import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
@@ -28,17 +28,11 @@ import java.util.List;
 @SuppressWarnings("ConstantConditions")
 public class GetMonitorCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(GetMonitorCommand.class);
-
-    private final GuildMessageReceivedEvent data;
-    private final long commandId;
+    private final CommandData data;
 
     public GetMonitorCommand(@Nonnull GuildMessageReceivedEvent data) {
-        this.data = data;
-        this.commandId = MiscellaneousFunctions.getCommandId();
-
-        if (ArgumentParser.validateEvent(data)) {
-            checkPermissionsAndQueue(this);
-        }
+        this.data = new CommandData(data);
+        checkPermissionsAndQueue(this);
     }
 
     /**
@@ -57,7 +51,7 @@ public class GetMonitorCommand implements Command {
                 PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                         "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                         "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
-                statement.setString(1, data.getGuild().getId());
+                statement.setString(1, data.event.getGuild().getId());
                 ResultSet rs = statement.executeQuery();
 
                 while (rs.next()) {
@@ -67,7 +61,7 @@ public class GetMonitorCommand implements Command {
                 statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                         "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                         "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1");
-                statement.setString(1, data.getGuild().getId());
+                statement.setString(1, data.event.getGuild().getId());
                 rs = statement.executeQuery();
 
                 while (rs.next()) {
@@ -78,8 +72,8 @@ public class GetMonitorCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), this.commandId), ex
-                    );
+                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex
+            );
         }
 
         // #2 - Converts channel ids to mentions
@@ -95,14 +89,13 @@ public class GetMonitorCommand implements Command {
 
         // #3 - Sends embed with information.
         ResponseDispatcher.commandSucceeded(this,
-                Embeds.dynamicEmbed(
+                Embeds.getEmbed(EmbedType.DYNAMIC, data,
                         Arrays.asList(
                                 "Channels currently being monitored:",
                                 monitoredString,
                                 "Channels currently being filtered:",
                                 filteredString
-                        ),
-                        data.getMember().getUser(), commandId
+                        )
                 )
         );
     }
@@ -118,7 +111,7 @@ public class GetMonitorCommand implements Command {
         // iterate through retrieved array, adding
         // every monitored/filtered guild to the ending embed
         for (String it : list) {
-            TextChannel filteredChannel = data.getGuild().getTextChannelById(it);
+            TextChannel filteredChannel = data.event.getGuild().getTextChannelById(it);
 
             if (filteredChannel != null)
                 string.append("<#").append(filteredChannel.getId()).append("> ");
@@ -129,10 +122,6 @@ public class GetMonitorCommand implements Command {
         return string.toString();
     }
 
-    @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return data;
-    }
 
     @Override
     public CommandType getType() {
@@ -145,7 +134,7 @@ public class GetMonitorCommand implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
+    public CommandData getData() {
+        return data;
     }
 }

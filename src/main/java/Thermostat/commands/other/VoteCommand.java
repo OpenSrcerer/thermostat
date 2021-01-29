@@ -3,13 +3,13 @@ package thermostat.commands.other;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.commands.informational.InfoCommand;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.util.ArgumentParser;
-import thermostat.util.MiscellaneousFunctions;
+import thermostat.embeds.Embeds;
+import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 
@@ -17,22 +17,22 @@ import javax.annotation.Nonnull;
  * Class that manages the th!vote command. Sends
  * a Vote embed when th!vote is called.
  */
-@SuppressWarnings("ConstantConditions")
 public class VoteCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(InfoCommand.class);
-
-    private final GuildMessageReceivedEvent data;
-    private final String prefix;
-    private final long commandId;
+    private final CommandData data;
 
     public VoteCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull String prefix) {
-        this.data = null;
-        this.prefix = prefix;
-        this.commandId = MiscellaneousFunctions.getCommandId();
+        this.data = new CommandData(data, prefix);
 
-        if (ArgumentParser.validateEvent(data)) {
-            checkPermissionsAndQueue(this);
+        if (this.data.parameters == null) {
+            ResponseDispatcher.commandFailed(
+                    this,
+                    Embeds.getEmbed(EmbedType.ERR, this.data),
+                    "Bad arguments.");
+            return;
         }
+
+        checkPermissionsAndQueue(this);
     }
 
     /**
@@ -40,12 +40,7 @@ public class VoteCommand implements Command {
      */
     @Override
     public void run() {
-        ResponseDispatcher.commandSucceeded(this, Embeds.getVote(data.getMember().getUser().getAsTag(), data.getMember().getUser().getAvatarUrl()));
-    }
-
-    @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return data;
+        ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(EmbedType.GET_VOTE, data));
     }
 
     @Override
@@ -59,7 +54,7 @@ public class VoteCommand implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
+    public CommandData getData() {
+        return data;
     }
 }

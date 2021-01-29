@@ -4,52 +4,39 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
-import thermostat.util.ArgumentParser;
-import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.entities.CommandData;
+import thermostat.util.entities.SettingsData;
 import thermostat.util.enumeration.CommandType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
-import static thermostat.util.ArgumentParser.parseArguments;
 import static thermostat.util.ArgumentParser.parseMention;
 
 /**
  * Command that when called, shows an embed
  * with the settings of a specific channel.
  */
-@SuppressWarnings("ConstantConditions")
 public class SettingsCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(SettingsCommand.class);
-
-    private GuildMessageReceivedEvent data;
-    private Map<String, List<String>> parameters;
-    private final String prefix;
-    private final long commandId;
+    private final CommandData data;
 
     public SettingsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.commandId = MiscellaneousFunctions.getCommandId();
-        this.prefix = prefix;
+        this.data = new CommandData(data, arguments, prefix);
 
-        try {
-            this.parameters = parseArguments(arguments);
-        } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this, Embeds.inputError(ex.getLocalizedMessage(), this.commandId), ex);
-            return;
-        }
-
-        if (ArgumentParser.validateEvent(data)) {
-            this.data = data;
-        } else {
-            ResponseDispatcher.commandFailed(this, Embeds.error("Event was not valid. Please try again."), "Event had a null member.");
+        if (this.data.parameters == null) {
+            ResponseDispatcher.commandFailed(
+                    this,
+                    Embeds.getEmbed(EmbedType.HELP_SETTINGS, this.data),
+                    "Bad arguments.");
             return;
         }
 
@@ -63,12 +50,12 @@ public class SettingsCommand implements Command {
      */
     @Override
     public void run() {
-        List<String> channels = parameters.get("c");
+        List<String> channels = data.parameters.get("c");
         String channelId;
 
         if (channels == null) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.expandedHelpSettings(prefix),
+                    Embeds.getEmbed(EmbedType.HELP_SETTINGS, data),
                     "User did not provide a bound argument.");
             return;
         }
@@ -76,15 +63,18 @@ public class SettingsCommand implements Command {
         // Check if user has given a channel. If they have not, assign
         // command channel to the channel where the event was triggered.
         if (channels.isEmpty()) {
-            channelId = data.getChannel().getId();
+            channelId = data.event.getChannel().getId();
         } else {
             channelId = parseMention(channels.get(0), "#");
 
             // if channel doesn't exist, show error msg
-            if (channelId.isEmpty() || data.getGuild().getTextChannelById(channelId) == null) {
+            if (channelId.isEmpty() || data.event.getGuild().getTextChannelById(channelId) == null) {
                 ResponseDispatcher.commandFailed(this,
-                        Embeds.inputError("Channel \"" + channels.get(0) + "\" was not found.", commandId),
-                        "Channel that user provided wasn't found.");
+                        Embeds.getEmbed(EmbedType.ERR_INPUT, data,
+                                "Channel \"" + channels.get(0) + "\" was not found.",
+                                "Channel that user provided wasn't found."
+                        )
+                );
                 return;
             }
         }
@@ -117,19 +107,12 @@ public class SettingsCommand implements Command {
                     filtered = rs.getBoolean(5);
                 }
 
-                TextChannel settingsChannel = data.getGuild().getTextChannelById(channelId);
+                TextChannel settingsChannel = data.event.getGuild().getTextChannelById(channelId);
 
                 if (settingsChannel != null) {
+                    SettingsData settingsData = new SettingsData(settingsChannel.getName(), min, max, sens, monitored, filtered);
                     ResponseDispatcher.commandSucceeded(this,
-                            Embeds.channelSettings(settingsChannel.getName(),
-                                    data.getMember().getUser().getAsTag(),
-                                    data.getMember().getUser().getAvatarUrl(),
-                                    min,
-                                    max,
-                                    sens,
-                                    monitored,
-                                    filtered
-                            )
+                            Embeds.getEmbed(EmbedType.CHANNEL_SETTINGS, data, settingsData)
                     );
                 }
 
@@ -137,14 +120,9 @@ public class SettingsCommand implements Command {
             });
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), commandId),
+                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
                     ex);
         }
-    }
-
-    @Override
-    public GuildMessageReceivedEvent getEvent() {
-        return data;
     }
 
     @Override
@@ -158,7 +136,7 @@ public class SettingsCommand implements Command {
     }
 
     @Override
-    public long getId() {
-        return commandId;
+    public CommandData getData() {
+        return data;
     }
 }

@@ -6,12 +6,12 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.Embeds;
+import thermostat.commands.Command;
 import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.ThermosCharts;
-import thermostat.util.MiscellaneousFunctions;
-import thermostat.commands.Command;
+import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -25,7 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
-import thermostat.util.entities.CommandData;
 import static thermostat.util.ArgumentParser.hasArguments;
 
 public class ChartCommand implements Command {
@@ -38,8 +37,8 @@ public class ChartCommand implements Command {
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
                     this,
-                    Embeds.getEmbed(EmbedType.CHART_HOLDER, this.data),
-                    "Bad arguments.");
+                    Embeds.getEmbed(EmbedType.HELP_CHART, this.data),
+                    "No arguments provided.");
             return;
         }
 
@@ -69,7 +68,7 @@ public class ChartCommand implements Command {
         switch (chartType.get(0).toLowerCase()) {
             case "slowfreq" -> sendFrequencyChart();
             default -> ResponseDispatcher.commandFailed(this,
-                    Embeds.inputError("Chart \"" + chartType.get(0) + "\" does not exist.", data.commandId),
+                    Embeds.getEmbed(EmbedType.ERR_INPUT, data, "Chart \"" + chartType.get(0) + "\" does not exist."),
                     "User provided an incorrect chart type."
             );
         }
@@ -93,7 +92,7 @@ public class ChartCommand implements Command {
             });
         } catch (Exception ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), data.commandId),
+                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
                     "Exception thrown while querying slowmode data.");
             return;
         }
@@ -102,8 +101,9 @@ public class ChartCommand implements Command {
         // in this guild.
         if (top5slowmode.isEmpty()) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error("Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
-                            "Get some channels slowmoded with `th!monitor`.", data.commandId),
+                    Embeds.getEmbed(EmbedType.ERR_FIX, data,
+                            "Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
+                            "Get some channels slowmoded with `th!monitor`."),
                     "Channels were never slowmoded in this guild.");
             return;
         }
@@ -137,7 +137,7 @@ public class ChartCommand implements Command {
             inputStream = new ByteArrayInputStream(baos.toByteArray());
         } catch (IOException ex) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.error(ex.getLocalizedMessage(), MiscellaneousFunctions.getCommandId()),
+                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
                     ex);
             return;
         }
@@ -152,7 +152,17 @@ public class ChartCommand implements Command {
     }
 
     @Override
+    public Logger getLogger() {
+        return lgr;
+    }
+
+    @Override
     public CommandData getData() {
         return data;
+    }
+
+    @Override
+    public CommandType getType() {
+        return CommandType.CHART;
     }
 }

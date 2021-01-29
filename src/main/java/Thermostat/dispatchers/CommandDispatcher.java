@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,10 +28,6 @@ public final class CommandDispatcher {
 
     static {
         Runnable drainCommands = () -> {
-            // Boolean that shows if the thread should wait
-            // for the problem to be resolved.
-            boolean backOff = false;
-
             while (true) {
                 try {
                     if (Thread.interrupted()) {
@@ -63,8 +60,10 @@ public final class CommandDispatcher {
             lgr.error("Request queue was interrupted!");
             ResponseDispatcher.commandFailed(
                     command,
-                    Embeds.error(ex.getCause().toString(), command.getId()),
-                    ex
+                    Embeds.getEmbed(EmbedType.ERR_FIX, command.getData(),
+                            "Something went wrong on our end while handling your command.",
+                            "Please try again."
+                            ), ex
             );
         }
     }
