@@ -71,6 +71,7 @@ public class ReactionMenu {
 
             switch (this.getMenuType()) {
                 case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT));
+                default -> throw new RuntimeException("Unknown menu type");
             }
         }, 200, TimeUnit.SECONDS);
     }

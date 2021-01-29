@@ -89,6 +89,7 @@ public class MenuDispatcher extends ListenerAdapter {
                     case UNMONITORALL -> matchUnMonitorAllReaction(menu, event);
                     case UNFILTERALL -> matchUnFilterAllReaction(menu, event);
                     case SELECTION -> matchInfoReaction(menu, event);
+                    default -> expungeMenu(event.getMessageId());
                 }
             }
         } catch (InsufficientPermissionsException ex) {
@@ -118,13 +119,13 @@ public class MenuDispatcher extends ListenerAdapter {
      * @param reactionMenu The monitored message.
      * @param event The event of the reaction being added.
      */
-    public void matchInfoReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws InsufficientPermissionsException, IllegalStateException {
+    public void matchInfoReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event)
+            throws InsufficientPermissionsException, IllegalStateException {
         if (!reactionMenu.getOwnerId().equals(event.getUserId())) {
             return;
         }
 
         String prefix = CommandTrigger.getGuildPrefix(event.getGuild().getId());
-
         reactionMenu.resetDestructionTimer(event.getChannel());
         Messages.clearReactions(event.getChannel(), event.getMessageId());
 
@@ -166,10 +167,12 @@ public class MenuDispatcher extends ListenerAdapter {
                 reactionMenu.invalidate();
                 Messages.deleteMessage(event.getChannel(), event.getMessageId());
             }
+            default -> { return; }
         }
     }
 
-    public void matchUnMonitorAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws SQLException, InsufficientPermissionsException {
+    public void matchUnMonitorAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event)
+            throws SQLException, InsufficientPermissionsException {
         if (
                 !reactionMenu.getOwnerId().equals(event.getUserId()) ||
                 !event.getReactionEmote().getEmoji().equals("☑")
