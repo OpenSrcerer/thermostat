@@ -16,6 +16,22 @@ public class CommandData {
     public final String prefix;
     public final long commandId;
 
+    public CommandData(final GuildMessageReceivedEvent event)
+    {
+        this.commandId = MiscellaneousFunctions.getCommandId();
+        this.prefix = null;
+        this.parameters = null;
+        this.event = event;
+    }
+
+    public CommandData(final GuildMessageReceivedEvent event, final String prefix)
+    {
+        this.commandId = MiscellaneousFunctions.getCommandId();
+        this.prefix = prefix;
+        this.parameters = null;
+        this.event = event;
+    }
+
     public CommandData(final GuildMessageReceivedEvent event,
                        final List<String> arguments,
                        final String prefix)
