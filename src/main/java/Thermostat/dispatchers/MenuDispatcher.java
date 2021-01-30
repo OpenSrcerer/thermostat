@@ -80,7 +80,7 @@ public class MenuDispatcher extends ListenerAdapter {
      * Tries to retrieve a menu on a Reaction being added to a message.
      * @param event Event where the reaction was added.
      */
-    public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent event) {
+    public void onGuildMessageReactionAdd(@NotNull final GuildMessageReactionAddEvent event) {
         ReactionMenu menu = getMenu(event.getMessageId());
 
         try {
@@ -88,7 +88,7 @@ public class MenuDispatcher extends ListenerAdapter {
                 switch (menu.getMenuType()) {
                     case UNMONITORALL -> matchUnMonitorAllReaction(menu, event);
                     case UNFILTERALL -> matchUnFilterAllReaction(menu, event);
-                    case SELECTION -> matchInfoReaction(menu, event);
+                    case SELECTION, MONITOR, UTILITY, OTHER -> matchInfoReaction(menu, event);
                     default -> expungeMenu(event.getMessageId());
                 }
             }
@@ -96,7 +96,8 @@ public class MenuDispatcher extends ListenerAdapter {
             Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet()));
             expungeMenu(event.getMessageId());
         } catch (Exception ex) {
-            Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, ex.getMessage()));
+            Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, "Something went wrong with the menu. Please try again."));
+            ex.printStackTrace();
         }
     }
 

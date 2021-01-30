@@ -129,7 +129,7 @@ public final class Messages {
         );
 
         if (missingPermissions.isEmpty()) {
-            channel.retrieveMessageById(msgId).queue(message -> message.delete().queueAfter(500, TimeUnit.MILLISECONDS));
+            channel.retrieveMessageById(msgId).queue(message -> message.delete().queue());
         } else {
             throw new InsufficientPermissionsException(missingPermissions);
         }
@@ -149,35 +149,12 @@ public final class Messages {
 
         if (missingPermissions.isEmpty()) {
             channel.retrieveMessageById(msgId).queue(message -> {
-                long reactionsDuration = 750;
+                long reactionsDuration = 0;
                 for (String it : unicode) {
                     message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS);
-                    reactionsDuration += 500;
+                    reactionsDuration += 150;
                 }
             });
-        } else {
-            throw new InsufficientPermissionsException(missingPermissions);
-        }
-    }
-
-    /**
-     * Adds a list of reactions to a given message.
-     * @param message The message which will have reactions added to it.
-     * @param unicode The unicode emoji to add as a reaction.
-     */
-    public static void addReactions(Message message, List<String> unicode) throws InsufficientPermissionsException {
-        EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
-                message.getGuild().getSelfMember(), message.getTextChannel(),
-                CommandType.ADD_REACTIONS.getThermoPerms()
-        );
-
-        if (missingPermissions.isEmpty()) {
-            long reactionsDuration = 750;
-            for (String it : unicode) {
-                message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS);
-                // Timer to prevent RateLimiting
-                reactionsDuration += 500;
-            }
         } else {
             throw new InsufficientPermissionsException(missingPermissions);
         }

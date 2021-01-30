@@ -64,7 +64,7 @@ public class InfoCommand implements Command {
         Messages.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION, data),
         message -> {
             try {
-                Messages.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
+                Messages.addReactions(data.event.getChannel(), message.getId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 new ReactionMenu(
                         MenuType.SELECTION, data.event.getMember().getId(),
                         message.getId(), data.event.getChannel()
