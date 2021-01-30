@@ -60,17 +60,17 @@ public class ArgumentParser {
      * two StringBuilders with arguments that were invalid.
      */
     @Nonnull
-    public static Arguments parseChannelArgument(TextChannel eventChannel, List<String> rawChannels) {
+    public static Arguments parseChannelArgument(@Nonnull final TextChannel eventChannel, @Nullable final List<String> rawChannels) {
+        ArrayList<String> newArgs = new ArrayList<>();
         StringBuilder
                 // Channels that could not be found
                 nonValid = new StringBuilder(),
                 // Channels that are valid, but are not text channels
                 noText = new StringBuilder();
-        ArrayList<String> newArgs = new ArrayList<>();
 
         // if no arguments were valid just add the event channel
         // as the target channel
-        if (rawChannels.isEmpty()) {
+        if (!hasArguments(rawChannels)) {
             newArgs.add(eventChannel.getId());
         } else {
             // parses arguments into usable IDs, checks if channels exist
