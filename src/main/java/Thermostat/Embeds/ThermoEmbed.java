@@ -44,7 +44,7 @@ public class ThermoEmbed extends EmbedBuilder {
         if (data.event.getMember().getUser() == null) {
             footerLine = "Command ID: " + data.commandId;
         } else {
-            footerLine = "Requested by " + data.event.getMember().getUser() + "\nCommand ID: " + data.commandId;
+            footerLine = "Requested by " + data.event.getMember().getUser().getAsTag() + "\nCommand ID: " + data.commandId;
         }
 
         setTimestamp(Instant.now());
