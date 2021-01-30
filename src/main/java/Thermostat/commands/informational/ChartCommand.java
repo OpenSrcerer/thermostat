@@ -102,8 +102,10 @@ public class ChartCommand implements Command {
         if (top5slowmode.isEmpty()) {
             ResponseDispatcher.commandFailed(this,
                     Embeds.getEmbed(EmbedType.ERR_FIX, data,
-                            "Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
-                            "Get some channels slowmoded with `th!monitor`."),
+                            Arrays.asList(
+                                    "Could not pull top slowmode data from database because no channels were ever slowmoded in your guild.",
+                                    "Get some channels slowmoded with `th!monitor`.")
+                            ),
                     "Channels were never slowmoded in this guild.");
             return;
         }

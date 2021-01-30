@@ -71,9 +71,8 @@ public class SettingsCommand implements Command {
             if (channelId.isEmpty() || data.event.getGuild().getTextChannelById(channelId) == null) {
                 ResponseDispatcher.commandFailed(this,
                         Embeds.getEmbed(EmbedType.ERR_INPUT, data,
-                                "Channel \"" + channels.get(0) + "\" was not found.",
-                                "Channel that user provided wasn't found."
-                        )
+                                        "Channel \"" + channels.get(0) + "\" was not found.)"),
+                        "Channel that user provided wasn't found."
                 );
                 return;
             }

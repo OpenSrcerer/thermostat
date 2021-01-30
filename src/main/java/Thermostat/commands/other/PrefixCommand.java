@@ -29,10 +29,10 @@ public class PrefixCommand implements Command {
         this.data = new CommandData(data, arguments, prefix);
 
         if (this.data.parameters == null) {
-            ResponseDispatcher.commandFailed(
+            ResponseDispatcher.commandSucceeded(
                     this,
-                    Embeds.getEmbed(EmbedType.ERR, this.data),
-                    "Bad arguments.");
+                    Embeds.getEmbed(EmbedType.GET_PREFIX, this.data)
+            );
             return;
         }
 

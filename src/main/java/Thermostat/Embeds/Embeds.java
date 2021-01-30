@@ -17,21 +17,23 @@ import java.util.Set;
  */
 public final class Embeds {
     @EverythingIsNonNull
+    public static ThermoEmbed getEmbed(final EmbedType type) {
+        return matchTypeToOptions(type, new ThermoEmbed(), null, null);
+    }
+
+    @EverythingIsNonNull
     public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data) {
-        ThermoEmbed embed = new ThermoEmbed(data);
-        return matchTypeToOptions(type, embed, data, null);
+        return matchTypeToOptions(type, new ThermoEmbed(data), data, null);
     }
 
     @EverythingIsNonNull
-    public static ThermoEmbed getEmbed(final EmbedType type, Object... options) {
-        ThermoEmbed embed = new ThermoEmbed();
-        return matchTypeToOptions(type, embed, null, options);
+    public static ThermoEmbed getEmbed(final EmbedType type, Object options) {
+        return matchTypeToOptions(type, new ThermoEmbed(), null, options);
     }
 
     @EverythingIsNonNull
-    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data, final Object... options) {
-        ThermoEmbed embed = new ThermoEmbed(data);
-        return matchTypeToOptions(type, embed, data, options);
+    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data, final Object options) {
+        return matchTypeToOptions(type, new ThermoEmbed(data), data, options);
     }
 
     @SuppressWarnings("unchecked")
@@ -42,7 +44,7 @@ public final class Embeds {
             return switch (type) {
                 case SAME_PREFIX ->             samePrefix(embed, data.prefix);
                 case RESET_PREFIX ->            resetPrefix(embed);
-                case NEW_PREFIX ->              setPrefix(embed, data.prefix);
+                case GET_PREFIX ->              getPrefix(embed, data.prefix, data.event.getGuild().getName());
                 case GET_VOTE ->                getVote(embed);
                 case INVITE_SERVER ->           inviteServer(embed);
                 case MISSED_PROMPT ->           missedPrompt(embed);
@@ -58,25 +60,25 @@ public final class Embeds {
                 case HELP_SETBOUNDS ->          helpSetBounds(embed, data.prefix);
                 case HELP_PREFIX ->             helpPrefix(embed, data.prefix);
                 case HELP_FILTER ->             helpFilter(embed, data.prefix);
-                case MONITOR_INFO ->            getMonitorInfo(embed, data.prefix);
-                case UTILITY_INFO ->            getUtilityInfo(embed, data.prefix);
-                case OTHER_INFO ->              getOtherInfo(embed, data.prefix);
                 case SELECTION ->               getInfoSelection(embed);
-                default ->                      embed;
+                default ->                      throw new IllegalArgumentException();
             };
         } else {
             return switch (type) {
+                case MONITOR_INFO ->            getMonitorInfo(embed, (String) options);
+                case UTILITY_INFO ->            getUtilityInfo(embed, (String) options);
+                case OTHER_INFO ->              getOtherInfo(embed, (String) options);
                 case CHART_HOLDER ->            chartHolder(embed, (String) options);
-                case GET_PREFIX ->              getPrefix(embed, data.prefix, (String) options);
+                case NEW_PREFIX ->              setPrefix(embed, (String) options);
                 case CHANNEL_SETTINGS ->        channelSettings(embed, (SettingsData) options);
                 case ALL_REMOVED ->             allRemoved(embed, (String) options);
-                case ERR_PERMISSION ->          errPermission(embed, (Set<Permission>[]) options);
+                case ERR_PERMISSION ->          errPermission(embed, (List<Set<Permission>>) options);
                 case ERR_PERMISSION_THERMO ->   errPermission(embed, (Set<Permission>) options);
                 case ERR_INPUT ->               inputError(embed, (String) options);
-                case ERR_FIX ->                 error(embed, (String[]) options);
+                case ERR_FIX ->                 error(embed, (List<String>) options);
                 case ERR ->                     error(embed, (String) options);
                 case DYNAMIC ->                 dynamicEmbed(embed, (List<String>) options);
-                default ->                      embed;
+                default ->                      throw new IllegalArgumentException();
             };
         }
     }
@@ -101,8 +103,8 @@ public final class Embeds {
         return embed;
     }
 
-    private static ThermoEmbed setPrefix(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Thermostat will now reply to: " + "`" + prefix + "` .");
+    private static ThermoEmbed setPrefix(final ThermoEmbed embed, final String newPrefix) {
+        embed.setTitle("Thermostat will now reply to: " + "`" + newPrefix + "` .");
         return embed;
     }
 
@@ -312,17 +314,17 @@ public final class Embeds {
     // **                            ERROR                          **
     // ***************************************************************
 
-    private static ThermoEmbed errPermission(final ThermoEmbed embed, final Set<Permission>[] permissions) {
+    private static ThermoEmbed errPermission(final ThermoEmbed embed, final List<Set<Permission>> permissions) {
         embed.setTitle("❌ Error encountered! Details:");
 
-        if (!permissions[0].isEmpty()) {
+        if (!permissions.get(0).isEmpty()) {
             StringBuilder missingPerms = new StringBuilder();
-            permissions[0].forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
+            permissions.get(0).forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
             embed.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
         }
-        if (!permissions[1].isEmpty()) {
+        if (!permissions.get(1).isEmpty()) {
             StringBuilder missingPerms = new StringBuilder();
-            permissions[1].forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
+            permissions.get(1).forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
             embed.addField("You lack these permissions:", missingPerms.toString(), false);
         }
         return embed;
@@ -343,10 +345,10 @@ public final class Embeds {
         return embed;
     }
 
-    private static ThermoEmbed error(final ThermoEmbed embed, final String[] error) {
+    private static ThermoEmbed error(final ThermoEmbed embed, final List<String> error) {
         embed.setTitle("❌ An error has occurred. ❌");
-        embed.addField("Error details:", error[0], false);
-        embed.addField("Suggested fix: ", error[1], false);
+        embed.addField("Error details:", error.get(0), false);
+        embed.addField("Suggested fix: ", error.get(1), false);
         embed.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         return embed;
     }

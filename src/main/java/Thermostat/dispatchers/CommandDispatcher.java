@@ -3,11 +3,12 @@ package thermostat.dispatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.embeds.Embeds;
 import thermostat.commands.Command;
+import thermostat.embeds.Embeds;
 import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -61,9 +62,10 @@ public final class CommandDispatcher {
             ResponseDispatcher.commandFailed(
                     command,
                     Embeds.getEmbed(EmbedType.ERR_FIX, command.getData(),
-                            "Something went wrong on our end while handling your command.",
-                            "Please try again."
-                            ), ex
+                            Arrays.asList("Something went wrong on our end while handling your command.",
+                                    "Please try again."
+                            )
+                    ), ex
             );
         }
     }

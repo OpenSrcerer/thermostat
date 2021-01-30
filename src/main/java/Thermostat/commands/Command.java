@@ -12,6 +12,7 @@ import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import static thermostat.util.PermissionComputer.getMissingPermissions;
@@ -63,7 +64,7 @@ public interface Command extends Runnable {
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
                                         " " + missingThermostatPerms.toString() + " " + missingMemberPerms.toString() + "");
-                                Messages.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION, command.getData(), missingThermostatPerms, missingMemberPerms));
+                                Messages.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION, command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms)));
                             }
                         }
                 );
