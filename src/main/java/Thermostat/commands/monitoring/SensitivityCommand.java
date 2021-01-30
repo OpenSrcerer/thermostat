@@ -62,7 +62,7 @@ public class SensitivityCommand implements Command {
         try {
             offset = Float.parseFloat(sensitivity.get(0));
 
-            if (offset >= -10 && offset <= 10) {
+            if (offset <= -10 && offset >= 10) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
