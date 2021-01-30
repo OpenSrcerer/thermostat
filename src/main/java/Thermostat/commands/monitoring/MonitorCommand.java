@@ -65,7 +65,8 @@ public class MonitorCommand implements Command {
         final List<String> allSwitch = data.parameters.get("-all");
 
         if (offSwitch == null && onSwitch == null) {
-            ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.MONITOR_INFO, data));
+            ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.HELP_MONITOR, data));
+            return;
         } else if (allSwitch != null) {
             unMonitorAll();
         }
@@ -79,6 +80,8 @@ public class MonitorCommand implements Command {
         // #1 - Retrieve target channels
         {
             Arguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
+            // Channels.clear throws exception
+            // Move Arguments to a separate function??
             channels.clear();
 
             nonValid = results.nonValid;

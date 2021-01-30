@@ -168,6 +168,7 @@ public class Synapse {
              PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                      "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                      "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
+             statement.setString(1, guildId);
              ResultSet rs = statement.executeQuery();
 
              while (rs.next()) {
