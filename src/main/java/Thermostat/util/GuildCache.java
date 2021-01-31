@@ -4,6 +4,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.util.entities.CachedGuild;
 import thermostat.util.entities.Synapse;
 
+import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -74,29 +75,23 @@ public class GuildCache {
     }
 
     /**
-     * Get the synapse of a Guild.
-     * @param guildId ID of Guild.
-     * @return Guild's Synapse. Null if Guild is not cached.
+     * Set the Synapse object for a Guild.
+     * @param guildId ID of guild.
+     * @return Newly set Synapse.
      */
-    public static Synapse getSynapse(String guildId) {
+    @Nonnull
+    public static Synapse getSynapse(final String guildId) {
         CachedGuild guild = cache.get(guildId);
+
         if (guild == null) {
             guild = cacheGuild(guildId, null);
         }
-        return guild.getSynapse();
-    }
 
-    /**
-     * Set the Synapse object for a Guild.
-     * @param guildId ID of guild.
-     * @return Newly set synapse.
-     */
-    public static Synapse setSynapse(String guildId) throws RuntimeException, SQLException {
-        CachedGuild guild = cache.get(guildId);
-        if (guild != null) {
-            return guild.setSynapse(guildId);
+        if (guild.getSynapse() == null) {
+            guild.setSynapse(guildId);
         }
-        throw new RuntimeException("Guild was not found in cache.");
+
+        return guild.getSynapse();
     }
 
     /**

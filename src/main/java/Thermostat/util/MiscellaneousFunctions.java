@@ -77,7 +77,7 @@ public abstract class MiscellaneousFunctions {
     public static String toQueryString(@Nonnull final List<String> ids) {
         StringBuilder builder = new StringBuilder();
         for (String id : ids) {
-            builder.append("'").append(id).append("',");
+            builder.append(id).append(",");
         }
         String returnString = builder.toString();
 

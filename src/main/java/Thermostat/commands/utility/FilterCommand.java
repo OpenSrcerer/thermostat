@@ -6,15 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
-import thermostat.util.entities.Arguments;
+import thermostat.util.entities.CommandArguments;
 import thermostat.util.entities.CommandData;
-import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.DBActionType;
 import thermostat.util.enumeration.EmbedType;
@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-@SuppressWarnings("ConstantConditions")
 public class FilterCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(FilterCommand.class);
     private final CommandData data;
@@ -74,7 +73,7 @@ public class FilterCommand implements Command {
 
         // #1 - Parse Target Channels
         {
-            Arguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
+            CommandArguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
             channels.clear();
 
             nonValid = results.nonValid;
@@ -120,15 +119,7 @@ public class FilterCommand implements Command {
         Consumer<Message> consumer = message -> {
             try {
                 Messages.addReaction(message, "☑");
-                new ReactionMenu(
-                        MenuType.UNFILTERALL, data.event.getMember().getId(),
-                        message.getId(), data.event.getChannel()
-                );
-                ResponseDispatcher.commandSucceeded(this,
-                        Embeds.getEmbed(EmbedType.ALL_REMOVED, data,
-                                "filtered"
-                        )
-                );
+                MenuDispatcher.addMenu(MenuType.UNFILTERALL, message.getId(), this);
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this,
                         Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),

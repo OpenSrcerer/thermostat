@@ -49,6 +49,7 @@ public final class Embeds {
                 case INVITE_SERVER ->           inviteServer(embed);
                 case MISSED_PROMPT ->           missedPrompt(embed);
                 case PROMPT ->                  promptEmbed(embed);
+                case ACTION_SUCCESSFUL ->       actionSuccessful(embed);
                 case HELP_INFO ->               helpInfo(embed, data.prefix);
                 case HELP_INVITE ->             helpInvite(embed, data.prefix);
                 case HELP_VOTE ->               helpVote(embed, data.prefix);
@@ -71,7 +72,6 @@ public final class Embeds {
                 case CHART_HOLDER ->            chartHolder(embed, (String) options);
                 case NEW_PREFIX ->              setPrefix(embed, (String) options);
                 case CHANNEL_SETTINGS ->        channelSettings(embed, (SettingsData) options);
-                case ALL_REMOVED ->             allRemoved(embed, (String) options);
                 case ERR_PERMISSION ->          errPermission(embed, (List<Set<Permission>>) options);
                 case ERR_PERMISSION_THERMO ->   errPermission(embed, (Set<Permission>) options);
                 case ERR_INPUT ->               inputError(embed, (String) options);
@@ -174,8 +174,8 @@ public final class Embeds {
         return embed;
     }
 
-    private static ThermoEmbed allRemoved(final ThermoEmbed embed, final String action) {
-        embed.setTitle("All channels are no longer being " + action + ".");
+    private static ThermoEmbed actionSuccessful(final ThermoEmbed embed) {
+        embed.setTitle("Action was completed successfully.");
         return embed;
     }
 

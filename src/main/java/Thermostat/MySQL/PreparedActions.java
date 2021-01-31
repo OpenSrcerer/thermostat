@@ -65,13 +65,15 @@ public final class PreparedActions {
      * @param channels  The ID of every channel.
      */
     @EverythingIsNonNull
-    public static StringBuilder modifyChannel(final Connection conn, final DBActionType action, final int value, final String guildId, final List<String> channels) throws SQLException {
+    public static StringBuilder modifyChannel(final Connection conn, final DBActionType action, final int value,
+                                              final String guildId, final List<String> channels) throws SQLException
+    {
         StringBuilder builder = new StringBuilder();
 
         PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
                 "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
                 "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
-                "SET " + action.sqlAction + " WHERE CHANNEL_SETTINGS.CHANNEL_ID IN (?)" +
+                "SET " + action.sqlAction1 + " WHERE CAST(CHANNEL_SETTINGS.CHANNEL_ID AS VARCHAR(60)) IN (?)" +
                 " AND GUILDS.GUILD_ID = ?");
 
         statement.setInt(1, value);

@@ -5,9 +5,10 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
-import thermostat.embeds.Embeds;
 import thermostat.Messages;
+import thermostat.commands.Command;
 import thermostat.commands.CommandTrigger;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.entities.InsufficientPermissionsException;
@@ -38,12 +39,13 @@ public class MenuDispatcher extends ListenerAdapter {
     private static final Map<String, ReactionMenu> cache = new ReferenceMap<>();
 
     /**
-     * Removes a ReactionMenu from the cache.
-     * @param messageId ID of ReactionMenu.
-     * @param message Object that represents Menu.
+     * Adds a new ReactionMenu to the cache.
+     * @param type Type of ReactionMenu.
+     * @param messageId Message ID of ReactionMenu.
+     * @param command The Command that created the ReactionMenu.
      */
-    public static void addMenu(String messageId, ReactionMenu message) {
-        cache.put(messageId, message);
+    public static void addMenu(final MenuType type, final String messageId, final Command command) {
+        cache.put(messageId, new ReactionMenu(type, messageId, command));
     }
 
     /**
@@ -86,8 +88,8 @@ public class MenuDispatcher extends ListenerAdapter {
         try {
             if (menu != null) {
                 switch (menu.getMenuType()) {
-                    case UNMONITORALL -> matchUnMonitorAllReaction(menu, event);
-                    case UNFILTERALL -> matchUnFilterAllReaction(menu, event);
+                    case UNMONITORALL -> matchFMReaction(menu, event, DBActionType.MONITOR);
+                    case UNFILTERALL -> matchFMReaction(menu, event, DBActionType.FILTER);
                     case SELECTION, MONITOR, UTILITY, OTHER -> matchInfoReaction(menu, event);
                     default -> expungeMenu(event.getMessageId());
                 }
@@ -172,60 +174,44 @@ public class MenuDispatcher extends ListenerAdapter {
         }
     }
 
-    public void matchUnMonitorAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event)
-            throws SQLException, InsufficientPermissionsException {
-        if (
-                !reactionMenu.getOwnerId().equals(event.getUserId()) ||
-                !event.getReactionEmote().getEmoji().equals("☑")
-        ) {
+    /**
+     * Checks if a given reaction matches a GuildMessageReactionAddEvent, then runs a Filter or Monitor action
+     * on the database.
+     * @param reactionMenu ReactionMenu to compare values with.
+     * @param event Reaction event data.
+     * @param type Type of action to perform (Filter/Monitor).
+     * @throws SQLException If action could not be performed.
+     * @throws InsufficientPermissionsException Thermostat lacks permissions to add reactions.
+     */
+    public void matchFMReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event, final DBActionType type)
+            throws SQLException, InsufficientPermissionsException
+    {
+        if (!reactionMenu.getOwnerId().equals(event.getUserId()) || !event.getReactionEmote().getEmoji().equals("☑")) {
             return;
         }
 
         if (event.getReactionEmote().getEmoji().equals("☑")) {
             DataSource.execute(conn -> {
-                List<String> channels = new ArrayList<>();
-                    PreparedStatement pst = conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
-                            "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                            "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
-                    pst.setString(1, event.getGuild().getId());
-                    ResultSet rs = pst.executeQuery();
-
-                    while (rs.next()) {
-                        channels.add(rs.getString(1));
-                    }
-
-                    PreparedActions.modifyChannel(conn, DBActionType.MONITOR, 0, event.getGuild().getId(), channels);
-                    return null;
-                }
-            );
-
-            reactionMenu.invalidate();
-            Messages.deleteMessage(event.getChannel(), event.getMessageId());
-        }
-    }
-
-    public void matchUnFilterAllReaction(ReactionMenu reactionMenu, GuildMessageReactionAddEvent event) throws SQLException, InsufficientPermissionsException {
-        if (
-                !reactionMenu.getOwnerId().equals(event.getUserId()) ||
-                !event.getReactionEmote().getEmoji().equals("☑")
-        ) {
-            return;
-        }
-
-        if (event.getReactionEmote().getEmoji().equals("☑")) {
-            DataSource.execute(conn -> {
-                List<String> channels = new ArrayList<>();
+                        List<String> channels = new ArrayList<>();
                         PreparedStatement pst = conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
-                                        "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                                        "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.FILTERED = 1");
+                                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                                "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS." + type.sqlAction2 + " = 1");
                         pst.setString(1, event.getGuild().getId());
-
                         ResultSet rs = pst.executeQuery();
+
                         while (rs.next()) {
                             channels.add(rs.getString(1));
                         }
 
-                        PreparedActions.modifyChannel(conn, DBActionType.UNFILTER, 0, event.getGuild().getId(), channels);
+                        // Do nothing if the list is empty, but still send a response as if something was done.
+                        // THE ILLUSION OF USER INTERACTION
+                        if (!channels.isEmpty()) {
+                            PreparedActions.modifyChannel(conn, type, 0, event.getGuild().getId(), channels);
+                        }
+                        ResponseDispatcher.commandSucceeded(reactionMenu.getCommand(),
+                                Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
+                        );
+
                         return null;
                     }
             );

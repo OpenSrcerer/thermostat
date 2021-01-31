@@ -16,7 +16,7 @@ public enum EmbedType {
     CHANNEL_SETTINGS,
     GET_VOTE,
     INVITE_SERVER,
-    ALL_REMOVED,
+    ACTION_SUCCESSFUL,
     PROMPT,
     MISSED_PROMPT,
 

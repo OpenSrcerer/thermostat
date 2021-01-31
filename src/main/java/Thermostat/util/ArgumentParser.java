@@ -3,7 +3,7 @@ package thermostat.util;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import thermostat.util.entities.Arguments;
+import thermostat.util.entities.CommandArguments;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,7 +60,7 @@ public class ArgumentParser {
      * two StringBuilders with arguments that were invalid.
      */
     @Nonnull
-    public static Arguments parseChannelArgument(@Nonnull final TextChannel eventChannel, @Nullable final List<String> rawChannels) {
+    public static CommandArguments parseChannelArgument(@Nonnull final TextChannel eventChannel, @Nullable final List<String> rawChannels) {
         ArrayList<String> newArgs = new ArrayList<>();
         StringBuilder
                 // Channels that could not be found
@@ -112,7 +112,7 @@ public class ArgumentParser {
             }
         }
 
-        return new Arguments(nonValid, noText, newArgs);
+        return new CommandArguments(nonValid, noText, newArgs);
     }
 
     /**

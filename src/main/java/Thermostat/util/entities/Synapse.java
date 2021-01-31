@@ -72,7 +72,7 @@ public class Synapse {
      * Create a new Synapse that checks a Guild periodically.
      * @param guildId ID of Guild to check.
      */
-    public Synapse(@Nonnull String guildId) throws SQLException {
+    public Synapse(@Nonnull String guildId) {
         this.guildId = guildId;
         this.monitoredChannels = initializeMonitoredChannels(guildId);
 
@@ -157,42 +157,45 @@ public class Synapse {
      * Initializes monitored channels Map for a Synapse.
      * @param guildId ID of Synapse's guild.
      * @return A monitor Map for a Synapse.
-     * @throws SQLException If something went wrong while connecting to the database.
      */
     @Nonnull
-    private static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(final String guildId) throws SQLException {
+    private static Map<String, LinkedList<OffsetDateTime>> initializeMonitoredChannels(final String guildId) {
         Map<String, LinkedList<OffsetDateTime>> monChannels = new HashMap<>();
 
-         DataSource.execute(conn -> {
-             ArrayList<String> databaseMonitoredChannels = new ArrayList<>();
-             PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
-                     "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                     "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
-             statement.setString(1, guildId);
-             ResultSet rs = statement.executeQuery();
+        try {
+            DataSource.execute(conn -> {
+                ArrayList<String> databaseMonitoredChannels = new ArrayList<>();
+                PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
+                        "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                        "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");
+                statement.setString(1, guildId);
+                ResultSet rs = statement.executeQuery();
 
-             while (rs.next()) {
-                 databaseMonitoredChannels.add(rs.getString(1));
-             }
+                while (rs.next()) {
+                    databaseMonitoredChannels.add(rs.getString(1));
+                }
 
-             Guild guild = Thermostat.thermo.getGuildById(guildId);
-             if (guild == null || databaseMonitoredChannels.isEmpty()) {
-                 return null;
-             }
+                Guild guild = Thermostat.thermo.getGuildById(guildId);
+                if (guild == null || databaseMonitoredChannels.isEmpty()) {
+                    return null;
+                }
 
-             // Get all channel ids from list of text channels
-             List<String> channelsInGuild = guild.getTextChannels().stream().map(ISnowflake::getId).collect(Collectors.toList());
+                // Get all channel ids from list of text channels
+                List<String> channelsInGuild = guild.getTextChannels().stream().map(ISnowflake::getId).collect(Collectors.toList());
 
-             for (final String channel : databaseMonitoredChannels) {
-                 if (channelsInGuild.contains(channel)) {
-                     monChannels.put(channel, new LinkedList<>());
-                 } else {
-                     PreparedActions.deleteChannel(conn, guildId, channel);
-                 }
-             }
+                for (final String channel : databaseMonitoredChannels) {
+                    if (channelsInGuild.contains(channel)) {
+                        monChannels.put(channel, new LinkedList<>());
+                    } else {
+                        PreparedActions.deleteChannel(conn, guildId, channel);
+                    }
+                }
 
-             return null;
-        });
+                return null;
+            });
+        } catch (SQLException ex) {
+            lgr.warn("Initializing Monitored Channels Failure for " + guildId + ". Falling back to default. Details:", ex);
+        }
 
         return monChannels;
     }

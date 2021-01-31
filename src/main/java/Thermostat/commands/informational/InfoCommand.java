@@ -5,10 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.util.entities.CommandData;
-import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
@@ -65,10 +65,7 @@ public class InfoCommand implements Command {
         message -> {
             try {
                 Messages.addReactions(data.event.getChannel(), message.getId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
-                new ReactionMenu(
-                        MenuType.SELECTION, data.event.getMember().getId(),
-                        message.getId(), data.event.getChannel()
-                );
+                MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
                 ResponseDispatcher.commandSucceeded(this, null);
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex);

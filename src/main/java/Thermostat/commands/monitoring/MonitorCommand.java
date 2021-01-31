@@ -4,17 +4,17 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.embeds.*;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.mySQL.PreparedActions;
+import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
+import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
-import thermostat.util.entities.Arguments;
+import thermostat.util.entities.CommandArguments;
 import thermostat.util.entities.CommandData;
-import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.DBActionType;
 import thermostat.util.enumeration.EmbedType;
@@ -30,7 +30,6 @@ import java.util.function.Consumer;
  * db.properties, upon user running the
  * command.
  */
-@SuppressWarnings("ConstantConditions")
 public class MonitorCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(MonitorCommand.class);
     private final CommandData data;
@@ -41,7 +40,7 @@ public class MonitorCommand implements Command {
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
                     this,
-                    Embeds.getEmbed(EmbedType.ERR, this.data),
+                    Embeds.getEmbed(EmbedType.ERR_INPUT, this.data, "Invalid switch usage."),
                     "Bad arguments.");
             return;
         }
@@ -69,36 +68,34 @@ public class MonitorCommand implements Command {
             return;
         } else if (allSwitch != null) {
             unMonitorAll();
+            return;
         }
 
-        monitorAction(channels, MiscellaneousFunctions.getMonitorValue(onSwitch, offSwitch));
+        monitorAction(
+                ArgumentParser.parseChannelArgument(data.event.getChannel(), channels),
+                MiscellaneousFunctions.getMonitorValue(onSwitch, offSwitch)
+        );
     }
 
-    private void monitorAction(final List<String> channels, final int monitor) {
-        final StringBuilder nonValid, noText, complete;
+    private void monitorAction(final CommandArguments commandArguments, final int monitor) {
+        final StringBuilder complete;
 
-        // #1 - Retrieve target channels
-        {
-            Arguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
-            // Channels.clear throws exception
-            // Move Arguments to a separate function??
-            channels.clear();
-
-            nonValid = results.nonValid;
-            noText = results.noText;
-            channels.addAll(results.newArguments);
-        }
-
-        // #2 - Monitor target channels
+        // Monitor target channels
         try {
-            complete = DataSource.execute(conn -> PreparedActions.modifyChannel(conn, DBActionType.MONITOR, monitor, data.event.getGuild().getId(), channels));
+            complete = DataSource.execute(conn ->
+                    PreparedActions.modifyChannel(
+                            conn, DBActionType.MONITOR,
+                            monitor, data.event.getGuild().getId(),
+                            commandArguments.newArguments
+                    )
+            );
         } catch (Exception ex) {
             // Issues with the database transaction
             ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex);
             return;
         }
 
-        // #3 - Switch message depending on user action
+        // Switch message depending on user action
         final String message;
         if (monitor == 1) {
             message = "Successfully monitored:";
@@ -106,16 +103,16 @@ public class MonitorCommand implements Command {
             message = "Successfully unmonitored:";
         }
 
-        // #4 - Send the results embed to manager
+        // Send the results embed to manager
         ResponseDispatcher.commandSucceeded(this,
                 Embeds.getEmbed(EmbedType.DYNAMIC, data,
                         Arrays.asList(
                                 message,
                                 complete.toString(),
                                 "Channels that were not valid or found:",
-                                nonValid.toString(),
+                                commandArguments.nonValid.toString(),
                                 "Categories with no Text Channels:",
-                                noText.toString()
+                                commandArguments.noText.toString()
                         )
                 )
         );
@@ -126,15 +123,7 @@ public class MonitorCommand implements Command {
         Consumer<Message> consumer = message -> {
             try {
                 Messages.addReaction(message, "☑");
-                new ReactionMenu(
-                        MenuType.UNMONITORALL, data.event.getMember().getId(),
-                        message.getId(), data.event.getChannel()
-                );
-                ResponseDispatcher.commandSucceeded(
-                        this, Embeds.getEmbed(EmbedType.ALL_REMOVED, data,
-                                "monitored"
-                        )
-                );
+                MenuDispatcher.addMenu(MenuType.UNMONITORALL, message.getId(), this);
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this,
                         Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex

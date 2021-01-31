@@ -3,6 +3,7 @@ package thermostat.util.entities;
 import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.Messages;
 import thermostat.Thermostat;
+import thermostat.commands.Command;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.util.enumeration.EmbedType;
@@ -25,14 +26,14 @@ public class ReactionMenu {
     private MenuType menu;
 
     /**
-     * The original initiator of the menu.
-     */
-    private final String ownerId;
-
-    /**
      * This menu's Discord ID.
      */
     private final String messageId;
+
+    /**
+     *
+     */
+    private final Command command;
 
     /**
      * When this menu will stop being cached.
@@ -42,15 +43,15 @@ public class ReactionMenu {
     /**
      * Build a new menu.
      * @param menu Type of menu.
-     * @param ownerId Initiator of this menu.
+     * @param messageId Message ID of this menu.
+     * @param command The Command that created this ReactionMenu.
      */
-    public ReactionMenu(@Nonnull MenuType menu, @Nonnull String ownerId, @Nonnull String messageId, @Nonnull TextChannel channel) {
+    public ReactionMenu(@Nonnull final MenuType menu, @Nonnull final String messageId, @Nonnull final Command command) {
         this.menu = menu;
-        this.ownerId = ownerId;
         this.messageId = messageId;
+        this.command = command;
 
-        rescheduleTimer(channel);
-        MenuDispatcher.addMenu(messageId, this);
+        rescheduleTimer(command.getData().event.getChannel());
     }
 
     /**
@@ -64,7 +65,7 @@ public class ReactionMenu {
     /**
      * Create a new destruction timer for this menu.
      */
-    public void rescheduleTimer(TextChannel channel) {
+    public void rescheduleTimer(final TextChannel channel) {
         this.decachingTimer = Thermostat.executor.schedule(() -> {
             Messages.deleteMessage(channel, messageId);
             MenuDispatcher.removeMenu(messageId);
@@ -91,7 +92,16 @@ public class ReactionMenu {
      */
     @Nonnull
     public String getOwnerId() {
-        return ownerId;
+        return command.getData().event.getAuthor().getId();
+    }
+
+    /**
+     * Get the owner of the menu.
+     * @return ID of menu's owner.
+     */
+    @Nonnull
+    public Command getCommand() {
+        return command;
     }
 
     /**

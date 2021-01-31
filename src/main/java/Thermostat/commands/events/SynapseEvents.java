@@ -32,16 +32,6 @@ public class SynapseEvents extends ListenerAdapter {
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         Synapse synapse = GuildCache.getSynapse(event.getGuild().getId());
 
-        // Create a new Synapse for the guild where the message was sent.
-        if (synapse == null) {
-            try {
-                synapse = GuildCache.setSynapse(event.getGuild().getId());
-            } catch (Exception ex) {
-                lgr.info("Failure in creating a new Synapse for Guild " + event.getGuild().getId() + ".", ex);
-                return;
-            }
-        }
-
         // Re-activate Synapse if it was disabled due to inactivity.
         if (synapse.getState() == SynapseState.INACTIVE && synapse.getChannels().contains(event.getChannel().getId())) {
             synapse.setState(SynapseState.ACTIVE);

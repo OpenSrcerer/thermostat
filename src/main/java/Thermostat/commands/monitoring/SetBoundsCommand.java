@@ -8,7 +8,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.ArgumentParser;
-import thermostat.util.entities.Arguments;
+import thermostat.util.entities.CommandArguments;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
@@ -95,7 +95,7 @@ public class SetBoundsCommand implements Command {
 
         // #1 - Retrieve target channels
         {
-            Arguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
+            CommandArguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
             channels.clear();
 
             nonValid = results.nonValid;
