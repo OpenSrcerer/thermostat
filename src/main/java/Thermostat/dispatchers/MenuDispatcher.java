@@ -19,12 +19,8 @@ import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,8 +84,8 @@ public class MenuDispatcher extends ListenerAdapter {
         try {
             if (menu != null) {
                 switch (menu.getMenuType()) {
-                    case UNMONITORALL -> matchFMReaction(menu, event, DBActionType.MONITOR);
-                    case UNFILTERALL -> matchFMReaction(menu, event, DBActionType.FILTER);
+                    case MONITORALL -> matchFMReaction(menu, event, DBActionType.MONITOR);
+                    case FILTERALL -> matchFMReaction(menu, event, DBActionType.FILTER);
                     case SELECTION, MONITOR, UTILITY, OTHER -> matchInfoReaction(menu, event);
                     default -> expungeMenu(event.getMessageId());
                 }
@@ -98,7 +94,7 @@ public class MenuDispatcher extends ListenerAdapter {
             Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet()));
             expungeMenu(event.getMessageId());
         } catch (Exception ex) {
-            Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, "Something went wrong with the menu. Please try again."));
+            Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, "Something went wrong. Please try again."));
             ex.printStackTrace();
         }
     }
@@ -183,7 +179,8 @@ public class MenuDispatcher extends ListenerAdapter {
      * @throws SQLException If action could not be performed.
      * @throws InsufficientPermissionsException Thermostat lacks permissions to add reactions.
      */
-    public void matchFMReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event, final DBActionType type)
+    public void matchFMReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event,
+                                final DBActionType type, final int actionValue)
             throws SQLException, InsufficientPermissionsException
     {
         if (!reactionMenu.getOwnerId().equals(event.getUserId()) || !event.getReactionEmote().getEmoji().equals("☑")) {
@@ -191,32 +188,16 @@ public class MenuDispatcher extends ListenerAdapter {
         }
 
         if (event.getReactionEmote().getEmoji().equals("☑")) {
-            DataSource.execute(conn -> {
-                        List<String> channels = new ArrayList<>();
-                        PreparedStatement pst = conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
-                                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                                "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS." + type.sqlAction2 + " = 1");
-                        pst.setString(1, event.getGuild().getId());
-                        ResultSet rs = pst.executeQuery();
 
-                        while (rs.next()) {
-                            channels.add(rs.getString(1));
-                        }
+            if (actionValue == 0) {
+                DataSource.execute(PreparedActions.discardChannels(reactionMenu, event, type));
+            } else if (actionValue == 1) {
 
-                        // Do nothing if the list is empty, but still send a response as if something was done.
-                        // THE ILLUSION OF USER INTERACTION
-                        if (!channels.isEmpty()) {
-                            PreparedActions.modifyChannel(conn, type, 0, event.getGuild().getId(), channels);
-                        }
-                        ResponseDispatcher.commandSucceeded(reactionMenu.getCommand(),
-                                Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
-                        );
+            } else {
+                throw new IllegalArgumentException("Action Value must be 0 or 1");
+            }
 
-                        return null;
-                    }
-            );
-
-            reactionMenu.invalidate();
+            expungeMenu(reactionMenu.getMessageId());
             Messages.deleteMessage(event.getChannel(), event.getMessageId());
         }
     }

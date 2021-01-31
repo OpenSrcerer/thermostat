@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
@@ -41,7 +42,7 @@ public class FilterCommand implements Command {
             return;
         }
 
-        checkPermissionsAndQueue(this);
+        CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
     /**
@@ -58,32 +59,27 @@ public class FilterCommand implements Command {
             ResponseDispatcher.commandFailed(this,
                     Embeds.getEmbed(EmbedType.HELP_FILTER, data),
                     "User did not provide arguments.");
+            return;
         } else if (allSwitch != null) {
             unFilterAll();
+            return;
         }
 
-        filterAction(channels, MiscellaneousFunctions.getMonitorValue(onSwitch, offSwitch));
+        filterAction(
+                ArgumentParser.parseChannelArgument(data.event.getChannel(), channels),
+                MiscellaneousFunctions.getMonitorValue(onSwitch, offSwitch)
+        );
     }
 
-    private void filterAction(final List<String> channels, final int filter) {
+    private void filterAction(final CommandArguments arguments, final int filter) {
         DBActionType type = filter == 1 ? DBActionType.FILTER : DBActionType.UNFILTER;
-        final StringBuilder nonValid,
-                noText,
-                complete;
+        final StringBuilder complete;
 
-        // #1 - Parse Target Channels
-        {
-            CommandArguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
-            channels.clear();
-
-            nonValid = results.nonValid;
-            noText = results.noText;
-            channels.addAll(results.newArguments);
-        }
-
-        // #2 - Filter Target Channels
+        // Filter Target Channels
         try {
-            complete = DataSource.execute(conn -> PreparedActions.modifyChannel(conn, type, filter, data.event.getGuild().getId(), channels));
+            complete = DataSource.execute(conn -> PreparedActions.modifyChannel(
+                    conn, type, filter, data.event.getGuild().getId(), arguments.channels)
+            );
         } catch (SQLException ex) {
             ResponseDispatcher.commandFailed(this,
                     Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
@@ -91,7 +87,7 @@ public class FilterCommand implements Command {
             return;
         }
 
-        // #3 - Switch message depending on user action
+        // Switch message depending on user action
         final String message;
         if (filter == 1) {
             message = "Enabled filtering on:";
@@ -99,16 +95,16 @@ public class FilterCommand implements Command {
             message = "Disabled filtering on:";
         }
 
-        // #4 - Send the results embed to manager
+        // Send the results embed to dispatch
         ResponseDispatcher.commandSucceeded(this,
                 Embeds.getEmbed(EmbedType.DYNAMIC, data,
                         Arrays.asList(
                                 message,
                                 complete.toString(),
                                 "Channels that were not valid or found:",
-                                nonValid.toString(),
+                                arguments.nonValid.toString(),
                                 "Categories with no Text Channels:",
-                                noText.toString()
+                                arguments.noText.toString()
                         )
                 )
         );
@@ -119,7 +115,7 @@ public class FilterCommand implements Command {
         Consumer<Message> consumer = message -> {
             try {
                 Messages.addReaction(message, "☑");
-                MenuDispatcher.addMenu(MenuType.UNFILTERALL, message.getId(), this);
+                MenuDispatcher.addMenu(MenuType.FILTERALL, message.getId(), this);
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this,
                         Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),

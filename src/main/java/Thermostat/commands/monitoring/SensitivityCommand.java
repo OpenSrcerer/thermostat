@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -35,7 +36,7 @@ public class SensitivityCommand implements Command {
             return;
         }
 
-        checkPermissionsAndQueue(this);
+        CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
     /**
@@ -73,28 +74,19 @@ public class SensitivityCommand implements Command {
             return;
         }
 
-        sensitivityAction(channels, offset);
+        sensitivityAction(
+                ArgumentParser.parseChannelArgument(data.event.getChannel(), channels),
+                offset
+        );
     }
 
-    private void sensitivityAction(final List<String> channels, final float offset) {
-        StringBuilder nonValid,
-                noText,
-                complete = new StringBuilder();
-
-        // #1 - Retrieve target channels
-        {
-            CommandArguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
-            channels.clear();
-
-            nonValid = results.nonValid;
-            noText = results.noText;
-            channels.addAll(results.newArguments);
-        }
+    private void sensitivityAction(final CommandArguments arguments, final float offset) {
+        StringBuilder complete = new StringBuilder();
 
         // #2 - Perform appropriate action
         try {
             DataSource.execute(conn -> {
-                for (String channel : channels) {
+                for (final String channel : arguments.channels) {
                     PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?");
                     statement.setFloat(1, 1f + offset / 20f);
                     statement.setString(2, channel);
@@ -117,9 +109,9 @@ public class SensitivityCommand implements Command {
                                 "Channels given a new sensitivity of " + offset + ":",
                                 complete.toString(),
                                 "Channels that were not valid or found:",
-                                nonValid.toString(),
+                                arguments.nonValid.toString(),
                                 "Categories with no Text Channels:",
-                                noText.toString()
+                                arguments.noText.toString()
                         )
                 )
         );

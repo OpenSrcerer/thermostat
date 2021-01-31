@@ -7,6 +7,7 @@ import org.knowm.xchart.CategoryChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -42,7 +43,7 @@ public class ChartCommand implements Command {
             return;
         }
 
-        checkPermissionsAndQueue(this);
+        CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
     /**

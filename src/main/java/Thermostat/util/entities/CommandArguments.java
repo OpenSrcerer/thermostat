@@ -10,11 +10,11 @@ import java.util.ArrayList;
 public class CommandArguments {
     public final StringBuilder nonValid;
     public final StringBuilder noText;
-    public final ArrayList<String> newArguments;
+    public final ArrayList<String> channels;
 
-    public CommandArguments(@Nonnull StringBuilder nonValid, @Nonnull StringBuilder noText, @Nonnull ArrayList<String> newArguments) {
+    public CommandArguments(@Nonnull StringBuilder nonValid, @Nonnull StringBuilder noText, @Nonnull ArrayList<String> channels) {
         this.nonValid = nonValid;
         this.noText = noText;
-        this.newArguments = newArguments;
+        this.channels = channels;
     }
 }

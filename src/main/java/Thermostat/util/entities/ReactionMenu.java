@@ -71,7 +71,7 @@ public class ReactionMenu {
             MenuDispatcher.removeMenu(messageId);
 
             switch (this.getMenuType()) {
-                case UNMONITORALL, UNFILTERALL -> Messages.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT));
+                case MONITORALL, FILTERALL -> Messages.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT));
                 default -> throw new RuntimeException("Unknown menu type");
             }
         }, 200, TimeUnit.SECONDS);
@@ -84,6 +84,15 @@ public class ReactionMenu {
     @Nonnull
     public MenuType getMenuType() {
         return menu;
+    }
+
+    /**
+     * Get this menu's message ID.
+     * @return Message ID of menu.
+     */
+    @Nonnull
+    public String getMessageId() {
+        return messageId;
     }
 
     /**

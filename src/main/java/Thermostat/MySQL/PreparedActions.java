@@ -1,17 +1,23 @@
 package thermostat.mySQL;
 
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
 import thermostat.util.GuildCache;
 import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.DBActionType;
+import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -117,23 +123,40 @@ public final class PreparedActions {
     }
 
     /**
-     * Retrieve whether a channel is monitored or not from the database.
-     * @param conn Connection to use to perform this action.
-     * @param channel Channel to perform this action on.
-     * @return Retrieves whether the channel is monitored or not. -1 otherwise.
-     * @throws SQLException If something went wrong while performing changes in database.
+     * Connects to the database, unfiltering / unmonitoring all channels for a given Guild.
+     * @param reactionMenu Menu that called this action.
+     * @param event Event this action was called from.
+     * @param type Type of database action to perform.
+     * @return A DatabaseAction to Unmonitor/Unfilter channels from the database.
      */
     @EverythingIsNonNull
-    public static int retrieveMonitoredValue(final Connection conn, final String channel) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement("SELECT MONITORED FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
-        statement.setString(1, channel);
-        ResultSet rs = statement.executeQuery();
+    public static DataSource.DatabaseAction<Void> discardChannels(final ReactionMenu reactionMenu,
+                                                                  final GuildMessageReactionAddEvent event,
+                                                                  final DBActionType type)
+    {
+        return conn -> {
+            List<String> channels = new ArrayList<>();
+            PreparedStatement pst = conn.prepareStatement("SELECT * FROM CHANNELS JOIN CHANNEL_SETTINGS ON " +
+                    "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
+                    "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS." + type.sqlAction2 + " = 1");
+            pst.setString(1, event.getGuild().getId());
+            ResultSet rs = pst.executeQuery();
 
-        if (rs.next()) {
-            return rs.getInt(1);
-        } else {
-            return -1;
-        }
+            while (rs.next()) {
+                channels.add(rs.getString(1));
+            }
+
+            // Do nothing if the list is empty, but still send a response as if something was done.
+            // THE ILLUSION OF USER INTERACTION
+            if (!channels.isEmpty()) {
+                PreparedActions.modifyChannel(conn, type, 0, event.getGuild().getId(), channels);
+            }
+            ResponseDispatcher.commandSucceeded(reactionMenu.getCommand(),
+                    Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
+            );
+
+            return null;
+        };
     }
 
     /**

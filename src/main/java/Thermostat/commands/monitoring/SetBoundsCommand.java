@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -38,7 +39,7 @@ public class SetBoundsCommand implements Command {
             return;
         }
 
-        checkPermissionsAndQueue(this);
+        CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
     /**
@@ -83,34 +84,25 @@ public class SetBoundsCommand implements Command {
             return;
         }
 
-        setBoundsAction(channels, bound, isSetMaximum(maxSwitch, minSwitch));
+        setBoundsAction(
+                ArgumentParser.parseChannelArgument(data.event.getChannel(), channels),
+                bound,
+                isSetMaximum(maxSwitch, minSwitch));
     }
 
-    public void setBoundsAction(final List<String> channels, final int bound, final boolean isSetMaximum) {
-        StringBuilder nonValid,
-                noText,
-                bothComplete = new StringBuilder(),
+    public void setBoundsAction(final CommandArguments arguments, final int bound, final boolean isSetMaximum) {
+        StringBuilder bothComplete = new StringBuilder(),
                 minComplete = new StringBuilder(),
                 maxComplete = new StringBuilder();
 
-        // #1 - Retrieve target channels
-        {
-            CommandArguments results = ArgumentParser.parseChannelArgument(data.event.getChannel(), channels);
-            channels.clear();
-
-            nonValid = results.nonValid;
-            noText = results.noText;
-            channels.addAll(results.newArguments);
-        }
-
-        // #2 - Perform database changes
+        // Perform database changes
         try {
             DataSource.execute(conn -> {
                 boolean threeArguments;
                 int minimumSlow, maximumSlow;
                 StringBuilder sql = new StringBuilder();
 
-                for (String channel : channels) {
+                for (String channel : arguments.channels) {
                     threeArguments = false;
 
                     {
@@ -175,7 +167,7 @@ public class SetBoundsCommand implements Command {
             return;
         }
 
-        // #3 - Send the results embed to dispatch
+        // Send the results embed to dispatch
         ResponseDispatcher.commandSucceeded(this,
                 Embeds.getEmbed(EmbedType.DYNAMIC, data,
                         Arrays.asList(
@@ -186,9 +178,9 @@ public class SetBoundsCommand implements Command {
                                 "Channels given a minimum slowmode of " + bound + ":",
                                 minComplete.toString(),
                                 "Channels that were not valid or found:",
-                                nonValid.toString(),
+                                arguments.nonValid.toString(),
                                 "Categories with no Text Channels:",
-                                noText.toString()
+                                arguments.noText.toString()
                         )
                 )
         );

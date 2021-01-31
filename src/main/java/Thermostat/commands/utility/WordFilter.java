@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -47,7 +48,7 @@ public class WordFilter implements Command {
         this.data = new CommandData(data);
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
 
-        checkThermoPermissionsAndQueue(this);
+        CommandDispatcher.checkThermoPermissionsAndQueue(this);
     }
 
     /**

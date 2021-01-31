@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
+import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
@@ -45,7 +46,7 @@ public class MonitorCommand implements Command {
             return;
         }
 
-        checkPermissionsAndQueue(this);
+        CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
     /**
@@ -66,8 +67,13 @@ public class MonitorCommand implements Command {
         if (offSwitch == null && onSwitch == null) {
             ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.HELP_MONITOR, data));
             return;
-        } else if (allSwitch != null) {
-            unMonitorAll();
+        }
+
+        if (allSwitch != null && onSwitch != null) {
+            monitorAll(true);
+            return;
+        } else if (allSwitch != null && offSwitch != null) {
+            monitorAll(false);
             return;
         }
 
@@ -86,7 +92,7 @@ public class MonitorCommand implements Command {
                     PreparedActions.modifyChannel(
                             conn, DBActionType.MONITOR,
                             monitor, data.event.getGuild().getId(),
-                            commandArguments.newArguments
+                            commandArguments.channels
                     )
             );
         } catch (Exception ex) {
@@ -118,12 +124,12 @@ public class MonitorCommand implements Command {
         );
     }
 
-    private void unMonitorAll() {
+    private void monitorAll(final boolean monitor) {
         // add reaction & start message listener
         Consumer<Message> consumer = message -> {
             try {
                 Messages.addReaction(message, "☑");
-                MenuDispatcher.addMenu(MenuType.UNMONITORALL, message.getId(), this);
+                MenuDispatcher.addMenu(MenuType.MONITORALL, message.getId(), this);
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(this,
                         Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex
