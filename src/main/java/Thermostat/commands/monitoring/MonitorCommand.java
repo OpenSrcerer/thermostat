@@ -1,13 +1,11 @@
 package thermostat.commands.monitoring;
 
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
-import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -24,7 +22,6 @@ import thermostat.util.enumeration.MenuType;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Adds channels to the database provided in
@@ -69,11 +66,8 @@ public class MonitorCommand implements Command {
             return;
         }
 
-        if (allSwitch != null && onSwitch != null) {
-            monitorAll(true);
-            return;
-        } else if (allSwitch != null && offSwitch != null) {
-            monitorAll(false);
+        if (allSwitch != null) {
+            monitorAll(onSwitch != null);
             return;
         }
 
@@ -125,21 +119,11 @@ public class MonitorCommand implements Command {
     }
 
     private void monitorAll(final boolean monitor) {
-        // add reaction & start message listener
-        Consumer<Message> consumer = message -> {
-            try {
-                Messages.addReaction(message, "☑");
-                MenuDispatcher.addMenu(MenuType.MONITORALL, message.getId(), this);
-            } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(this,
-                        Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex
-                );
-            }
-        };
+        MenuType type = (monitor) ? MenuType.MONITORALL : MenuType.UNMONITORALL;
 
         Messages.sendMessage(data.event.getChannel(),
                 Embeds.getEmbed(EmbedType.PROMPT, data),
-                consumer
+                MiscellaneousFunctions.addNewMenu(type, this)
         );
     }
 

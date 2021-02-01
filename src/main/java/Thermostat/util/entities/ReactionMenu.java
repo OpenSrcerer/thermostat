@@ -31,7 +31,7 @@ public class ReactionMenu {
     private final String messageId;
 
     /**
-     *
+     * Command that initialized this menu.
      */
     private final Command command;
 

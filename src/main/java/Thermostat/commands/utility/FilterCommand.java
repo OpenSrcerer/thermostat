@@ -1,13 +1,11 @@
 package thermostat.commands.utility;
 
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
-import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -25,7 +23,6 @@ import javax.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class FilterCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(FilterCommand.class);
@@ -56,12 +53,13 @@ public class FilterCommand implements Command {
         final List<String> allSwitch = data.parameters.get("-all");
 
         if (offSwitch == null && onSwitch == null) {
-            ResponseDispatcher.commandFailed(this,
-                    Embeds.getEmbed(EmbedType.HELP_FILTER, data),
+            ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.HELP_FILTER, data),
                     "User did not provide arguments.");
             return;
-        } else if (allSwitch != null) {
-            unFilterAll();
+        }
+
+        if (allSwitch != null) {
+            filterAll(onSwitch != null);
             return;
         }
 
@@ -110,23 +108,14 @@ public class FilterCommand implements Command {
         );
     }
 
-    private void unFilterAll() {
-        // add reaction & start message listener
-        Consumer<Message> consumer = message -> {
-            try {
-                Messages.addReaction(message, "☑");
-                MenuDispatcher.addMenu(MenuType.FILTERALL, message.getId(), this);
-            } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(this,
-                        Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
-                        ex);
-            }
-        };
+    private void filterAll(final boolean filter) {
+        MenuType type = (filter) ? MenuType.FILTERALL : MenuType.UNFILTERALL;
 
+        // Add a new Prompt menu,
         Messages.sendMessage(
                 data.event.getChannel(),
                 Embeds.getEmbed(EmbedType.PROMPT, data),
-                consumer
+                MiscellaneousFunctions.addNewMenu(type, this)
         );
     }
 
