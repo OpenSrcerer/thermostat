@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import static thermostat.util.ArgumentParser.hasArguments;
 import static thermostat.util.ArgumentParser.parseMention;
 
 /**
@@ -51,38 +52,31 @@ public class SettingsCommand implements Command {
      */
     @Override
     public void run() {
-        List<String> channels = data.parameters.get("c");
-        String channelId;
-
-        if (channels == null) {
-            ResponseDispatcher.commandFailed(this,
-                    Embeds.getEmbed(EmbedType.HELP_SETTINGS, data),
-                    "User did not provide a bound argument.");
-            return;
-        }
+        final List<String> channels = data.parameters.get("c");
+        TextChannel channel;
 
         // Check if user has given a channel. If they have not, assign
         // command channel to the channel where the event was triggered.
-        if (channels.isEmpty()) {
-            channelId = data.event.getChannel().getId();
+        if (!hasArguments(channels)) {
+            channel = data.event.getChannel();
         } else {
-            channelId = parseMention(channels.get(0), "#");
-
-            // if channel doesn't exist, show error msg
-            if (channelId.isEmpty() || data.event.getGuild().getTextChannelById(channelId) == null) {
-                ResponseDispatcher.commandFailed(this,
-                        Embeds.getEmbed(EmbedType.ERR_INPUT, data,
-                                        "Channel \"" + channels.get(0) + "\" was not found.)"),
-                        "Channel that user provided wasn't found."
-                );
-                return;
-            }
+            channel = data.event.getGuild().getTextChannelById(parseMention(channels.get(0), "#"));
         }
 
-        settingsAction(channelId);
+        // if channel doesn't exist, show error msg
+        if (channel == null) {
+            ResponseDispatcher.commandFailed(this,
+                    Embeds.getEmbed(EmbedType.ERR, data,
+                            "Channel \"" + channels.get(0) + "\" was not found.)"),
+                    "Channel that user provided wasn't found."
+            );
+            return;
+        }
+
+        settingsAction(channel);
     }
 
-    private void settingsAction(String channelId) {
+    private void settingsAction(final @Nonnull TextChannel channel) {
         // Retrieve the settings values from the database and send a response.
         try {
             DataSource.execute(conn -> {
@@ -92,7 +86,7 @@ public class SettingsCommand implements Command {
 
                 PreparedStatement statement = conn.prepareStatement("SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET, MONITORED, FILTERED " +
                         "FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
-                statement.setString(1, channelId);
+                statement.setString(1, channel.getId());
                 ResultSet rs = statement.executeQuery();
 
                 if (rs.next()) {
@@ -107,14 +101,10 @@ public class SettingsCommand implements Command {
                     filtered = rs.getBoolean(5);
                 }
 
-                TextChannel settingsChannel = data.event.getGuild().getTextChannelById(channelId);
-
-                if (settingsChannel != null) {
-                    SettingsData settingsData = new SettingsData(settingsChannel.getName(), min, max, sens, monitored, filtered);
-                    ResponseDispatcher.commandSucceeded(this,
-                            Embeds.getEmbed(EmbedType.CHANNEL_SETTINGS, data, settingsData)
-                    );
-                }
+                SettingsData settingsData = new SettingsData(channel.getName(), min, max, sens, monitored, filtered);
+                ResponseDispatcher.commandSucceeded(this,
+                        Embeds.getEmbed(EmbedType.CHANNEL_SETTINGS, data, settingsData)
+                );
 
                 return null;
             });

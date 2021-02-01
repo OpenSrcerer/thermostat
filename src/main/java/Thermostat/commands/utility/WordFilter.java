@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
+import okhttp3.internal.annotations.EverythingIsNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
@@ -44,7 +45,7 @@ public class WordFilter implements Command {
     private static List<String> badWords, niceWords;
     private static final Random random = new Random();
 
-    public WordFilter(@Nonnull GuildMessageReceivedEvent data) {
+    public WordFilter(@Nonnull final GuildMessageReceivedEvent data) {
         this.data = new CommandData(data);
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
 
@@ -52,7 +53,7 @@ public class WordFilter implements Command {
     }
 
     /**
-     * Initiate the WFEvent.
+     * Initiate the WordFilterEvent.
      */
     @Override
     public void run() {
@@ -113,6 +114,7 @@ public class WordFilter implements Command {
      * @param value The value of the Webhook to look for.
      * @return A webhook value depending on the argument.
      */
+    @EverythingIsNonNull
     public String getWebhookValue(final Connection conn, final String value) throws SQLException {
         PreparedStatement statement = conn.prepareStatement("SELECT WEBHOOK_" + value + " FROM " +
                 "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
@@ -128,10 +130,11 @@ public class WordFilter implements Command {
      * @param webhookID Webhook Id
      * @param webhookToken Webhook Token
      */
-    public void sendWebhookMessage(@Nonnull String webhookID, String webhookToken) {
-        WebhookClient client = WebhookClient.withId(Long.parseLong(webhookID), webhookToken);
-        client.send(String.join(" ", message));
-        client.close();
+    @EverythingIsNonNull
+    public void sendWebhookMessage(final String webhookID, final String webhookToken) {
+        try (WebhookClient client = WebhookClient.withId(Long.parseLong(webhookID), webhookToken)) {
+            client.send(String.join(" ", message));
+        }
     }
 
     /**
@@ -140,7 +143,8 @@ public class WordFilter implements Command {
      * @param webhookId Webhook target ID
      * @return RestAction to call when necessary
      */
-    public RestAction<Void> updateWebhook(@Nonnull User eventAuthor, String webhookId) {
+    @EverythingIsNonNull
+    public RestAction<Void> updateWebhook(final User eventAuthor, final String webhookId) {
         String username = eventAuthor.getName();
         String userAvatarURL;
 
@@ -210,9 +214,8 @@ public class WordFilter implements Command {
      */
     @Nullable
     @CheckReturnValue
-    public Icon getUserIcon(@Nonnull String avatarURL) {
-        try {
-            InputStream imageStream = new URL(avatarURL + "?size=64").openStream();
+    public Icon getUserIcon(@Nonnull final String avatarURL) {
+        try (InputStream imageStream = new URL(avatarURL + "?size=64").openStream()) {
             return Icon.from(imageStream, Icon.IconType.JPEG);
         } catch (IOException ex) {
             return null;
@@ -224,7 +227,8 @@ public class WordFilter implements Command {
      * @param nice Words that will replace the prohibited words.
      * @param prohibited Prohibited words that will get removed.
      */
-    public static void setWordArrays(ArrayList<String> nice, ArrayList<String> prohibited) {
+    @EverythingIsNonNull
+    public static void setWordArrays(final ArrayList<String> nice, final ArrayList<String> prohibited) {
         niceWords = nice;
         badWords = prohibited;
     }
