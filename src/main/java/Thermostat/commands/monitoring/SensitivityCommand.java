@@ -31,7 +31,7 @@ public class SensitivityCommand implements Command {
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
                     this,
-                    Embeds.getEmbed(EmbedType.ERR, this.data),
+                    Embeds.getEmbed(EmbedType.HELP_SENSITIVITY, this.data),
                     "Bad arguments.");
             return;
         }
@@ -53,8 +53,7 @@ public class SensitivityCommand implements Command {
         // Check that sensitivity has arguments
         if (!hasArguments(sensitivity)) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.getEmbed(EmbedType.ERR_INPUT, data,
-                            "Please insert a sensitivity value."),
+                    Embeds.getEmbed(EmbedType.HELP_SENSITIVITY, data),
                     "User did not provide arguments.");
             return;
         }
@@ -63,7 +62,7 @@ public class SensitivityCommand implements Command {
         try {
             offset = Float.parseFloat(sensitivity.get(0));
 
-            if (offset <= -10 && offset >= 10) {
+            if (offset < -10 || offset > 10) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
@@ -83,13 +82,14 @@ public class SensitivityCommand implements Command {
     private void sensitivityAction(final CommandArguments arguments, final float offset) {
         StringBuilder complete = new StringBuilder();
 
-        // #2 - Perform appropriate action
+        // Update sensitivity value on the database
         try {
             DataSource.execute(conn -> {
                 for (final String channel : arguments.channels) {
                     PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?");
                     statement.setFloat(1, 1f + offset / 20f);
                     statement.setString(2, channel);
+                    statement.executeUpdate();
                     complete.append("<#").append(channel).append("> ");
                 }
                 return null;
@@ -101,9 +101,8 @@ public class SensitivityCommand implements Command {
             return;
         }
 
-        // #3 - Send embed results to user
+        // Send embed results to user
         ResponseDispatcher.commandSucceeded(this,
-
                 Embeds.getEmbed(EmbedType.DYNAMIC, data,
                         Arrays.asList(
                                 "Channels given a new sensitivity of " + offset + ":",

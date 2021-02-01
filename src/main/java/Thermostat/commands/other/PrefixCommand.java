@@ -84,6 +84,7 @@ public class PrefixCommand implements Command {
                     PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET GUILD_PREFIX = ? WHERE GUILD_ID = ?;");
                     statement.setString(1, newPrefix);
                     statement.setString(2, data.event.getGuild().getId());
+                    statement.executeUpdate();
                     return null;
                 });
                 CommandTrigger.updateEntry(data.event.getGuild().getId(), newPrefix);
