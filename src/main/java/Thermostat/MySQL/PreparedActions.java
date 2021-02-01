@@ -1,16 +1,13 @@
 package thermostat.mySQL;
 
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.embeds.Embeds;
 import thermostat.util.GuildCache;
 import thermostat.util.MiscellaneousFunctions;
-import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.DBActionType;
-import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.Connection;
@@ -19,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Contains functions used to insert
@@ -76,16 +74,18 @@ public final class PreparedActions {
     {
         StringBuilder builder = new StringBuilder();
 
-        PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
+        // Insert the channels into the SQL query manually.
+        PreparedStatement statement = conn.prepareStatement(
+                ("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
                 "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
                 "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
-                "SET " + action.sqlAction1 + " WHERE CAST(CHANNEL_SETTINGS.CHANNEL_ID AS VARCHAR(60)) IN (?)" +
-                " AND GUILDS.GUILD_ID = ?");
+                "SET " + action.sqlAction1 + " WHERE CAST(CHANNEL_SETTINGS.CHANNEL_ID AS VARCHAR(60)) IN (@) " +
+                "AND GUILDS.GUILD_ID = ?")
+                .replaceFirst("@", MiscellaneousFunctions.toQueryString(channels))
+        );
 
         statement.setInt(1, value);
-        statement.setString(2, MiscellaneousFunctions.toQueryString(channels));
-        statement.setString(3, guildId);
-
+        statement.setString(2, guildId);
         statement.executeUpdate();
 
         for (String channel : channels) {
@@ -97,6 +97,73 @@ public final class PreparedActions {
             } else {
                 GuildCache.getSynapse(guildId).removeChannel(channel);
             }
+        }
+
+        return builder;
+    }
+
+    /**
+     * Changes a channel's slowmode bounds on the database.
+     * @param conn      Connection to use for this action.
+     * @param guildId   The ID of the Guild that the channel resides in.
+     * @param channels  The ID of every channel.
+     */
+    @EverythingIsNonNull
+    public static StringBuilder modifyBounds(final Connection conn, final String guildId,
+                                             final int minBound, final int maxBound,
+                                             final List<String> channels) throws SQLException
+    {
+        StringBuilder builder = new StringBuilder();
+
+        int minimumCurr, maximumCurr, minimumNew = minBound, maximumNew = maxBound;
+        PreparedStatement statement = conn.prepareStatement(
+                ("SELECT CHANNEL_ID, MIN_SLOW, MAX_SLOW " +
+                        "FROM CHANNEL_SETTINGS WHERE " +
+                        "CAST(CHANNEL_ID AS VARCHAR(60)) IN (@)")
+                        .replaceFirst("@", MiscellaneousFunctions.toQueryString(channels))
+        );
+        ResultSet rs = statement.executeQuery();
+
+        while (rs.next()) {
+            final String channelId = rs.getString(1);
+            minimumCurr = rs.getInt(2);
+            maximumCurr = rs.getInt(3);
+
+            // Minimum not set
+            if (minimumNew == -1) {
+                minimumNew = minimumCurr;
+
+                if (minimumNew > maximumNew) {
+                    minimumNew = maximumNew;
+                }
+            }
+
+            // Maximum not set
+            if (maximumNew == -1) {
+                maximumNew = maximumCurr;
+
+                if (maximumNew < minimumNew) {
+                    maximumNew = minimumNew;
+                }
+            }
+
+            // Insert the channels into the SQL query manually.
+            statement = conn.prepareStatement(
+                    ("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
+                            "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
+                            "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
+                            "SET CHANNEL_SETTINGS.MIN_SLOW = ?, CHANNEL_SETTINGS.MAX_SLOW = ? " +
+                            "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ? " +
+                            "AND GUILDS.GUILD_ID = ?")
+            );
+
+            statement.setInt(1, minimumNew);
+            statement.setInt(2, maximumNew);
+            statement.setString(3, channelId);
+            statement.setString(4, guildId);
+            statement.executeUpdate();
+
+            builder.append("<#").append(channelId).append("> ");
         }
 
         return builder;
@@ -123,15 +190,13 @@ public final class PreparedActions {
     }
 
     /**
-     * Connects to the database, unfiltering / unmonitoring all channels for a given Guild.
-     * @param reactionMenu Menu that called this action.
+     * Connects to the database, Unfiltering/Unmonitoring all channels for a given Guild.
      * @param event Event this action was called from.
      * @param type Type of database action to perform.
      * @return A DatabaseAction to Unmonitor/Unfilter channels from the database.
      */
     @EverythingIsNonNull
-    public static DataSource.DatabaseAction<Void> discardChannels(final ReactionMenu reactionMenu,
-                                                                  final GuildMessageReactionAddEvent event,
+    public static DataSource.DatabaseAction<Void> discardChannels(final GuildMessageReactionAddEvent event,
                                                                   final DBActionType type)
     {
         return conn -> {
@@ -151,9 +216,31 @@ public final class PreparedActions {
             if (!channels.isEmpty()) {
                 PreparedActions.modifyChannel(conn, type, 0, event.getGuild().getId(), channels);
             }
-            ResponseDispatcher.commandSucceeded(reactionMenu.getCommand(),
-                    Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
-            );
+
+            return null;
+        };
+    }
+
+    /**
+     * Connects to the database, Filtering/Monitoring all channels for a given Guild.
+     * @param event Event this action was called from.
+     * @param type Type of database action to perform.
+     * @return A DatabaseAction to Monitor/Filter channels from the database.
+     */
+    @EverythingIsNonNull
+    public static DataSource.DatabaseAction<Void> acquireChannels(final GuildMessageReactionAddEvent event,
+                                                                  final DBActionType type)
+    {
+        return conn -> {
+            // Retrieve all channels in the Guild.
+            List<String> channels = event.getGuild().getChannels()
+                    .stream().map(ISnowflake::getId).collect(Collectors.toList());
+
+            // Do nothing if the list is empty, but still send a response as if something was done.
+            // THE ILLUSION OF USER INTERACTION
+            if (!channels.isEmpty()) {
+                PreparedActions.modifyChannel(conn, type, 1, event.getGuild().getId(), channels);
+            }
 
             return null;
         };

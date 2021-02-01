@@ -84,8 +84,10 @@ public class MenuDispatcher extends ListenerAdapter {
         try {
             if (menu != null) {
                 switch (menu.getMenuType()) {
-                    case MONITORALL -> matchFMReaction(menu, event, DBActionType.MONITOR);
-                    case FILTERALL -> matchFMReaction(menu, event, DBActionType.FILTER);
+                    case MONITORALL -> matchFMReaction(menu, event, DBActionType.MONITOR, 1);
+                    case UNMONITORALL -> matchFMReaction(menu, event, DBActionType.MONITOR, 0);
+                    case FILTERALL -> matchFMReaction(menu, event, DBActionType.FILTER, 1);
+                    case UNFILTERALL -> matchFMReaction(menu, event, DBActionType.FILTER, 0);
                     case SELECTION, MONITOR, UTILITY, OTHER -> matchInfoReaction(menu, event);
                     default -> expungeMenu(event.getMessageId());
                 }
@@ -132,7 +134,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "🌡" -> {
                 // Monitored Functions Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.MONITOR_INFO, prefix).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.MONITOR_INFO, prefix));
                     reactionMenu.setMenuType(MenuType.MONITOR);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
@@ -140,7 +142,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "🔧" -> {
                 // Informational Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.UTILITY_INFO, prefix).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.UTILITY_INFO, prefix));
                     reactionMenu.setMenuType(MenuType.UTILITY);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
@@ -148,7 +150,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "ℹ" -> {
                 // Informational Menu
                 if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.OTHER_INFO, prefix).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.OTHER_INFO, prefix));
                     reactionMenu.setMenuType(MenuType.OTHER);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
                 }
@@ -156,7 +158,7 @@ public class MenuDispatcher extends ListenerAdapter {
             case "⬆" -> {
                 // Exit Menu
                 if (reactionMenu.getMenuType() != MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.SELECTION).build());
+                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.SELECTION));
                     reactionMenu.setMenuType(MenuType.SELECTION);
                     Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 }
@@ -190,15 +192,19 @@ public class MenuDispatcher extends ListenerAdapter {
         if (event.getReactionEmote().getEmoji().equals("☑")) {
 
             if (actionValue == 0) {
-                DataSource.execute(PreparedActions.discardChannels(reactionMenu, event, type));
+                DataSource.execute(PreparedActions.discardChannels(event, type));
             } else if (actionValue == 1) {
-
+                DataSource.execute(PreparedActions.acquireChannels(event, type));
             } else {
                 throw new IllegalArgumentException("Action Value must be 0 or 1");
             }
 
             expungeMenu(reactionMenu.getMessageId());
-            Messages.deleteMessage(event.getChannel(), event.getMessageId());
+            Messages.editMessage(
+                    event.getChannel(),
+                    event.getMessageId(),
+                    Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
+            );
         }
     }
 }

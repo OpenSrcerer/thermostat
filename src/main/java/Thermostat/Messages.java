@@ -3,7 +3,6 @@ package thermostat;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import thermostat.util.PermissionComputer;
 import thermostat.util.entities.InsufficientPermissionsException;
@@ -105,14 +104,16 @@ public final class Messages {
      * @param msgId      Message to edit.
      * @param newContent New embed to place in the message.
      */
-    public static void editMessage(TextChannel channel, String msgId, MessageEmbed newContent) throws InsufficientPermissionsException {
+    public static void editMessage(TextChannel channel, String msgId, EmbedBuilder newContent) throws InsufficientPermissionsException {
         EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
                 channel.getGuild().getSelfMember(), channel,
                 CommandType.EDIT_MESSAGE.getThermoPerms()
         );
 
         if (missingPermissions.isEmpty()) {
-            channel.retrieveMessageById(msgId).queue(message -> message.editMessage(newContent).queue());
+            channel.retrieveMessageById(msgId).queue(message ->
+                    message.clearReactions().and(message.editMessage(newContent.build())).queue()
+            );
         } else {
             throw new InsufficientPermissionsException(missingPermissions);
         }

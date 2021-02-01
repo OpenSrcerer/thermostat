@@ -6,5 +6,7 @@ public enum MenuType {
     OTHER,
     UTILITY,
     MONITORALL,
-    FILTERALL;
+    FILTERALL,
+    UNMONITORALL,
+    UNFILTERALL;
 }
