@@ -15,16 +15,22 @@ import java.util.regex.Pattern;
 
 public class ArgumentParser {
     /**
-     * Checks if a list is not null and contains data.
-     * @param list List to check.
+     * Null-safe checker for whether lists have arguments.
+     * @param lists Lists to check.
      * @return True if the list does contain data, false otherwise.
      */
-    public static boolean hasArguments(List<String> list) {
-        if (list == null) {
-            return false;
-        }
+    @SafeVarargs
+    public static boolean hasArguments(final List<String>... lists) {
+        for (List<String> list : lists) {
+            if (list == null) {
+                return false;
+            }
 
-        return !list.isEmpty();
+            if (list.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Nonnull
@@ -42,7 +48,7 @@ public class ArgumentParser {
                 }
 
                 options = new ArrayList<>();
-                params.put(arg.substring(1).toLowerCase(), options);
+                params.put(arg.substring(1)/*.toLowerCase()*/, options);
             } else if (options != null) {
                 options.add(arg);
             } else {
@@ -60,7 +66,7 @@ public class ArgumentParser {
      * two StringBuilders with arguments that were invalid.
      */
     @Nonnull
-    public static CommandArguments parseChannelArgument(@Nonnull final TextChannel eventChannel, @Nullable final List<String> rawChannels) {
+    public static CommandArguments parseChannelArgument(@Nonnull final TextChannel eventChannel, final List<String> rawChannels) {
         ArrayList<String> newArgs = new ArrayList<>();
         StringBuilder
                 // Channels that could not be found
@@ -159,11 +165,10 @@ public class ArgumentParser {
     /**
      * Function that converts a string slowmode argument
      * to a usable Integer one.
-     *
      * @param slowmode Slowmode argument, in a string.
      * @return Parsed slowmode value.
      */
-    public static Integer parseSlowmode(String slowmode) throws NumberFormatException {
+    public static int parseSlowmode(String slowmode) throws NumberFormatException {
         int retInteger;
         // second = 1; minute = 60; hour = 3600
         int multiplyValue = 1;
