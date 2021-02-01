@@ -2,13 +2,22 @@ package thermostat.util;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import thermostat.Messages;
 import thermostat.Thermostat;
+import thermostat.commands.Command;
+import thermostat.dispatchers.MenuDispatcher;
+import thermostat.dispatchers.ResponseDispatcher;
+import thermostat.embeds.Embeds;
+import thermostat.util.enumeration.EmbedType;
+import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * Class for utility functions that do not fit in any specific
@@ -77,12 +86,12 @@ public abstract class MiscellaneousFunctions {
     public static String toQueryString(@Nonnull final List<String> ids) {
         StringBuilder builder = new StringBuilder();
         for (String id : ids) {
-            builder.append(id).append(",");
+            builder.append("'").append(id).append("'").append(", ");
         }
         String returnString = builder.toString();
 
-        // Strip the last comma
-        return returnString.substring(0, returnString.length() - 1);
+        // Strip the last comma and space
+        return returnString.substring(0, returnString.length() - 2);
     }
 
     /**
@@ -90,5 +99,21 @@ public abstract class MiscellaneousFunctions {
      */
     public static long getCommandId() {
         return System.currentTimeMillis() * ThreadLocalRandom.current().nextLong(10000);
+    }
+
+    /**
+     * @return A Consumer that creates a new ReactionMenu.
+     */
+    public static Consumer<Message> addNewMenu(final MenuType type, final Command command) {
+        return message -> {
+            try {
+                Messages.addReaction(message, "☑");
+                MenuDispatcher.addMenu(type, message.getId(), command);
+            } catch (Exception ex) {
+                ResponseDispatcher.commandFailed(command,
+                        Embeds.getEmbed(EmbedType.ERR, command.getData(), ex.getMessage()),
+                        ex);
+            }
+        };
     }
 }
