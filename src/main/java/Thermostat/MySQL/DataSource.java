@@ -77,21 +77,4 @@ public abstract class DataSource {
             return action.doInConnection(conn);
         }
     }
-
-    /**
-     * Return an action that performs an update on the database.
-     * @param sql SQL Code to run.
-     * @param args Arguments to set.
-     * @return An action that takes in arguments but returns nothing.
-     */
-    public static DataSource.DatabaseAction<Void> getAction(String sql, String... args) {
-        return conn -> {
-            PreparedStatement statement = conn.prepareStatement(sql);
-            for (int index = 0; index < args.length; ++index) {
-                statement.setString(index + 1, args[index]);
-            }
-            statement.executeUpdate();
-            return null;
-        };
-    }
 }

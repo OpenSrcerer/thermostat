@@ -33,7 +33,6 @@ public class CachedGuild {
         this.prefix = prefix;
     }
 
-
     /**
      * Get this Guild's cached prefix.
      * @return This Guild's prefix.

@@ -11,7 +11,6 @@ import thermostat.Thermostat;
 import thermostat.commands.CommandTrigger;
 import thermostat.commands.utility.WordFilter;
 import thermostat.dispatchers.MenuDispatcher;
-import thermostat.util.GuildCache;
 
 import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
@@ -49,7 +48,6 @@ public class Ready extends ListenerAdapter {
                     new SynapseEvents()
             );
 
-            GuildCache.initializeCache();
             getConnectedGuilds();
             thermo.getPresence().setPresence(OnlineStatus.ONLINE, Activity.streaming("@Thermostat", "https://github.com/opensrcerer/thermostat"));
         } catch (Exception ex) {

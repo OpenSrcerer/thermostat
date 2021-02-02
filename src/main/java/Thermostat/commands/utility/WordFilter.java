@@ -152,7 +152,6 @@ public class WordFilter implements Command {
             userAvatarURL = eventAuthor.getAvatarUrl();
         else
             userAvatarURL = eventAuthor.getDefaultAvatarUrl();
-
         Icon userAvatar = getUserIcon(userAvatarURL);
 
         return Thermostat.thermo
@@ -176,7 +175,6 @@ public class WordFilter implements Command {
             userAvatarURL = user.getAvatarUrl();
         else
             userAvatarURL = user.getDefaultAvatarUrl();
-
         Icon userAvatar = getUserIcon(userAvatarURL);
 
         return data.event.getChannel()
@@ -194,7 +192,6 @@ public class WordFilter implements Command {
                                 statement.setString(1, webhook.getId());
                                 statement.setString(2, webhook.getToken());
                                 statement.setString(3, data.event.getChannel().getId());
-
                                 statement.executeUpdate();
                             } catch (SQLException ex) {
                                 ResponseDispatcher.commandFailed(this,

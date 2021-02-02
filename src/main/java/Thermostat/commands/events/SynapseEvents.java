@@ -35,7 +35,7 @@ public class SynapseEvents extends ListenerAdapter {
         // Re-activate Synapse if it was disabled due to inactivity.
         if (synapse.getState() == SynapseState.INACTIVE && synapse.getChannels().contains(event.getChannel().getId())) {
             synapse.setState(SynapseState.ACTIVE);
-            System.out.println("Synapse reactivated! Guild: " + event.getGuild().getName());
+            lgr.info("Synapse reactivated! Guild: " + event.getGuild().getName());
         }
 
         synapse.addMessage(event.getChannel().getId(), event.getMessage().getTimeCreated());
