@@ -32,12 +32,10 @@ public class GuildCache {
         DataSource.execute(conn -> {
             PreparedStatement statement = conn.prepareStatement("SELECT GUILD_ID, GUILD_PREFIX FROM GUILDS");
             ResultSet rs = statement.executeQuery();
-
             String guildId, guildPrefix;
             while (rs.next()) {
                 guildId = rs.getString(1);
                 guildPrefix = rs.getString(2);
-
                 CachedGuild guildData = new CachedGuild(guildPrefix);
                 cache.put(guildId, guildData);
             }
@@ -56,11 +54,9 @@ public class GuildCache {
         CachedGuild guild = cache.get(guildId); // Try to retrieve the guild from the cache
         if (guild == null) { // Guild hasn't been cached.
             String prefix = retrievePrefix(guildId); // Retrieve the prefix of the Guild.
-
             if (prefix == null) { // If the prefix is not set, use the default prefix.
                 prefix = Constants.DEFAULT_PREFIX;
             }
-
             add(guildId, prefix); // Add the Guild to the cache.
             return prefix; // Return the new/default prefix.
         }

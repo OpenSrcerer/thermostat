@@ -240,23 +240,18 @@ public class Synapse {
 
     /**
      * Adjusts the slowmode for the given channel.
-     *
      * @param channel TextChannel that will have the slowmode adjusted.
      * @param time    Int representing the adjustment time.
      */
     private static void putSlowmode(@Nullable final Connection conn, final TextChannel channel, final int time, final int min, final int max) throws SQLException {
         int slowmodeToSet;
 
-        // gets the current slowmode in the channel
-        int slow = channel.getSlowmode();
+        int slow = channel.getSlowmode(); // gets the current slowmode in the channel
 
-        // if slowmode and the added time exceed the max slowmode
-        if (slow + time > max && max > 0) {
-            // Set slowmode to the maximum value taken from the database.
-            slowmodeToSet = max;
+        if (slow + time > max && max > 0) { // if slowmode and the added time exceed the max slowmode
+            slowmodeToSet = max; // Set slowmode to the maximum value taken from the database.
         } else if (slow + time > TextChannel.MAX_SLOWMODE) {
-            // sets to max DISCORD slowmode value
-            slowmodeToSet = TextChannel.MAX_SLOWMODE;
+            slowmodeToSet = TextChannel.MAX_SLOWMODE; // sets to max DISCORD slowmode value
         } else {
             slowmodeToSet = Math.max(slow + time, min);
         }
@@ -298,25 +293,25 @@ public class Synapse {
             // accounting for each delay of the messages
             // this function picks an appropriate slowmode
             // adjustment number for each case.
-            if ((averageDelay <= 100 * offset) && (firstMessageTime > 0 && firstMessageTime <= 1000)) {
+            if (averageDelay <= 100 * offset) {
                 putSlowmode(conn, channel, 20, min, max);
-            } else if ((averageDelay <= 250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 2500)) {
+            } else if (averageDelay <= 250 * offset) {
                 putSlowmode(conn, channel, 10, min, max);
-            } else if ((averageDelay <= 500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 5000)) {
+            } else if (averageDelay <= 500 * offset) {
                 putSlowmode(conn, channel, 6, min, max);
-            } else if ((averageDelay <= 750 * offset) && (firstMessageTime > 0 && firstMessageTime <= 8000)) {
+            } else if (averageDelay <= 750 * offset) {
                 putSlowmode(conn, channel, 4, min, max);
-            } else if ((averageDelay <= 1000 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            } else if (averageDelay <= 1000 * offset) {
                 putSlowmode(conn, channel, 2, min, max);
-            } else if ((averageDelay <= 1250 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            } else if (averageDelay <= 1250 * offset) {
                 putSlowmode(conn, channel, 1, min, max);
-            } else if ((averageDelay <= 1500 * offset) && (firstMessageTime > 0 && firstMessageTime <= 10000)) {
+            } else if (averageDelay <= 1500 * offset) {
                 putSlowmode(conn, channel, 0, min, max);
-            } else if ((firstMessageTime > 0 && firstMessageTime <= 10000) || (averageDelay < 2000 && averageDelay >= 1500)) {
+            } else if (averageDelay <= 2000 * offset) {
                 putSlowmode(conn, channel, -1, min, max);
-            } else if ((firstMessageTime > 10000 && firstMessageTime <= 30000) || (averageDelay < 2500 && averageDelay >= 2000)) {
+            } else if (averageDelay <= 2500 * offset) {
                 putSlowmode(conn, channel, -2, min, max);
-            } else if ((firstMessageTime > 30000 && firstMessageTime <= 60000) || averageDelay >= 2500) {
+            } else {
                 putSlowmode(conn, channel, -4, min, max);
             }
             return null;
