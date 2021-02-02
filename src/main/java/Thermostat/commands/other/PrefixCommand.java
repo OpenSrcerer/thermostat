@@ -4,12 +4,12 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.commands.Command;
-import thermostat.commands.CommandTrigger;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
+import thermostat.util.GuildCache;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
@@ -70,7 +70,7 @@ public class PrefixCommand implements Command {
                 statement.setString(1, data.event.getGuild().getId());
                 return null;
             });
-            CommandTrigger.updateEntry(data.event.getGuild().getId(), Constants.DEFAULT_PREFIX);
+            GuildCache.assignPrefix(data.event.getGuild().getId(), Constants.DEFAULT_PREFIX);
             ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(EmbedType.RESET_PREFIX, data));
             return;
         }
@@ -87,7 +87,7 @@ public class PrefixCommand implements Command {
                     statement.executeUpdate();
                     return null;
                 });
-                CommandTrigger.updateEntry(data.event.getGuild().getId(), newPrefix);
+                GuildCache.assignPrefix(data.event.getGuild().getId(), newPrefix);
                 ResponseDispatcher.commandSucceeded(
                         this,
                         Embeds.getEmbed(EmbedType.NEW_PREFIX, data, newPrefix)

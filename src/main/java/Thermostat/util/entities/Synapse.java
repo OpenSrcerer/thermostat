@@ -43,7 +43,7 @@ public class Synapse {
     private static final ChronoUnit millis = ChronoUnit.MILLIS;
 
     /**
-     * The ID of the Guild that the Synapse owes to.
+     * The ID of the Guild that the Synapse will constantly monitor.
      */
     private final String guildId;
 
@@ -70,7 +70,7 @@ public class Synapse {
 
     /**
      * Create a new Synapse that checks a Guild periodically.
-     * @param guildId ID of Guild to check.
+     * @param guildId ID of Guild to monitor.
      */
     public Synapse(@Nonnull String guildId) {
         this.guildId = guildId;

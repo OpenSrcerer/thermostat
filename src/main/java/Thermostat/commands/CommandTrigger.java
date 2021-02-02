@@ -20,13 +20,10 @@ import thermostat.commands.utility.WordFilter;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
-import thermostat.util.Constants;
 import thermostat.util.GuildCache;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,21 +48,19 @@ public final class CommandTrigger extends ListenerAdapter {
             return;
         }
 
-        String prefix = getGuildPrefix(event.getGuild().getId());
+        String prefix = GuildCache.getPrefix(event.getGuild().getId());
         // gets given arguments and passes them to a list
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(event.getMessage().getContentRaw().split("\\s+")));
 
         try {
             DataSource.execute(conn -> {
                 DataSource.syncDatabase(conn, event.getGuild().getId(), event.getChannel().getId());
-
                 // Make sure to implement cache checks before communicating with the database.
                 // TBD - Bookmark
                 // Checks for whether the channel has the offensive-word filter activated.
                 if (PreparedActions.isFiltered(conn, event.getGuild().getId(), event.getChannel().getId())) {
                     new WordFilter(event);
                 }
-
                 return null;
             });
         } catch (SQLException ex) {
@@ -170,60 +165,5 @@ public final class CommandTrigger extends ListenerAdapter {
             arguments.remove(0);
             new VoteCommand(event, prefix);
         }
-    }
-
-    /**
-     * Convenience method that retrieves a Prefix for a Guild
-     * from the cache or database.
-     * @param guildId ID of Guild to lookup prefix for.
-     * @return Prefix of said guild.
-     */
-    @Nonnull
-    public static String getGuildPrefix(final String guildId) {
-        boolean isCached = true;
-        String prefix = GuildCache.getPrefix(guildId);
-
-        // Null check 1: If prefix is not cached for guild
-        // retrieve prefix from database and create a cache entry
-        if (prefix == null) {
-            isCached = false;
-            try {
-                prefix = retrievePrefix(guildId);
-            } catch (SQLException ex) {
-                lgr.warn("Couldn't retrieve prefix for Guild" + guildId + ":", ex);
-            }
-        }
-
-        // Null check 2: If prefix is NULL in database
-        // Fallback to default prefix
-        if (prefix == null) {
-            prefix = Constants.DEFAULT_PREFIX;
-        }
-
-        if (!isCached) {
-            GuildCache.add(guildId, prefix);
-        }
-
-        return prefix;
-    }
-
-    /**
-     *
-     * Retrieves a Prefix for a Guild from the database.
-     * @param guildId ID of Guild to lookup prefix for.
-     * @return Prefix of said guild.
-     */
-    private static String retrievePrefix(String guildId) throws SQLException {
-        return DataSource.execute(conn -> {
-            PreparedStatement query = conn.prepareStatement("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?");
-            query.setString(1, guildId);
-            ResultSet rs = query.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString(1);
-            } else {
-                return null;
-            }
-        });
     }
 }

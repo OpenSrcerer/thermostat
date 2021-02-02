@@ -20,8 +20,8 @@ public class CachedGuild {
      * Create a new GuildData object for use in the cache.
      * @param prefix Guild's prefix.
      */
-    public CachedGuild(final String guildId, final String prefix) {
-        this.synapse = new Synapse(guildId);
+    public CachedGuild(final String prefix) {
+        this.synapse = null;
         this.prefix = prefix;
     }
 
@@ -43,11 +43,14 @@ public class CachedGuild {
     }
 
     /**
-     * Get this Guild's cached synapse.
-     * @return This Guild's synapse. Null if synapse is not set.
+     * Get this Guild's cached synapse. If the synapse has not been initialized, it gets so and then returned.
+     * @return This Guild's synapse.
      */
     @Nonnull
-    public Synapse getSynapse() {
-        return synapse;
+    public Synapse getSynapse(final String guildId) {
+        if (this.synapse == null) {
+            this.synapse = new Synapse(guildId);
+        }
+        return this.synapse;
     }
 }
