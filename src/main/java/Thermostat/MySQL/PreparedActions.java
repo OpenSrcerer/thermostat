@@ -275,6 +275,7 @@ public final class PreparedActions {
                 }
                 return null;
             });
+            lgr.info("Successfully deleted " + guildId + "from the database. (Guild Kicked Thermo)");
         } catch (SQLException ex) {
             lgr.warn("Failed to delete Guild " + guildId + " from the database. Details:", ex);
         }

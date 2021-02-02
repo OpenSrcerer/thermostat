@@ -11,6 +11,7 @@ public final class Constants {
     public static String DEFAULT_PREFIX;
     public static String THERMOSTAT_USER_ID;
     public static String THERMOSTAT_AVATAR_URL;
+    public static final int DEFAULT_CACHING_SIZE = 10;
 
     /**
      * Initialize Thermostat's constants.

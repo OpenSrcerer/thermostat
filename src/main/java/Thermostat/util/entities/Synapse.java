@@ -9,6 +9,7 @@ import thermostat.Thermostat;
 import thermostat.commands.monitoring.SynapseMonitor;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
+import thermostat.util.Constants;
 import thermostat.util.enumeration.SynapseState;
 
 import javax.annotation.Nonnull;
@@ -76,12 +77,7 @@ public class Synapse {
         this.guildId = guildId;
         this.monitoredChannels = initializeMonitoredChannels(guildId);
 
-        try {
-            setMessageCachingSize();
-        } catch (SQLException ex) {
-            lgr.warn("Failed to retrieve caching size for " + this.guildId + ". Defaulting to 10.");
-            messageCachingSize = 10;
-        }
+        setMessageCachingSize();
     }
 
     /**
@@ -203,15 +199,23 @@ public class Synapse {
     /**
      * Set the caching size for the message date Linked List.
      * Retrieves the size from the database. Called upon for first initialization.
-     * Default: 10
      */
-    public void setMessageCachingSize() throws SQLException {
-        this.messageCachingSize = DataSource.execute(conn -> {
-            PreparedStatement statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
-            statement.setString(1, guildId);
-            ResultSet rs = statement.executeQuery();
-            return rs.getInt(1);
-        });
+    public void setMessageCachingSize() {
+        try {
+            this.messageCachingSize = DataSource.execute(conn -> {
+                PreparedStatement statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
+                statement.setString(1, guildId);
+                ResultSet rs = statement.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                } else {
+                    return Constants.DEFAULT_CACHING_SIZE;
+                }
+            });
+        } catch (SQLException ex) {
+            this.messageCachingSize = Constants.DEFAULT_CACHING_SIZE;
+        }
+        lgr.debug("Set message caching size " + this.messageCachingSize + " for " + this.guildId + ".");
     }
 
     /**

@@ -7,9 +7,8 @@ import thermostat.util.entities.Synapse;
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * A cache utility class that stores
@@ -21,27 +20,7 @@ public class GuildCache {
      * The HashMap where CachedGuilds are stored.
      * K: Guild ID -> V: Cached Guild Data
      */
-    private static final Map<String, CachedGuild> cache = new WeakHashMap<>();
-
-    /**
-     * Fill the cache with CachedGuilds.
-     * @throws SQLException Error while retrieving information
-     * in the database.
-     */
-    public static void initializeCache() throws SQLException {
-        DataSource.execute(conn -> {
-            PreparedStatement statement = conn.prepareStatement("SELECT GUILD_ID, GUILD_PREFIX FROM GUILDS");
-            ResultSet rs = statement.executeQuery();
-            String guildId, guildPrefix;
-            while (rs.next()) {
-                guildId = rs.getString(1);
-                guildPrefix = rs.getString(2);
-                CachedGuild guildData = new CachedGuild(guildPrefix);
-                cache.put(guildId, guildData);
-            }
-            return null;
-        });
-    }
+    private static final Map<String, CachedGuild> cache = new HashMap<>();
 
     /**
      * Get the prefix of a Guild.
