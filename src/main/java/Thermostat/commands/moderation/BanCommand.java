@@ -56,9 +56,9 @@ public class BanCommand implements Command {
         }
     }
 
-    private static void banMembers(List<String> users, Calendar calendar) {
+    private static void banMembers(final List<String> users, final Calendar calendar) {
         if (calendar == null) {
-
+            return;
         }
     }
 

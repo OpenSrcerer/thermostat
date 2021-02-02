@@ -350,7 +350,7 @@ public class Synapse {
      * every message.
      * @param lgr Logger to use for logging.
      */
-    public void monitorChannels(Logger lgr) throws SQLException {
+    public void monitorChannels(final Logger lgr) throws SQLException {
         OffsetDateTime timeNow = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(millis);
         Guild synapseGuild = Thermostat.thermo.getGuildById(this.getGuildId());
         final StringBuilder adjusted = new StringBuilder(), notAdjusted = new StringBuilder();

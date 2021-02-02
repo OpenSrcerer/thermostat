@@ -7,10 +7,10 @@ import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
 import thermostat.Messages;
 import thermostat.commands.Command;
-import thermostat.commands.CommandTrigger;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
+import thermostat.util.GuildCache;
 import thermostat.util.entities.InsufficientPermissionsException;
 import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.DBActionType;
@@ -126,7 +126,7 @@ public class MenuDispatcher extends ListenerAdapter {
             return;
         }
 
-        String prefix = CommandTrigger.getGuildPrefix(event.getGuild().getId());
+        String prefix = GuildCache.getPrefix(event.getGuild().getId());
         reactionMenu.resetDestructionTimer(event.getChannel());
         Messages.clearReactions(event.getChannel(), event.getMessageId());
 
