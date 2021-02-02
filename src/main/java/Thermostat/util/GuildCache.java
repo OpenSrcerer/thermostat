@@ -39,26 +39,11 @@ public class GuildCache {
                 guildId = rs.getString(1);
                 guildPrefix = rs.getString(2);
 
-                CachedGuild guildData = new CachedGuild(guildPrefix);
+                CachedGuild guildData = new CachedGuild(guildId, guildPrefix);
                 cache.put(guildId, guildData);
             }
             return null;
         });
-
-        /* TO BE REMOVED
-        Runnable monitorAction = () -> {
-            Synapse synapse;
-            for (Map.Entry<String, CachedGuild> guild : cache.entrySet()) {
-                synapse = guild.getValue().getSynapse();
-                if (synapse != null) {
-                    if (guild.getValue().getSynapse().getState() == SynapseState.ACTIVE) {
-                        new SynapseMonitor(guild.getValue().getSynapse());
-                    }
-                }
-            }
-        };
-
-        Thermostat.executor.scheduleAtFixedRate(monitorAction, 0, 8, TimeUnit.SECONDS);*/
     }
 
     /**
@@ -84,22 +69,20 @@ public class GuildCache {
         CachedGuild guild = cache.get(guildId);
 
         if (guild == null) {
-            guild = cacheGuild(guildId, null);
-        }
-
-        if (guild.getSynapse() == null) {
-            guild.setSynapse(guildId);
+            guild = add(guildId, null);
         }
 
         return guild.getSynapse();
     }
 
     /**
-     * Caches a Guild.
+     * Puts a Guild in the GuildCache cache.
      * @param guildId Guild's ID.
+     * @return Newly created CachedGuild object.
      */
-    public static CachedGuild cacheGuild(String guildId, String guildPrefix) {
-        CachedGuild guildData = new CachedGuild(guildPrefix);
+    @Nonnull
+    public static CachedGuild add(final String guildId, final String guildPrefix) {
+        CachedGuild guildData = new CachedGuild(guildId, guildPrefix);
         cache.put(guildId, guildData);
         return guildData;
     }

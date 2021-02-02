@@ -5,22 +5,23 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.mySQL.DataSource;
-import thermostat.mySQL.PreparedActions;
-import thermostat.util.ArgumentParser;
-import thermostat.util.Constants;
 import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
+import thermostat.commands.informational.InfoCommand;
 import thermostat.commands.informational.SettingsCommand;
 import thermostat.commands.monitoring.MonitorCommand;
 import thermostat.commands.monitoring.SensitivityCommand;
 import thermostat.commands.monitoring.SetBoundsCommand;
-import thermostat.commands.informational.InfoCommand;
 import thermostat.commands.other.InviteCommand;
 import thermostat.commands.other.PrefixCommand;
 import thermostat.commands.other.VoteCommand;
 import thermostat.commands.utility.FilterCommand;
 import thermostat.commands.utility.WordFilter;
+import thermostat.mySQL.DataSource;
+import thermostat.mySQL.PreparedActions;
+import thermostat.util.ArgumentParser;
+import thermostat.util.Constants;
+import thermostat.util.GuildCache;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
@@ -29,8 +30,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * Adapter for any sort of action based on the
@@ -41,11 +40,6 @@ public final class CommandTrigger extends ListenerAdapter {
      * Logger for this class.
      */
     private static final Logger lgr = LoggerFactory.getLogger(CommandTrigger.class);
-
-    /**
-     * Cache object that contains Guild prefixes.
-     */
-    private static final Map<String, String> prefixCache = new WeakHashMap<>();
 
     /**
      * Trigger a new command when a message calling thermostat gets sent.
@@ -74,7 +68,8 @@ public final class CommandTrigger extends ListenerAdapter {
 
                 return null;
             });
-        } catch (SQLException ignored) {
+        } catch (SQLException ex) {
+            lgr.warn("Database synchronization failed:", ex);
         }
 
         if (
@@ -184,9 +179,9 @@ public final class CommandTrigger extends ListenerAdapter {
      * @return Prefix of said guild.
      */
     @Nonnull
-    public static String getGuildPrefix(String guildId) {
+    public static String getGuildPrefix(final String guildId) {
         boolean isCached = true;
-        String prefix = prefixCache.get(guildId);
+        String prefix = GuildCache.getPrefix(guildId);
 
         // Null check 1: If prefix is not cached for guild
         // retrieve prefix from database and create a cache entry
@@ -195,7 +190,7 @@ public final class CommandTrigger extends ListenerAdapter {
             try {
                 prefix = retrievePrefix(guildId);
             } catch (SQLException ex) {
-                lgr.warn("Failure to retrieve prefix for Guild" + guildId + ":", ex);
+                lgr.warn("Couldn't retrieve prefix for Guild" + guildId + ":", ex);
             }
         }
 
@@ -206,7 +201,7 @@ public final class CommandTrigger extends ListenerAdapter {
         }
 
         if (!isCached) {
-            prefixCache.put(guildId, prefix);
+            GuildCache.add(guildId, prefix);
         }
 
         return prefix;
@@ -230,14 +225,5 @@ public final class CommandTrigger extends ListenerAdapter {
                 return null;
             }
         });
-    }
-
-    /**
-     * Updates Guild prefix cache entry if it exists.
-     * @param guildId ID of Guild to update.
-     * @param newPrefix Newly assigned Guild prefix.
-     */
-    public static void updateEntry(String guildId, String newPrefix) {
-        prefixCache.replace(guildId, newPrefix);
     }
 }

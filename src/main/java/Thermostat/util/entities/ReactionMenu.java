@@ -118,7 +118,7 @@ public class ReactionMenu {
      * restarts the countdown.
      * @param channel Channel to delete the menu from.
      */
-    public void resetDestructionTimer(TextChannel channel) {
+    public void resetDestructionTimer(final TextChannel channel) {
         if (decachingTimer != null) {
             this.decachingTimer.cancel(true);
         }

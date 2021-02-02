@@ -72,7 +72,6 @@ public class Ready extends ListenerAdapter {
         ArrayList<String> wordFileArray = new ArrayList<>();
 
         InputStream fileStream = Thermostat.class.getClassLoader().getResourceAsStream(fileName);
-
         if (fileStream == null) {
             throw new FileNotFoundException("Could not find a file with given file name.");
         }

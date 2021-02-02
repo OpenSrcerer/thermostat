@@ -1,6 +1,6 @@
 package thermostat.util.entities;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * Cache object. Struct-like, merely for storage.
@@ -20,8 +20,8 @@ public class CachedGuild {
      * Create a new GuildData object for use in the cache.
      * @param prefix Guild's prefix.
      */
-    public CachedGuild(String prefix) {
-        this.synapse = null;
+    public CachedGuild(final String guildId, final String prefix) {
+        this.synapse = new Synapse(guildId);
         this.prefix = prefix;
     }
 
@@ -29,19 +29,10 @@ public class CachedGuild {
      * Set a new prefix for the Guild.
      * @param prefix Guild's prefix.
      */
-    public void setPrefix(String prefix) {
+    public void setPrefix(final String prefix) {
         this.prefix = prefix;
     }
 
-    /**
-     * Set the Synapse object for a Guild.
-     * @param guildId Guild's ID.
-     * @return Newly set synapse.
-     */
-    public Synapse setSynapse(String guildId) {
-        this.synapse = new Synapse(guildId);
-        return this.synapse;
-    }
 
     /**
      * Get this Guild's cached prefix.
@@ -55,7 +46,7 @@ public class CachedGuild {
      * Get this Guild's cached synapse.
      * @return This Guild's synapse. Null if synapse is not set.
      */
-    @Nullable
+    @Nonnull
     public Synapse getSynapse() {
         return synapse;
     }
