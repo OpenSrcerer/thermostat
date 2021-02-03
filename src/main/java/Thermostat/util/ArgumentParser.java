@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import thermostat.util.entities.CommandArguments;
+import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -227,4 +228,33 @@ public class ArgumentParser {
         return !event.getMember().getUser().isBot();
     }
 
+    /**
+     * Matches the initialization of a Command with a CommandType alias, and returns the CommandType.
+     * @param arguments Arguments provided by the user.
+     * @param prefix Prefix of the Guild.
+     * @return Type of Command. Null if type could not be matched.
+     */
+    @Nullable
+    public static CommandType getCommandByInit(final List<String> arguments, final String prefix) {
+        for (final CommandType t : CommandType.class.getEnumConstants()) {
+            String init = arguments.get(0); // First init: Initialization with a prefix. (th!cmd)
+            if (init.equalsIgnoreCase(prefix + t.alias1) ||
+                init.equalsIgnoreCase(prefix + t.alias2))
+            {
+                arguments.remove(0); // Remove the initialization to use in a command.
+                return t; // Return the command type if there is a match
+            }
+
+            if (arguments.size() < 2) { continue; } // Do not proceed if there is less than two arguments.
+
+            init = arguments.get(0).concat(arguments.get(1)); // Second init: Initialization by mention. (@Thermostat cmd)
+            if (init.equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">" + t.alias1) ||
+                init.equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">" + t.alias2))
+            {
+                arguments.subList(0, 2).clear(); // Remove the initialization to use in a command.
+                return t; // Return command type if there is a match
+            }
+        }
+        return null; // Could not match type.
+    }
 }

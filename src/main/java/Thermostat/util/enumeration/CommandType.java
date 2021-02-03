@@ -244,7 +244,7 @@ public enum CommandType {
     /**
      * Long and short alias to run the command.
      */
-    private final String alias1, alias2;
+    public final String alias1, alias2;
 
     /**
      * Permissions that Thermostat needs to run the command.
@@ -284,13 +284,6 @@ public enum CommandType {
         return alias1;
     }
 
-    /**
-     * @return Second alias of command.
-     */
-    public String getAlias2() {
-        return alias2;
-    }
-
     // Functions below must return clones, otherwise the originals will get modified by methods
     // that process these EnumSets due to the abstraction EnumSet provides..
 
@@ -303,4 +296,5 @@ public enum CommandType {
      * @return A set of permissions a member must have to run the command.
      */
     public EnumSet<Permission> getMemberPerms() { return memberPermissions.clone(); }
+
 }

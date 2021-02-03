@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Thermostat;
 import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
 import thermostat.commands.informational.InfoCommand;
@@ -16,17 +15,15 @@ import thermostat.commands.other.InviteCommand;
 import thermostat.commands.other.PrefixCommand;
 import thermostat.commands.other.VoteCommand;
 import thermostat.commands.utility.FilterCommand;
-import thermostat.commands.utility.WordFilter;
-import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
 import thermostat.util.GuildCache;
 import thermostat.util.enumeration.CommandType;
 
 import javax.annotation.Nonnull;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Adapter for any sort of action based on the
@@ -43,127 +40,55 @@ public final class CommandTrigger extends ListenerAdapter {
      * @param event Event that contains sent message.
      */
     @Override
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        if (!ArgumentParser.validateEvent(event)) {
+    public void onGuildMessageReceived(@Nonnull final GuildMessageReceivedEvent event) {
+        if (!ArgumentParser.validateEvent(event)) { // If the event is invalid or the member is a bot, don't reply
             return;
         }
 
-        String prefix = GuildCache.getPrefix(event.getGuild().getId());
-        // gets given arguments and passes them to a list
+        // Get the arguments from the event and split them appropriately.
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(event.getMessage().getContentRaw().split("\\s+")));
+        String prefix = GuildCache.getPrefix(event.getGuild().getId()); // Retrieves the prefix for this Guild
+        CommandType type = ArgumentParser.getCommandByInit(arguments, prefix); // Get the type of the Command & prep arguments.
+        PreparedActions.performGMREActions(event); // Run Database sync & Word Filter
 
-        try {
-            DataSource.execute(conn -> {
-                DataSource.syncDatabase(conn, event.getGuild().getId(), event.getChannel().getId());
-                // Make sure to implement cache checks before communicating with the database.
-                // TBD - Bookmark
-                // Checks for whether the channel has the offensive-word filter activated.
-                if (PreparedActions.isFiltered(conn, event.getGuild().getId(), event.getChannel().getId())) {
-                    new WordFilter(event);
-                }
-                return null;
-            });
-        } catch (SQLException ex) {
-            lgr.warn("Database synchronization failed:", ex);
+        if (type == null) {
+            return;
         }
 
-        if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.CHART.getAlias2())
-        ) {
-            arguments.remove(0);
-            new ChartCommand(event, arguments, prefix);
-        }
+        forwardCommand(type, event, arguments, prefix); // Create the command and queue it
+    }
 
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.FILTER.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.FILTER.getAlias2())
-        ) {
-            arguments.remove(0);
-            new FilterCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITOR.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.GETMONITOR.getAlias2())
-        ) {
-            arguments.remove(0);
-            new GetMonitorCommand(event);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.SETTINGS.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.SETTINGS.getAlias2())
-        ) {
-            arguments.remove(0);
-            new SettingsCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.MONITOR.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.MONITOR.getAlias2())
-        ) {
-            arguments.remove(0);
-            new MonitorCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.SENSITIVITY.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.SENSITIVITY.getAlias2())
-        ) {
-            arguments.remove(0);
-            new SensitivityCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.SETBOUNDS.getAlias2())
-        ) {
-            arguments.remove(0);
-            new SetBoundsCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.INFO.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.INFO.getAlias2()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.HELP.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.HELP.getAlias2())
-        ) {
-            arguments.remove(0);
-            new InfoCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.INVITE.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.INVITE.getAlias2())
-        ) {
-            arguments.remove(0);
-            new InviteCommand(event, prefix);
-        }
-
-        // PrefixCommand has two checks, one for th!prefix
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.PREFIX.getAlias2())
-        ) {
-            arguments.remove(0);
-            new PrefixCommand(event, arguments, prefix);
-        }
-
-        // one for @Thermostat
-        else if (
-                (arguments.get(0).equalsIgnoreCase("<@!" + Thermostat.thermo.getSelfUser().getId() + ">"))
-        ) {
-            arguments.remove(0);
-            new PrefixCommand(event, arguments, prefix);
-        }
-
-        else if (
-                arguments.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias1()) ||
-                        arguments.get(0).equalsIgnoreCase(prefix + CommandType.VOTE.getAlias2())
-        ) {
-            arguments.remove(0);
-            new VoteCommand(event, prefix);
+    /**
+     * Matches a given CommandType with a Command and creates one.
+     * @param type Type of Command.
+     * @param event Event to be used for the creation of the Command.
+     * @param arguments Arguments to use in the Command.
+     * @param prefix Prefix of the Guild that called this command.
+     */
+    private static void forwardCommand(final CommandType type, final GuildMessageReceivedEvent event,
+                                       final List<String> arguments, final String prefix) {
+        switch (type) {
+            // Informational
+            case CHART -> new ChartCommand(event, arguments, prefix);
+            case GETMONITOR -> new GetMonitorCommand(event);
+            case INFO, HELP -> new InfoCommand(event, arguments, prefix);
+            case SETTINGS -> new SettingsCommand(event, arguments, prefix);
+            // Moderation (TBA)
+            /*case BAN -> ;
+            case KICK -> ;
+            case MUTE -> ;
+            case PURGE -> ;*/
+            // Monitoring
+            case MONITOR -> new MonitorCommand(event, arguments, prefix);
+            case SENSITIVITY -> new SensitivityCommand(event, arguments, prefix);
+            case SETBOUNDS -> new SetBoundsCommand(event, arguments, prefix);
+            // Other
+            case INVITE -> new InviteCommand(event, prefix);
+            case PREFIX -> new PrefixCommand(event, arguments, prefix);
+            case VOTE -> new VoteCommand(event, prefix);
+            // Utility
+            case FILTER -> new FilterCommand(event, arguments, prefix);
+            default -> lgr.warn("No commands matched.");
         }
     }
 }

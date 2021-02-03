@@ -1,10 +1,12 @@
 package thermostat.mySQL;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thermostat.commands.utility.WordFilter;
 import thermostat.util.GuildCache;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.DBActionType;
@@ -254,7 +256,7 @@ public final class PreparedActions {
      */
     public static void deleteGuild(@Nonnull final String guildId) {
         try {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 String[] statements = {
                         "DELETE CHANNEL_SETTINGS FROM GUILDS JOIN CHANNELS" +
                                 " ON (CHANNELS.GUILD_ID = GUILDS.GUILD_ID) JOIN CHANNEL_SETTINGS" +
@@ -306,6 +308,26 @@ public final class PreparedActions {
             statement.setString(1, guildId);
             statement.setString(2, channelId);
             statement.executeUpdate();
+        }
+    }
+
+    /**
+     * Perform grouped up actions necessary every time a GuildMessageReceivedEvent is triggered.
+     * @param event Event that triggered this set of actions.
+     */
+    public static void performGMREActions(final GuildMessageReceivedEvent event) {
+        try {
+            DataSource.demand(conn -> {
+                DataSource.syncDatabase(conn, event.getGuild().getId(), event.getChannel().getId());
+                // Make sure to implement cache checks before communicating with the database.
+                // TBD - Bookmark
+                if (PreparedActions.isFiltered(conn, event.getGuild().getId(), event.getChannel().getId())) {
+                    new WordFilter(event); // If channel is filtered, send a WordFilter Command.
+                }
+                return null;
+            });
+        } catch (SQLException ex) {
+            lgr.warn("Database synchronization failed:", ex);
         }
     }
 }
