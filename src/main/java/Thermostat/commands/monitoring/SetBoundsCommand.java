@@ -33,8 +33,8 @@ public class SetBoundsCommand implements Command {
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
                     this,
-                    Embeds.getEmbed(EmbedType.ERR, this.data),
-                    "Bad arguments.");
+                    Embeds.getEmbed(EmbedType.HELP_SETBOUNDS, this.data),
+                    "Bad Arguments / None were provided.");
             return;
         }
 
@@ -94,7 +94,7 @@ public class SetBoundsCommand implements Command {
 
         // Perform database changes
         try {
-            complete = DataSource.execute(conn -> PreparedActions.modifyBounds(
+            complete = DataSource.demand(conn -> PreparedActions.modifyBounds(
                     conn, data.event.getGuild().getId(),
                     minBound, maxBound, arguments.channels
             ));

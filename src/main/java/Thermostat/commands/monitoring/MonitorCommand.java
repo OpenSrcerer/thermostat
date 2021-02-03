@@ -82,7 +82,7 @@ public class MonitorCommand implements Command {
 
         // Monitor target channels
         try {
-            complete = DataSource.execute(conn ->
+            complete = DataSource.demand(conn ->
                     PreparedActions.modifyChannel(
                             conn, DBActionType.MONITOR,
                             monitor, data.event.getGuild().getId(),

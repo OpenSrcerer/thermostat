@@ -159,7 +159,7 @@ public class Synapse {
         Map<String, LinkedList<OffsetDateTime>> monChannels = new HashMap<>();
 
         try {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 ArrayList<String> databaseMonitoredChannels = new ArrayList<>();
                 PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                         "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
@@ -202,7 +202,7 @@ public class Synapse {
      */
     public void setMessageCachingSize() {
         try {
-            this.messageCachingSize = DataSource.execute(conn -> {
+            this.messageCachingSize = DataSource.demand(conn -> {
                 PreparedStatement statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
                 statement.setString(1, guildId);
                 ResultSet rs = statement.executeQuery();
@@ -278,7 +278,7 @@ public class Synapse {
      * @param firstMessageTime How long it has passed since the last message was sent.
      */
     private static void slowmodeSwitch(@Nullable final TextChannel channel, final long averageDelay, final long firstMessageTime) throws SQLException {
-        DataSource.execute(conn -> {
+        DataSource.demand(conn -> {
             if (channel == null) {
                 return null;
             }

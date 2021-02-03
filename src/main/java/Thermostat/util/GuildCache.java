@@ -98,7 +98,7 @@ public class GuildCache {
      */
     private static String retrievePrefix(final String guildId) {
         try {
-            return DataSource.execute(conn -> {
+            return DataSource.demand(conn -> {
                 PreparedStatement query = conn.prepareStatement("SELECT GUILD_PREFIX FROM GUILDS WHERE GUILD_ID = ?");
                 query.setString(1, guildId);
                 ResultSet rs = query.executeQuery();

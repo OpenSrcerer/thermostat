@@ -75,7 +75,7 @@ public class FilterCommand implements Command {
 
         // Filter Target Channels
         try {
-            complete = DataSource.execute(conn -> PreparedActions.modifyChannel(
+            complete = DataSource.demand(conn -> PreparedActions.modifyChannel(
                     conn, type, filter, data.event.getGuild().getId(), arguments.channels)
             );
         } catch (SQLException ex) {

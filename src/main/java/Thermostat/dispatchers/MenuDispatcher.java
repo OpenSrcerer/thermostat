@@ -192,9 +192,9 @@ public class MenuDispatcher extends ListenerAdapter {
         if (event.getReactionEmote().getEmoji().equals("☑")) {
 
             if (actionValue == 0) {
-                DataSource.execute(PreparedActions.discardChannels(event, type));
+                DataSource.demand(PreparedActions.discardChannels(event, type));
             } else if (actionValue == 1) {
-                DataSource.execute(PreparedActions.acquireChannels(event, type));
+                DataSource.demand(PreparedActions.acquireChannels(event, type));
             } else {
                 throw new IllegalArgumentException("Action Value must be 0 or 1");
             }

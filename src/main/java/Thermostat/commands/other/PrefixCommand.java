@@ -65,7 +65,7 @@ public class PrefixCommand implements Command {
     private void prefixAction(final List<String> prefixParameters, final List<String> resetSwitch) throws SQLException {
         // --reset switch
         if (resetSwitch != null) {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET GUILD_PREFIX = NULL WHERE GUILD_ID = ?;");
                 statement.setString(1, data.event.getGuild().getId());
                 return null;
@@ -80,7 +80,7 @@ public class PrefixCommand implements Command {
             String newPrefix = prefixParameters.get(0);
 
             if (Pattern.matches("[!-~]*", newPrefix) && newPrefix.length() <= 5 && !newPrefix.equalsIgnoreCase(data.prefix)) {
-                DataSource.execute(conn -> {
+                DataSource.demand(conn -> {
                     PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET GUILD_PREFIX = ? WHERE GUILD_ID = ?;");
                     statement.setString(1, newPrefix);
                     statement.setString(2, data.event.getGuild().getId());

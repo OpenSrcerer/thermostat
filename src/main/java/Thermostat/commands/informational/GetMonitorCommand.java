@@ -48,7 +48,7 @@ public class GetMonitorCommand implements Command {
 
         // #1 - Grab monitored and filtered channels from the DB
         try {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 PreparedStatement statement = conn.prepareStatement("SELECT CHANNELS.CHANNEL_ID FROM CHANNELS " +
                         "JOIN CHANNEL_SETTINGS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
                         "WHERE CHANNELS.GUILD_ID = ? AND CHANNEL_SETTINGS.MONITORED = 1");

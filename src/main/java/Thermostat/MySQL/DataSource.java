@@ -2,19 +2,16 @@ package thermostat.mySQL;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  * A single Hikari data source for Thermostat.
  */
 public abstract class DataSource {
-    private static final Logger lgr = LoggerFactory.getLogger(DataSource.class);
-
     // Creates the single HikariDataSource instance
     private static HikariDataSource ds = null;
 
@@ -56,24 +53,25 @@ public abstract class DataSource {
     }
 
     /**
-     * Used to wrap database actions.
+     * Used to wrap database actions that return a value.
      * @param <X> Type of result to expect from Database.
      */
     @FunctionalInterface
     public interface DatabaseAction<X> {
-        X doInConnection(Connection conn) throws SQLException;
+        X doInConnection(final Connection conn) throws SQLException;
     }
 
     /**
-     * Perform an action on the database.
+     * Query the database and return a value.
      * @param action Action to perform.
      * @param <X> Type of result to expect.
      * @return Database's result in given type.
      * @throws SQLException If something went wrong while
      * performing transaction.
      */
-    public static <X> X execute(DatabaseAction<X> action) throws SQLException {
-        try (Connection conn = getConnection()) {
+    public static <X> X demand(DatabaseAction<X> action) throws SQLException {
+        Objects.requireNonNull(action);
+        try (final Connection conn = getConnection()) {
             return action.doInConnection(conn);
         }
     }

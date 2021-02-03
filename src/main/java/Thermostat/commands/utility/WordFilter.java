@@ -69,7 +69,7 @@ public class WordFilter implements Command {
 
         if (messageWasChanged) {
             try {
-                DataSource.execute(conn -> {
+                DataSource.demand(conn -> {
                     data.event.getMessage().delete()
                             .reason("Inappropriate Language Filter")
                             .queue();

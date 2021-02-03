@@ -79,7 +79,7 @@ public class SettingsCommand implements Command {
     private void settingsAction(final @Nonnull TextChannel channel) {
         // Retrieve the settings values from the database and send a response.
         try {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 int min = 0, max = 0;
                 float sens = 0;
                 boolean monitored = false, filtered = false;

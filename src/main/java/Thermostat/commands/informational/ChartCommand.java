@@ -80,7 +80,7 @@ public class ChartCommand implements Command {
         final Map<String, Integer> top5slowmode = new LinkedHashMap<>();
 
         try {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 PreparedStatement statement = conn.prepareStatement("SELECT CHANNEL_ID, MANIPULATED FROM CHANNELS WHERE GUILD_ID = ?"
                         + " AND (MANIPULATED != 0) ORDER BY MANIPULATED DESC LIMIT 5");
                 statement.setString(1, data.event.getGuild().getId());

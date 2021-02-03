@@ -84,7 +84,7 @@ public class SensitivityCommand implements Command {
 
         // Update sensitivity value on the database
         try {
-            DataSource.execute(conn -> {
+            DataSource.demand(conn -> {
                 for (final String channel : arguments.channels) {
                     PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?");
                     statement.setFloat(1, 1f + offset / 20f);
