@@ -8,6 +8,7 @@ import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.mySQL.DataSource;
+import thermostat.mySQL.PreparedActions;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.entities.CommandData;
 import thermostat.util.entities.Synapse;
@@ -60,31 +61,24 @@ public class SynapseMonitor implements Command {
     @Override
     public void run() {
         try {
-            monitorChannels();
+            Guild synapseGuild = Thermostat.thermo.getGuildById(synapse.getGuildId()); // Retrieve Guild to monitor.
+            if (synapseGuild == null) {
+                lgr.info("[Slowmode Dispatch] Could not monitor null Guild - ID: " + synapse.getGuildId());
+                return;
+            }
+            TextChannel channel = synapseGuild.getTextChannelById(channelId);
+            if (channel == null) {
+                lgr.info("[Slowmode Dispatch] Could not monitor null Channel" +
+                        " - Guild ID: " + synapseGuild.getName() + " - Channel ID: " + channelId);
+                return;
+            }
+
+            slowmodeSwitch(channel, MiscellaneousFunctions.calculateAverageTime(channelMessages));
+            lgr.info("[Synapse Stats - " + synapseGuild.getName() + "] - Adjusted: [" + channel.getName() + "]");
+            channelMessages.clear();
         } catch (SQLException ex) {
             lgr.info("Failure in monitoring Guild " + synapse.getGuildId() + ".", ex);
         }
-    }
-
-    /**
-     * Adjust a channel's slowmode value depending on a temporal average of the delay between every message.
-     */
-    private void monitorChannels() throws SQLException {
-        Guild synapseGuild = Thermostat.thermo.getGuildById(synapse.getGuildId()); // Retrieve Guild to monitor.
-        if (synapseGuild == null) {
-            lgr.info("[Slowmode Dispatch] Could not monitor null Guild - ID: " + synapse.getGuildId());
-            return;
-        }
-        TextChannel channel = synapseGuild.getTextChannelById(channelId);
-        if (channel == null) {
-            lgr.info("[Slowmode Dispatch] Could not monitor null Channel" +
-                    " - Guild ID: " + synapseGuild.getName() + " - Channel ID: " + channelId);
-            return;
-        }
-
-        slowmodeSwitch(channel, MiscellaneousFunctions.calculateAverageTime(channelMessages));
-        lgr.info("[Synapse Stats - " + synapseGuild.getName() + "] - Adjusted: [" + channel.getName() + "]");
-        channelMessages.clear();
     }
 
     /**
@@ -161,13 +155,9 @@ public class SynapseMonitor implements Command {
 
         channel.getManager().setSlowmode(slowmodeToSet).queue();
 
-        // Adds +1 when slowmode turns on for the first time. (Charting)
+        // Adds +1 when a channel gets monitored.
         if (slow == min && slowmodeToSet > min && conn != null) {
-            PreparedStatement statement = conn.prepareStatement("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 " +
-                    "WHERE CHANNEL_ID = ? AND GUILD_ID = ?");
-            statement.setString(1, channel.getId());
-            statement.setString(2, channel.getGuild().getId());
-            statement.executeUpdate();
+            PreparedActions.incrementMonitorChart(conn, channel.getGuild().getId(), channel.getId());
         }
     }
 

@@ -330,4 +330,16 @@ public final class PreparedActions {
             lgr.warn("Database synchronization failed:", ex);
         }
     }
+
+    /**
+     * Increment the "Monitored" value of a channel.
+     * @param guildId Guild's Discord ID.
+     * @param channelId Channel's Discord ID.
+     */
+    public static void incrementMonitorChart(final Connection conn, final String guildId, final String channelId) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?");
+        statement.setString(1, channelId);
+        statement.setString(2, guildId);
+        statement.executeUpdate();
+    }
 }
