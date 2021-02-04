@@ -66,7 +66,7 @@ public class ReactionMenu {
      * Create a new destruction timer for this menu.
      */
     public void rescheduleTimer(final TextChannel channel) {
-        this.decachingTimer = Thermostat.executor.schedule(() -> {
+        this.decachingTimer = Thermostat.SCHEDULED_EXECUTOR.schedule(() -> {
             Messages.deleteMessage(channel, messageId);
             MenuDispatcher.removeMenu(messageId);
 

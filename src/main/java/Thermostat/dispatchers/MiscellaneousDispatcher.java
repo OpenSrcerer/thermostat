@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import static thermostat.Thermostat.thermo;
 
 /**
- * Dispatches periodic miscellanous events like status changes, API
+ * Dispatches periodic miscellaneous events like status changes, API
  * connections, etc.
  */
 public final class MiscellaneousDispatcher {
@@ -30,6 +30,6 @@ public final class MiscellaneousDispatcher {
             lgr.info("Current Guilds: [" + currentServers + "]");
         };
 
-        Thermostat.executor.scheduleAtFixedRate(run, 10, 120, TimeUnit.SECONDS);
+        Thermostat.SCHEDULED_EXECUTOR.scheduleAtFixedRate(run, 10, 120, TimeUnit.SECONDS);
     }
 }

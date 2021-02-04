@@ -106,12 +106,12 @@ public class GetMonitorCommand implements Command {
      * @param list List of channel IDs.
      * @return String that contains channelIds, to be used in an embed.
      */
-    private String getEmbedString(List<String> list) {
+    private String getEmbedString(@Nonnull final List<String> list) {
         StringBuilder string = new StringBuilder();
 
         // iterate through retrieved array, adding
         // every monitored/filtered guild to the ending embed
-        for (String it : list) {
+        for (final String it : list) {
             TextChannel filteredChannel = data.event.getGuild().getTextChannelById(it);
 
             if (filteredChannel != null)

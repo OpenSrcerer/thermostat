@@ -14,6 +14,8 @@ import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -115,5 +117,23 @@ public abstract class MiscellaneousFunctions {
                         ex);
             }
         };
+    }
+
+    /**
+     * Calculates an average of the delay time between
+     * each message.
+     * @param messageTimes A list containing Discord sent message OffsetDateTimes.
+     * @return A long value, with the average time.
+     */
+    public static long calculateAverageTime(List<OffsetDateTime> messageTimes) {
+        long sum = 0;
+
+        if (messageTimes.isEmpty())
+            return 0;
+
+        for (int index = 0; index < messageTimes.size() - 1; ++index) {
+            sum += ChronoUnit.MILLIS.between(messageTimes.get(index + 1), messageTimes.get(index));
+        }
+        return sum / messageTimes.size();
     }
 }
