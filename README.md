@@ -60,7 +60,7 @@ The Charting feature of Thermostat is one of the most unique among Discord bots.
 <br>
 
 <h1 align=center>Dependencies</h1>
-Thermostat is built on the most powerful and performant Java libraries. Visit them below:
+Thermostat is built on the most powerful and performant Java libraries. Visit them below: <br><br>
 <p align=center>
   <a href="https://github.com/DV8FromTheWorld/JDA">
     <img src="https://raw.githubusercontent.com/DV8FromTheWorld/JDA/assets/assets/readme/logo.png" width=64/>
@@ -86,9 +86,6 @@ Thermostat is built on the most powerful and performant Java libraries. Visit th
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://github.com/knowm/XChart">XChart</a>
 </p>
-
-The bot is going to react accordingly to the permissions it is missing. Please make sure that before you submit an issue, you have validated that Thermostat has all needed permissions in the specific channel you're trying to use it in.
-If you still have problems, <a href="https://discord.gg/FnPb4nM">join our support server</a>.
 
 <br>
 
