@@ -15,6 +15,7 @@ import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,7 +23,6 @@ import java.util.List;
  * Class that manages the th!info command. Sends
  * an Info embed when th!info is called.
  */
-@SuppressWarnings("ConstantConditions")
 public class InfoCommand implements Command {
     /**
      * Logger for this class.
@@ -30,20 +30,13 @@ public class InfoCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(InfoCommand.class);
 
     private final CommandData data;
-    private final EmbedType type;
-
-    /* TBA
-    private static final HashMap<String, EmbedBuilder> embeds = new HashMap<>() {{
-        put(CommandType.CHART.getAlias1(), HelpEmbeds.expandedHelpChart())
-    }};*/
+    private EmbedType type;
 
     public InfoCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
         this.data = new CommandData(data, prefix);
 
         if (!arguments.isEmpty()) {
             type = matchArgumentToEmbed(arguments.get(0));
-        } else {
-            type = null;
         }
 
         CommandDispatcher.checkPermissionsAndQueue(this);
@@ -74,33 +67,14 @@ public class InfoCommand implements Command {
         });
     }
 
-    @Nonnull
+    @Nullable
     private static EmbedType matchArgumentToEmbed(@Nonnull final String argument) {
-        if (argument.equalsIgnoreCase(CommandType.CHART.getAlias1())) {
-            return EmbedType.HELP_CHART;
-        } else if (argument.equalsIgnoreCase(CommandType.GETMONITOR.getAlias1())) {
-            return EmbedType.HELP_GETMONITOR;
-        } else if (argument.equalsIgnoreCase(CommandType.SETTINGS.getAlias1())) {
-            return EmbedType.HELP_SETTINGS;
-        } else if (argument.equalsIgnoreCase(CommandType.MONITOR.getAlias1())) {
-            return EmbedType.HELP_MONITOR;
-        } else if (argument.equalsIgnoreCase(CommandType.SENSITIVITY.getAlias1())) {
-            return EmbedType.HELP_SENSITIVITY;
-        } else if (argument.equalsIgnoreCase(CommandType.SETBOUNDS.getAlias1())) {
-            return EmbedType.HELP_SETBOUNDS;
-        } else if (argument.equalsIgnoreCase(CommandType.INVITE.getAlias1())) {
-            return EmbedType.HELP_INVITE;
-        } else if (argument.equalsIgnoreCase(CommandType.PREFIX.getAlias1())) {
-            return EmbedType.HELP_PREFIX;
-        } else if (argument.equalsIgnoreCase(CommandType.VOTE.getAlias1())) {
-            return EmbedType.HELP_VOTE;
-        } else if (argument.equalsIgnoreCase(CommandType.FILTER.getAlias1())) {
-            return EmbedType.HELP_FILTER;
-        } else if (argument.equalsIgnoreCase(CommandType.INFO.getAlias1())) {
-            return EmbedType.HELP_INFO;
-        } else {
-            return null;
+        for (final CommandType t : CommandType.class.getEnumConstants()) {
+            if (argument.equalsIgnoreCase(t.alias1)) {
+                return t.getEmbedType();
+            }
         }
+        return null;
     }
 
     @Override
