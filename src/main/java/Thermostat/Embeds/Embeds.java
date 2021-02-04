@@ -147,15 +147,7 @@ public final class Embeds {
             embed.addField("Filtered:", "**No**", true);
         }
 
-        String indicator = "`   ";
-
-        for (float index = 0.5f; index <= data.sensitivity; index += 0.05f) {
-            indicator = indicator.concat(" ");
-        }
-
-        indicator = indicator.concat("^ (" + String.format("%.1f", (data.sensitivity - 1f) * 20f) + ")`");
-        embed.addField("Sensitivity:\n `-10 -------------------- 10`\n " + indicator, "", false);
-
+        embed.addField("Sensitivity:", String.format("%.5f", data.sensitivity), false);
         return embed;
     }
 

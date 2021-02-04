@@ -25,8 +25,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MANAGE_SERVER
-            )
-    ),
+            ), EmbedType.HELP_CHART),
     GETMONITOR("getmonitor", "gm",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -34,7 +33,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MANAGE_CHANNEL
-            )),
+            ), EmbedType.HELP_GETMONITOR),
     SETTINGS("settings", "st",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -42,7 +41,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MANAGE_CHANNEL
-            )),
+            ), EmbedType.HELP_SETTINGS),
 
     // ***************************************************************
     // **                       MONITORING                          **
@@ -57,7 +56,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MANAGE_CHANNEL
-            )),
+            ), EmbedType.HELP_MONITOR),
     SENSITIVITY("sensitivity", "ss",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -66,7 +65,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MANAGE_CHANNEL
-            )),
+            ), EmbedType.HELP_SENSITIVITY),
     SETBOUNDS("setbounds", "sb",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -75,7 +74,16 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MANAGE_CHANNEL
-            )),
+            ), EmbedType.HELP_SETBOUNDS),
+    SETCACHING("setcaching", "sc",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MANAGE_CHANNEL
+            ),
+            EnumSet.of(
+                    Permission.MANAGE_SERVER
+            ), EmbedType.HELP_SETCACHE),
 
     // ***************************************************************
     // **                       MODERATION                          **
@@ -89,7 +97,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.BAN_MEMBERS
-            )),
+            ), EmbedType.HELP_BAN),
     KICK("kick", "kk",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -98,7 +106,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.KICK_MEMBERS
-            )),
+            ), EmbedType.HELP_KICK),
     MUTE("mute", "mt",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
@@ -108,7 +116,7 @@ public enum CommandType {
             EnumSet.of(
                     Permission.VOICE_MUTE_OTHERS,
                     Permission.KICK_MEMBERS
-            )),
+            ), EmbedType.HELP_MUTE),
     PURGE("purge", "ex",
             EnumSet.of(
                     Permission.MESSAGE_READ,
@@ -119,7 +127,7 @@ public enum CommandType {
             ),
             EnumSet.of(
                     Permission.MESSAGE_MANAGE
-            )),
+            ), EmbedType.HELP_PURGE),
 
     // ***************************************************************
     // **                         UTILITY                           **
@@ -135,7 +143,7 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MANAGE_CHANNEL,
                     Permission.MANAGE_SERVER
-            )),
+            ), EmbedType.HELP_FILTER),
 
     // ***************************************************************
     // **                       OTHER                               **
@@ -146,35 +154,31 @@ public enum CommandType {
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_HISTORY,
                     Permission.MESSAGE_ADD_REACTION
-            )
-    ),
+            ), EmbedType.HELP_INFO),
     HELP("help", "hp",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_ADD_REACTION
-            )
-    ),
+            ), EmbedType.HELP_INFO),
     INVITE("invite", "iv",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS
-            )
-    ),
+            ), EmbedType.HELP_INVITE),
     PREFIX("prefix", "px",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS
             ),
             EnumSet.of(
-                    Permission.ADMINISTRATOR
-            )),
+                    Permission.MANAGE_SERVER
+            ), EmbedType.HELP_PREFIX),
     VOTE("vote", "vo",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS
-            )
-    ),
+            ), EmbedType.HELP_VOTE),
 
     // ***************************************************************
     // **                   Internal Commands                       **
@@ -256,18 +260,25 @@ public enum CommandType {
      */
     private final EnumSet<Permission> memberPermissions;
 
-    CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions) {
+    /**
+     * The help Embed associated with this command.
+     */
+    private final EmbedType embedType;
+
+    CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions, EnumSet<Permission> memberPermissions, EmbedType type) {
         this.alias1 = alias1;
         this.alias2 = alias2;
         this.thermoPermissions = thermoPermissions;
         this.memberPermissions = memberPermissions;
+        this.embedType = type;
     }
 
-    CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions) {
+    CommandType(String alias1, String alias2, EnumSet<Permission> thermoPermissions, EmbedType type) {
         this.alias1 = alias1;
         this.alias2 = alias2;
         this.thermoPermissions = thermoPermissions;
         this.memberPermissions = EnumSet.noneOf(Permission.class);
+        this.embedType = type;
     }
 
     CommandType(EnumSet<Permission> thermoPermissions) {
@@ -275,6 +286,7 @@ public enum CommandType {
         this.alias2 = null;
         this.thermoPermissions = thermoPermissions;
         this.memberPermissions = null;
+        this.embedType = null;
     }
 
     /**
@@ -297,4 +309,10 @@ public enum CommandType {
      */
     public EnumSet<Permission> getMemberPerms() { return memberPermissions.clone(); }
 
+    /**
+     * @return The embed type associated with this command type.
+     */
+    public EmbedType getEmbedType() {
+        return embedType;
+    }
 }

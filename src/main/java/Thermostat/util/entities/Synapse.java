@@ -2,7 +2,6 @@ package thermostat.util.entities;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ISnowflake;
-import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
@@ -13,14 +12,10 @@ import thermostat.util.Constants;
 import thermostat.util.enumeration.SynapseState;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,11 +32,6 @@ public class Synapse {
      * Logger for Synapse operations.
      */
     private static final Logger lgr = LoggerFactory.getLogger(Synapse.class);
-
-    /**
-     * The ChronoUnit that the Synapse uses to measure message time.
-     */
-    private static final ChronoUnit millis = ChronoUnit.MILLIS;
 
     /**
      * The ID of the Guild that the Synapse will constantly monitor.
@@ -76,8 +66,7 @@ public class Synapse {
     public Synapse(@Nonnull String guildId) {
         this.guildId = guildId;
         this.monitoredChannels = initializeMonitoredChannels(guildId);
-
-        setMessageCachingSize();
+        initMessageCachingSize();
     }
 
     /**
@@ -138,14 +127,13 @@ public class Synapse {
      * @param messageTime Creation time of message.
      */
     public synchronized void addMessage(final String channelId, final OffsetDateTime messageTime) {
-        if (monitoredChannels.get(channelId) == null) {
+        LinkedList<OffsetDateTime> channelMessages = monitoredChannels.get(channelId);
+        if (channelMessages == null) {
             return;
         }
-
-        monitoredChannels.get(channelId).addFirst(messageTime);
-
-        if (monitoredChannels.get(channelId).size() == messageCachingSize) {
-            new SynapseMonitor(this);
+        channelMessages.addFirst(messageTime);
+        if (channelMessages.size() >= messageCachingSize) {
+            new SynapseMonitor(this, channelMessages, channelId);
         }
     }
 
@@ -200,7 +188,7 @@ public class Synapse {
      * Set the caching size for the message date Linked List.
      * Retrieves the size from the database. Called upon for first initialization.
      */
-    public void setMessageCachingSize() {
+    public void initMessageCachingSize() {
         try {
             this.messageCachingSize = DataSource.demand(conn -> {
                 PreparedStatement statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
@@ -223,177 +211,20 @@ public class Synapse {
      * Trims list of message dates if cache is smaller than current size.
      * @param newSize New cache size.
      */
-    public synchronized void setMessageCachingSize(int newSize) {
+    public synchronized void setMessageCachingSize(final int newSize) {
         if (newSize < messageCachingSize) {
             int cacheDifference = messageCachingSize - newSize;
 
             // Trim unneeded messages to match new size
             for (Map.Entry<String, LinkedList<OffsetDateTime>> entry : monitoredChannels.entrySet()) {
-                // if list has more elements than the new size
-                if (entry.getValue().size() > newSize) {
-                    // remove all unnecessary ones
-                    for (int index = 0; index < cacheDifference; ++index) {
+                if (entry.getValue().size() > newSize) { // if list has more elements than the new size
+                    for (int index = 0; index < cacheDifference; ++index) { // remove all unnecessary ones
                         entry.getValue().remove();
                     }
                 }
             }
         }
-
         this.messageCachingSize = newSize;
     }
 
-    /**
-     * Adjusts the slowmode for the given channel.
-     * @param channel TextChannel that will have the slowmode adjusted.
-     * @param time    Int representing the adjustment time.
-     */
-    private static void putSlowmode(@Nullable final Connection conn, final TextChannel channel, final int time, final int min, final int max) throws SQLException {
-        int slowmodeToSet;
-
-        int slow = channel.getSlowmode(); // gets the current slowmode in the channel
-
-        if (slow + time > max && max > 0) { // if slowmode and the added time exceed the max slowmode
-            slowmodeToSet = max; // Set slowmode to the maximum value taken from the database.
-        } else if (slow + time > TextChannel.MAX_SLOWMODE) {
-            slowmodeToSet = TextChannel.MAX_SLOWMODE; // sets to max DISCORD slowmode value
-        } else {
-            slowmodeToSet = Math.max(slow + time, min);
-        }
-
-        channel.getManager().setSlowmode(slowmodeToSet).queue();
-
-        // Adds +1 when slowmode turns on for the first time. (Charting)
-        if (slow == min && slowmodeToSet > min && conn != null) {
-            PreparedStatement statement = conn.prepareStatement("UPDATE CHANNELS SET MANIPULATED = MANIPULATED + 1 WHERE CHANNEL_ID = ? AND GUILD_ID = ?");
-            statement.setString(1, channel.getId());
-            statement.setString(2, channel.getGuild().getId());
-            statement.executeUpdate();
-        }
-    }
-
-    /**
-     * Calculates the slowmode for a certain channel.
-     * @param channel          The channel that will have the slowmode adjusted.
-     * @param averageDelay     The average delay between the past 25 messages.
-     * @param firstMessageTime How long it has passed since the last message was sent.
-     */
-    private static void slowmodeSwitch(@Nullable final TextChannel channel, final long averageDelay, final long firstMessageTime) throws SQLException {
-        DataSource.demand(conn -> {
-            if (channel == null) {
-                return null;
-            }
-
-            // gets the maximum and minimum slowmode values
-            // from the database.
-            PreparedStatement statement = conn.prepareStatement("SELECT MIN_SLOW, MAX_SLOW, SENSOFFSET FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
-            statement.setString(1, channel.getId());
-            ResultSet rs = statement.executeQuery();
-            rs.next();
-
-            int min = rs.getInt(1);
-            int max = rs.getInt(2);
-            float offset = rs.getFloat(3);
-
-            // accounting for each delay of the messages
-            // this function picks an appropriate slowmode
-            // adjustment number for each case.
-            if (averageDelay <= 100 * offset) {
-                putSlowmode(conn, channel, 20, min, max);
-            } else if (averageDelay <= 250 * offset) {
-                putSlowmode(conn, channel, 10, min, max);
-            } else if (averageDelay <= 500 * offset) {
-                putSlowmode(conn, channel, 6, min, max);
-            } else if (averageDelay <= 750 * offset) {
-                putSlowmode(conn, channel, 4, min, max);
-            } else if (averageDelay <= 1000 * offset) {
-                putSlowmode(conn, channel, 2, min, max);
-            } else if (averageDelay <= 1250 * offset) {
-                putSlowmode(conn, channel, 1, min, max);
-            } else if (averageDelay <= 1500 * offset) {
-                putSlowmode(conn, channel, 0, min, max);
-            } else if (averageDelay <= 2000 * offset) {
-                putSlowmode(conn, channel, -1, min, max);
-            } else if (averageDelay <= 2500 * offset) {
-                putSlowmode(conn, channel, -2, min, max);
-            } else {
-                putSlowmode(conn, channel, -4, min, max);
-            }
-            return null;
-        });
-    }
-
-    /**
-     * Calculates an average of the delay time between
-     * each message.
-     *
-     * @param messageTimes A list containing Discord sent
-     *                 message times.
-     * @return A long value, with the average time.
-     */
-    private static long calculateAverageTime(List<OffsetDateTime> messageTimes) {
-        long sum = 0;
-
-        if (messageTimes.isEmpty())
-            return 0;
-
-        for (int index = 0; index < messageTimes.size() - 1; ++index) {
-            sum += ChronoUnit.MILLIS.between(messageTimes.get(index + 1), messageTimes.get(index));
-        }
-        return sum / messageTimes.size();
-    }
-
-    /**
-     * Iterate through each of the channels found in this Synapse's
-     * monitoredChannels cache, and adjust their slowmode value
-     * depending on a temporal average of the dispatch rate between
-     * every message.
-     * @param lgr Logger to use for logging.
-     */
-    public void monitorChannels(final Logger lgr) throws SQLException {
-        OffsetDateTime timeNow = OffsetDateTime.now().toInstant().atOffset(ZoneOffset.UTC).truncatedTo(millis);
-        Guild synapseGuild = Thermostat.thermo.getGuildById(this.getGuildId());
-        final StringBuilder adjusted = new StringBuilder(), notAdjusted = new StringBuilder();
-
-        if (synapseGuild == null) {
-            lgr.info("[Slowmode Dispatch] Guild was null - ID: " + this.getGuildId());
-            return;
-        }
-
-        // Go through every channel in the set and calculate the
-        // necessary slowmode for every entry.
-        for (Map.Entry<String, LinkedList<OffsetDateTime>> channelData : monitoredChannels.entrySet()) {
-            TextChannel channel = synapseGuild.getTextChannelById(channelData.getKey());
-            if (channel == null) {
-                lgr.info("[Slowmode Dispatch] Channel was null." +
-                        " - Guild: " + synapseGuild.getName() + " - Channel ID: " + channelData.getKey());
-                notAdjusted.append(channelData.getKey()).append(" ");
-                continue;
-            } else if (channelData.getValue().size() < 10) {
-                notAdjusted.append(channelData.getKey()).append(" ");
-                continue;
-            }
-
-            if (millis.between(channelData.getValue().get(0), timeNow) > 60000) {
-                putSlowmode(null, channel, Integer.MIN_VALUE, 0, 0);
-            } else {
-                slowmodeSwitch(
-                        channel,
-                        calculateAverageTime(channelData.getValue()),
-                        millis.between(channelData.getValue().get(0), timeNow)
-                );
-                adjusted.append(channel.getName()).append(" ");
-            }
-
-            channelData.getValue().clear();
-        }
-
-        lgr.info("[Synapse Stats - " + synapseGuild.getName() + "] - Adjusted: [" + adjusted.toString() +
-                "] - Not Adjusted: [" + notAdjusted + "]");
-        // If none of the channels were slowmoded
-        // deactivate the Synapse for the whole Guild
-        if (adjusted.isEmpty()) {
-            state = SynapseState.INACTIVE;
-            lgr.info("Synapse deactivated for " + synapseGuild.getName());
-        }
-    }
 }

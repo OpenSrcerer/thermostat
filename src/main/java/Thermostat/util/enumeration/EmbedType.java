@@ -19,6 +19,7 @@ public enum EmbedType {
     ACTION_SUCCESSFUL,
     PROMPT,
     MISSED_PROMPT,
+    SET_CACHE,
 
     // ***************************************************************
     // **                            HELP                           **
@@ -33,8 +34,13 @@ public enum EmbedType {
     HELP_MONITOR,
     HELP_SENSITIVITY,
     HELP_SETBOUNDS,
+    HELP_SETCACHE,
     HELP_PREFIX,
     HELP_FILTER,
+    HELP_BAN,
+    HELP_KICK,
+    HELP_MUTE,
+    HELP_PURGE,
     MONITOR_INFO,
     UTILITY_INFO,
     OTHER_INFO,
