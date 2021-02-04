@@ -49,7 +49,7 @@ Our primary concern is performance and usability, and as such you can expect The
 <br>
 
 <h1 align=center>Features</h1>
-What makes Thermostat special is the fact that it controls Discord slowmode in a dynamic way, calculating the needed slowmode for a channel dependent on the number of incoming messages in a unit of time. It comes with easy set up, which is only a few commands. You set it, and forget it. Thermostat does not require continuous changes or maintenance.   <a href="https://github.com/OpenSrcerer/thermostat/wiki">Click me to get started!</a>
+What makes Thermostat special is the fact that it controls Discord slowmode in a dynamic way, calculating the needed slowmode for a channel dependent on the number of incoming messages in a unit of time. It comes with easy set up, which is only a few commands. You set it, and forget it. Thermostat does not require continuous changes or maintenance.   <a href="https://github.com/OpenSrcerer/thermostat/wiki">Click me to get started!</a> <br><br>
 
   <p align=center>
     <img src="https://i.ibb.co/4gxBbKB/chart.png" alt="Chart"/>
