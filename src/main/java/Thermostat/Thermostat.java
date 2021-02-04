@@ -10,16 +10,19 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import org.jetbrains.annotations.NotNull;
 import thermostat.commands.events.Ready;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 
+import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.util.EnumSet;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
+import static thermostat.util.Constants.AVAILABLE_CORES;
 
 /**
  * Thermostat
@@ -33,27 +36,38 @@ import java.util.concurrent.ThreadFactory;
  */
 public abstract class Thermostat {
     /**
-     * Pool of threads used by every non JDA related action in this application.
+     * Pools of threads used by every non JDA related action in this application.
      */
-    public static final ScheduledExecutorService executor;
-
-    static {
-        ThreadFactory threadFactory = new ThreadFactory() {
-            private int counter = 1;
-
-            @Override
-            public Thread newThread(@NotNull Runnable r) {
-                return new Thread(r, "CommandDispatch-" + counter++);
-            }
-        };
-
-        executor = Executors.newScheduledThreadPool(4, threadFactory);
-    }
+    public static final ScheduledExecutorService SCHEDULED_EXECUTOR;
+    public static final ExecutorService NON_SCHEDULED_EXECUTOR;
 
     /**
      * Singular JDA instance for thermostat.
      */
     public static JDA thermo;
+
+    static {
+        ThreadFactory nonScheduledFactory = new ThreadFactory() {
+            private int counter = 1;
+
+            @Override
+            public Thread newThread(@Nonnull final Runnable r) {
+                return new Thread(r, "Commander-" + counter++);
+            }
+        };
+
+        ThreadFactory scheduledFactory = new ThreadFactory() {
+            private int counter = 1;
+
+            @Override
+            public Thread newThread(@Nonnull final Runnable r) {
+                return new Thread(r, "Scheduler-" + counter++);
+            }
+        };
+
+        NON_SCHEDULED_EXECUTOR = Executors.newFixedThreadPool(AVAILABLE_CORES/2, nonScheduledFactory);
+        SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(AVAILABLE_CORES/2, scheduledFactory);
+    }
 
     /**
      * Start Thermostat and initialize all needed variables.
@@ -107,7 +121,6 @@ public abstract class Thermostat {
         }
 
         DataObject config = DataObject.fromJson(configFile);
-
         tokens[0] = config.getString("Prefix");
         tokens[1] = config.getString("Token");
         tokens[2] = config.getString("DBLToken");
@@ -121,14 +134,14 @@ public abstract class Thermostat {
      * or failure to initialize necessary configuration files.
      */
     public static void shutdownThermostat() {
-        executor.shutdown();
+        SCHEDULED_EXECUTOR.shutdown();
+        NON_SCHEDULED_EXECUTOR.shutdown();
 
         if (thermo != null) {
             thermo.shutdown();
         }
 
         DataSource.closeDataSource();
-
         System.exit(-1);
     }
 }

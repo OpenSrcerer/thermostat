@@ -8,6 +8,7 @@ import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.embeds.Embeds;
+import thermostat.util.Constants;
 import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
@@ -51,8 +52,8 @@ public final class CommandDispatcher {
             }
         };
 
-        for (int thread = 1; thread <= 2; ++thread) {
-            Thermostat.executor.submit(drainCommands);
+        for (int thread = 1; thread <= Constants.AVAILABLE_CORES; ++thread) {
+            Thermostat.NON_SCHEDULED_EXECUTOR.submit(drainCommands);
         }
     }
 

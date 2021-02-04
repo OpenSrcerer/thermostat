@@ -12,6 +12,7 @@ public final class Constants {
     public static String THERMOSTAT_USER_ID;
     public static String THERMOSTAT_AVATAR_URL;
     public static final int DEFAULT_CACHING_SIZE = 10;
+    public static final int AVAILABLE_CORES = Math.max(Runtime.getRuntime().availableProcessors(), 2);
 
     /**
      * Initialize Thermostat's constants.
