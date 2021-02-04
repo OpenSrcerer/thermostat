@@ -1,19 +1,34 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/opensrcerer/thermostat/badge)](https://www.codefactor.io/repository/github/opensrcerer/thermostat)
-[![GitHub forks](https://img.shields.io/github/forks/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/network)
-[![GitHub issues](https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square)](https://github.com/OpenSrcerer/thermostat/issues)
-[![Build Status](https://travis-ci.com/OpenSrcerer/thermostat.svg)](https://travis-ci.com/github/OpenSrcerer/thermostat)  
+<p align=center>
+  <a href="https://www.codefactor.io/repository/github/opensrcerer/thermostat">
+    <img src="https://www.codefactor.io/repository/github/opensrcerer/thermostat/badge" width=140/>
+  </a>
+  <a href="https://github.com/OpenSrcerer/thermostat/network">
+    <img src="https://img.shields.io/github/forks/OpenSrcerer/thermostat?style=flat-square" width=86/>
+  </a>
+  <a href="https://github.com/OpenSrcerer/thermostat/issues">
+    <img src="https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square" width=140/>
+  </a>
+  <a href="https://travis-ci.com/github/OpenSrcerer/thermostat">
+    <img src="https://travis-ci.com/OpenSrcerer/thermostat.svg" width=140/>
+  </a>
+</p>
 
-# Online and Build Status
+<p align=center>
+  <img src=https://i.ibb.co/rc8RNJJ/Thermostat-V2.png width=400>
+</p>
 
-<a href="https://top.gg/bot/700341788136833065" >
-  <img src="https://top.gg/api/widget/status/700341788136833065.svg" alt="Thermostat" />
+# Online Status & Bot Listing
+
+<a href="https://discord.boats/bot/700341788136833065">
+  <img src="https://discord.boats/api/widget/700341788136833065"/>
+</a>           
+<a href="https://top.gg/bot/700341788136833065">
+  <img src="https://top.gg/api/widget/700341788136833065.svg"/>
 </a>
-<a href="https://top.gg/bot/700341788136833065" >
-  <img src="https://top.gg/api/widget/servers/700341788136833065.svg" alt="Thermostat" />
+<a href="https://discord.bots.gg/bots/700341788136833065">
+  <img src="https://api.snaz.in/v2/bots-gg/widget/700341788136833065"/>
 </a>
-<a href="https://top.gg/bot/700341788136833065" >
-  <img src="https://top.gg/api/widget/upvotes/700341788136833065.svg" alt="Thermostat" />
-</a>
+
 <br><br>
 
 
