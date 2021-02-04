@@ -38,7 +38,7 @@ public class ReactionMenu {
     /**
      * When this menu will stop being cached.
      */
-    private ScheduledFuture<?> decachingTimer;
+    private ScheduledFuture<Void> decachingTimer;
 
     /**
      * Build a new menu.
@@ -74,6 +74,7 @@ public class ReactionMenu {
                 case MONITORALL, FILTERALL -> Messages.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT));
                 default -> throw new RuntimeException("Unknown menu type");
             }
+            return null;
         }, 200, TimeUnit.SECONDS);
     }
 
@@ -122,7 +123,6 @@ public class ReactionMenu {
         if (decachingTimer != null) {
             this.decachingTimer.cancel(true);
         }
-
         rescheduleTimer(channel);
     }
 
