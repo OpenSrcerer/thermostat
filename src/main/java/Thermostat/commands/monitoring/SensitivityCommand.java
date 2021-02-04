@@ -61,15 +61,14 @@ public class SensitivityCommand implements Command {
         // Parse sensitivity argument
         try {
             offset = Float.parseFloat(sensitivity.get(0));
-
-            if (offset < -10 || offset > 10) {
+            if (offset <= 0f) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
             ResponseDispatcher.commandFailed(this,
                     Embeds.getEmbed(EmbedType.ERR_INPUT, data,
-                            "Sensitivity value must be between -10 and 10 (inclusive)."),
-                    "User provided an incorrect sensitivity value.");
+                            "Sensitivity value must be larger than 0!"),
+                    "Invalid sensitivity value.");
             return;
         }
 
@@ -87,7 +86,7 @@ public class SensitivityCommand implements Command {
             DataSource.demand(conn -> {
                 for (final String channel : arguments.channels) {
                     PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET SENSOFFSET = ? WHERE CHANNEL_ID = ?");
-                    statement.setFloat(1, 1f + offset / 20f);
+                    statement.setFloat(1, offset);
                     statement.setString(2, channel);
                     statement.executeUpdate();
                     complete.append("<#").append(channel).append("> ");
