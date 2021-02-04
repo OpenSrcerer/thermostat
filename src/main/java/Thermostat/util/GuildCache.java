@@ -58,6 +58,15 @@ public class GuildCache {
     }
 
     /**
+     * Set the caching size for a Guild to a new value.
+     * @param guildId Guild's ID.
+     * @param newCachingSize Caching size to change to.
+     */
+    public static void setCacheSize(final String guildId, final int newCachingSize) {
+        cache.get(guildId).getSynapse(guildId).setMessageCachingSize(newCachingSize);
+    }
+
+    /**
      * Set the Synapse object for a Guild.
      * @param guildId ID of guild.
      * @return Newly set Synapse.
