@@ -23,13 +23,15 @@ public final class MiscellaneousDispatcher {
                 .botId(thermo.getSelfUser().getId())
                 .build();
 
+        // Post server stats
         Runnable run = () -> {
             long currentServers = thermo.getGuildCache().size();
             dblApi.setStats((int) currentServers);
             Boats4J.postStats(currentServers, thermo.getSelfUser().getId(), boatsToken);
-            lgr.info("Current Guilds: [" + currentServers + "]");
+            lgr.info("Posted server stats. Current Guilds: [" + currentServers + "]");
         };
 
+        // Every two minutes.
         Thermostat.SCHEDULED_EXECUTOR.scheduleAtFixedRate(run, 10, 120, TimeUnit.SECONDS);
     }
 }
