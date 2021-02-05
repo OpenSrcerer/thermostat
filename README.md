@@ -16,7 +16,7 @@
 </p>
 
 <p align=center>
-  <img src=https://i.ibb.co/rc8RNJJ/Thermostat-V2.png width=400>
+  <img src=https://raw.githubusercontent.com/OpenSrcerer/thermostat/master/img/Thermostat-V2.png width=400>
 </p>
 
 <br><br>
@@ -52,7 +52,7 @@ Our primary concern is performance and usability, and as such you can expect The
 What makes Thermostat special is the fact that it controls Discord slowmode in a dynamic way, calculating the needed slowmode for a channel dependent on the number of incoming messages in a unit of time. It comes with easy set up, which is only a few commands. You set it, and forget it. Thermostat does not require continuous changes or maintenance.   <a href="https://github.com/OpenSrcerer/thermostat/wiki">Click me to get started!</a> <br><br>
 
   <p align=center>
-    <img src="https://i.ibb.co/4gxBbKB/chart.png" alt="Chart"/>
+    <img src="https://raw.githubusercontent.com/OpenSrcerer/thermostat/master/img/chart.png" alt="Chart"/>
   </p>
 
 The Charting feature of Thermostat is one of the most unique among Discord bots. Based on the data that is collected by slowmoding your channels, you are able to visualize the information in highly stylish charts.
