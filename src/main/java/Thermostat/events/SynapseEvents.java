@@ -1,4 +1,4 @@
-package thermostat.commands.events;
+package thermostat.events;
 
 import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;

@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import thermostat.commands.events.Ready;
+import thermostat.events.Ready;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 
