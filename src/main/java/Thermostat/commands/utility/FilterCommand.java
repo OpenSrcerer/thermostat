@@ -43,7 +43,7 @@ public class FilterCommand implements Command {
     }
 
     /**
-     * Command form: th!filter <true/false> [channel(s)/category(ies)]
+     * Command form: th!filter
      */
     @Override
     public void run() {

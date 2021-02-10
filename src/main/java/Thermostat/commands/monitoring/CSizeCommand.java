@@ -39,7 +39,7 @@ public class CSizeCommand implements Command {
 
     /**
      * Command form: th!setcachingsize
-     * -s <sensitivity>
+     * -s <size>
      * -c <channels/categories>
      */
     @Override
@@ -47,7 +47,7 @@ public class CSizeCommand implements Command {
         final List<String> cachingSize = data.parameters.get("s");
         int newCachingSize;
 
-        // Check that sensitivity has arguments
+        // Check that size has arguments
         if (!hasArguments(cachingSize)) {
             ResponseDispatcher.commandFailed(this,
                     Embeds.getEmbed(EmbedType.HELP_SENSITIVITY, data),
