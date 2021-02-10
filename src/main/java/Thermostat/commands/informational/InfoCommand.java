@@ -9,6 +9,7 @@ import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
+import thermostat.util.ArgumentParser;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
@@ -30,15 +31,9 @@ public class InfoCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(InfoCommand.class);
 
     private final CommandData data;
-    private EmbedType type;
 
     public InfoCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, prefix);
-
-        if (!arguments.isEmpty()) {
-            type = matchArgumentToEmbed(arguments.get(0));
-        }
-
+        this.data = new CommandData(data, arguments, prefix);
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
@@ -47,11 +42,17 @@ public class InfoCommand implements Command {
      */
     @Override
     public void run() {
-        if (type == null) {
-            sendGenericInfoMenu();
-        } else {
-            ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(type, data));
+        List<String> commandType = data.parameters.get("-type");
+
+        if (ArgumentParser.hasArguments(commandType)) {
+            EmbedType type = matchArgumentToEmbed(commandType.get(0));
+            if (type != null) {
+                ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(type, data));
+                return;
+            }
         }
+
+        sendGenericInfoMenu();
     }
 
     private void sendGenericInfoMenu() {
