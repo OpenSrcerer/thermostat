@@ -1,11 +1,11 @@
 package thermostat.dispatchers;
 
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.jetbrains.annotations.NotNull;
-import thermostat.Messages;
 import thermostat.commands.Command;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
+
+import static thermostat.util.MessageHandler.*;
 
 /**
  * Organizes a cache of ReactionMenu and dispatches
@@ -93,10 +95,10 @@ public class MenuDispatcher extends ListenerAdapter {
                 }
             }
         } catch (InsufficientPermissionsException ex) {
-            Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet()));
+            sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet()));
             expungeMenu(event.getMessageId());
         } catch (Exception ex) {
-            Messages.sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, "Something went wrong. Please try again."));
+            sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, "Something went wrong. Please try again."));
             ex.printStackTrace();
         }
     }
@@ -126,49 +128,51 @@ public class MenuDispatcher extends ListenerAdapter {
             return;
         }
 
-        String prefix = GuildCache.getPrefix(event.getGuild().getId());
-        reactionMenu.resetDestructionTimer(event.getChannel());
-        Messages.clearReactions(event.getChannel(), event.getMessageId());
-
         switch (event.getReactionEmote().getEmoji()) {
-            case "🌡" -> {
-                // Monitored Functions Menu
-                if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.MONITOR_INFO, prefix));
-                    reactionMenu.setMenuType(MenuType.MONITOR);
-                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
-                }
-            }
-            case "🔧" -> {
-                // Informational Menu
-                if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.UTILITY_INFO, prefix));
-                    reactionMenu.setMenuType(MenuType.UTILITY);
-                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
-                }
-            }
-            case "ℹ" -> {
-                // Informational Menu
-                if (reactionMenu.getMenuType() == MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.OTHER_INFO, prefix));
-                    reactionMenu.setMenuType(MenuType.OTHER);
-                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("⬆", "❌"));
-                }
-            }
-            case "⬆" -> {
-                // Exit Menu
-                if (reactionMenu.getMenuType() != MenuType.SELECTION) {
-                    Messages.editMessage(event.getChannel(), event.getMessageId(), Embeds.getEmbed(EmbedType.SELECTION));
-                    reactionMenu.setMenuType(MenuType.SELECTION);
-                    Messages.addReactions(event.getChannel(), event.getMessageId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
-                }
-            }
+            // Monitoring Submenu
+            case "🌡" -> updateMenu(reactionMenu, event, EmbedType.MONITOR_INFO, reactionMenu.getMenuType(), MenuType.MONITOR);
+            // Utility Submenu
+            case "🔧" -> updateMenu(reactionMenu, event, EmbedType.UTILITY_INFO, reactionMenu.getMenuType(), MenuType.UTILITY);
+            // Informational Submenu
+            case "ℹ" -> updateMenu(reactionMenu, event, EmbedType.OTHER_INFO, reactionMenu.getMenuType(), MenuType.OTHER);
+            // Go back to main menu
+            case "🔼" -> updateMenu(reactionMenu, event, EmbedType.SELECTION, reactionMenu.getMenuType(), MenuType.SELECTION);
+            // Close Menu
             case "❌" -> {
-                // Close Menu
-                reactionMenu.invalidate();
-                Messages.deleteMessage(event.getChannel(), event.getMessageId());
+                removeMenu(reactionMenu.getMessageId());
+                perform(event.getChannel().retrieveMessageById(reactionMenu.getMessageId()).flatMap(Message::delete));
             }
-            default -> { return; }
+            // Remove invalid reaction
+            default -> perform(event.getReaction().removeReaction());
+        }
+    }
+
+    public static void updateMenu(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event,
+                                  final EmbedType type, final MenuType currType, final MenuType newType)
+    {
+        reactionMenu.setMenuType(newType);
+        reactionMenu.resetDestructionTimer(event.getChannel());
+
+        if (currType == MenuType.SELECTION) {
+            final String prefix = GuildCache.getPrefix(event.getGuild().getId());
+
+            // Action to update the menu to a submenu
+            perform(event.getChannel().retrieveMessageById(reactionMenu.getMessageId())
+                    .flatMap(message ->
+                            message.clearReactions()
+                            .and(editMessage(message, Embeds.getEmbed(type, prefix)))
+                            .and(addReactions(message, Arrays.asList("🔼", "❌")))
+                    )
+            );
+        } else {
+            // Go back to the main menu
+            perform(event.getChannel().retrieveMessageById(reactionMenu.getMessageId())
+                    .flatMap(message ->
+                            message.clearReactions()
+                            .and(editMessage(message, Embeds.getEmbed(type)))
+                            .and(addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌")))
+                    )
+            );
         }
     }
 
@@ -200,11 +204,13 @@ public class MenuDispatcher extends ListenerAdapter {
             }
 
             expungeMenu(reactionMenu.getMessageId());
-            Messages.editMessage(
+            editMessage(
                     event.getChannel(),
                     event.getMessageId(),
                     Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
             );
         }
     }
+
+
 }

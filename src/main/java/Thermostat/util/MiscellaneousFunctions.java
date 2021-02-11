@@ -3,7 +3,6 @@ package thermostat.util;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import thermostat.Messages;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.MenuDispatcher;
@@ -109,7 +108,7 @@ public abstract class MiscellaneousFunctions {
     public static Consumer<Message> addNewMenu(final MenuType type, final Command command) {
         return message -> {
             try {
-                Messages.addReaction(message, "☑");
+                MessageHandler.addReaction(message, "☑");
                 MenuDispatcher.addMenu(type, message.getId(), command);
             } catch (Exception ex) {
                 ResponseDispatcher.commandFailed(command,

@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Messages;
+import thermostat.util.MessageHandler;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.embeds.Embeds;
@@ -97,7 +97,7 @@ public final class CommandDispatcher {
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
                                         " " + missingThermostatPerms.toString() + "");
-                                Messages.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, command.getData(), missingThermostatPerms));
+                                MessageHandler.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, command.getData(), missingThermostatPerms));
                             }
                         }
                 );
@@ -127,7 +127,7 @@ public final class CommandDispatcher {
                             } else {
                                 command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
                                         " " + missingThermostatPerms.toString() + " " + missingMemberPerms.toString() + "");
-                                Messages.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION, command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms)));
+                                MessageHandler.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION, command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms)));
                             }
                         }
                 );

@@ -1,23 +1,31 @@
-package thermostat;
+package thermostat.util;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.util.PermissionComputer;
+import net.dv8tion.jda.api.requests.RestAction;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import thermostat.util.entities.InsufficientPermissionsException;
 import thermostat.util.enumeration.CommandType;
 
 import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
  * A handy Message sender with static functions.
  */
-public final class Messages {
+public final class MessageHandler {
+    @Contract("null -> fail")
+    public static <X> void perform(@Nullable RestAction<X> action) throws RuntimeException {
+        Objects.requireNonNull(action);
+        action.queue();
+    }
 
     /**
      * Sends a text message to a designated channel with an
@@ -120,6 +128,14 @@ public final class Messages {
     }
 
     /**
+     * Edits a Message's content to the provided MessageEmbed.
+     * @param newContent New embed to place in the message.
+     */
+    public static RestAction<Message> editMessage(Message message, EmbedBuilder newContent) throws InsufficientPermissionsException {
+        return message.editMessage(newContent.build());
+    }
+
+    /**
      * Deletes a message from Discord.
      * @param msgId ID of message to delete.
      */
@@ -162,6 +178,21 @@ public final class Messages {
     }
 
     /**
+     * Adds a list of reactions to a given message.
+     * @param unicode The unicode emoji to add as a reaction.
+     */
+    public static RestAction<Void> addReactions(final Message message, List<String> unicode) throws InsufficientPermissionsException {
+        RestAction<Void> action = null;
+        for (final String it : unicode) {
+            if (action == null) {
+                action = message.addReaction(it);
+            }
+            action = action.and(message.addReaction(it));
+        }
+        return action;
+    }
+
+    /**
      * Adds a reaction to a given message.
      * @param message  The target message.
      * @param unicode The unicode emoji to add as a reaction.
@@ -174,24 +205,6 @@ public final class Messages {
 
         if (missingPermissions.isEmpty()) {
             message.addReaction(unicode).queue();
-        } else {
-            throw new InsufficientPermissionsException(missingPermissions);
-        }
-    }
-
-    /**
-     * Clears all reactions from a target message.
-     * @param channel Channel that the message resides in.
-     * @param msgId   The ID of message to have its' reactions cleared.
-     */
-    public static void clearReactions(TextChannel channel, String msgId) throws InsufficientPermissionsException {
-        EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
-                channel.getGuild().getSelfMember(), channel,
-                CommandType.DELETE_REACTIONS.getThermoPerms()
-        );
-
-        if (missingPermissions.isEmpty()) {
-            channel.retrieveMessageById(msgId).queue(message -> message.clearReactions().queue());
         } else {
             throw new InsufficientPermissionsException(missingPermissions);
         }

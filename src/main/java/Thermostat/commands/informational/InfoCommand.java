@@ -3,7 +3,7 @@ package thermostat.commands.informational;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.Messages;
+import thermostat.util.MessageHandler;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.MenuDispatcher;
@@ -30,9 +30,12 @@ public class InfoCommand implements Command {
      */
     private static final Logger lgr = LoggerFactory.getLogger(InfoCommand.class);
 
+    /**
+     * Command's Data.
+     */
     private final CommandData data;
 
-    public InfoCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
+    public InfoCommand(final GuildMessageReceivedEvent data, final List<String> arguments, final String prefix) {
         this.data = new CommandData(data, arguments, prefix);
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
@@ -42,13 +45,15 @@ public class InfoCommand implements Command {
      */
     @Override
     public void run() {
-        List<String> commandType = data.parameters.get("-type");
+        if (this.data.parameters != null) {
+            List<String> commandType = data.parameters.get("-type");
 
-        if (ArgumentParser.hasArguments(commandType)) {
-            EmbedType type = matchArgumentToEmbed(commandType.get(0));
-            if (type != null) {
-                ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(type, data));
-                return;
+            if (ArgumentParser.hasArguments(commandType)) {
+                EmbedType type = matchArgumentToEmbed(commandType.get(0));
+                if (type != null) {
+                    ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(type, data));
+                    return;
+                }
             }
         }
 
@@ -56,10 +61,10 @@ public class InfoCommand implements Command {
     }
 
     private void sendGenericInfoMenu() {
-        Messages.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION, data),
+        MessageHandler.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION),
         message -> {
             try {
-                Messages.addReactions(data.event.getChannel(), message.getId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
+                MessageHandler.addReactions(data.event.getChannel(), message.getId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
                 MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
                 ResponseDispatcher.commandSucceeded(this, null);
             } catch (Exception ex) {

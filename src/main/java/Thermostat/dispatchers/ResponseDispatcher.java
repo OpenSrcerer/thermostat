@@ -1,7 +1,7 @@
 package thermostat.dispatchers;
 
 import net.dv8tion.jda.api.entities.Message;
-import thermostat.Messages;
+import thermostat.util.MessageHandler;
 import thermostat.commands.Command;
 import thermostat.embeds.ThermoEmbed;
 
@@ -25,7 +25,7 @@ public final class ResponseDispatcher {
     public static void commandSucceeded(@Nonnull Command command, @Nullable ThermoEmbed embed) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
         if (embed != null)
-            Messages.sendMessage(command.getData().event.getChannel(), embed);
+            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -38,7 +38,7 @@ public final class ResponseDispatcher {
      */
     public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull InputStream inputStream) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
-        Messages.sendMessage(command.getData().event.getChannel(), inputStream, embed);
+        MessageHandler.sendMessage(command.getData().event.getChannel(), inputStream, embed);
     }
 
     /**
@@ -51,7 +51,7 @@ public final class ResponseDispatcher {
      */
     public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull Consumer<Message> consumer) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
-        Messages.sendMessage(command.getData().event.getChannel(), embed, consumer);
+        MessageHandler.sendMessage(command.getData().event.getChannel(), embed, consumer);
     }
 
     /**
@@ -64,7 +64,7 @@ public final class ResponseDispatcher {
     public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull String reason) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. Reason: " + reason);
         if (embed != null)
-            Messages.sendMessage(command.getData().event.getChannel(), embed);
+            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -76,7 +76,7 @@ public final class ResponseDispatcher {
     public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull Throwable throwable) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. Details: ", throwable);
         if (embed != null)
-            Messages.sendMessage(command.getData().event.getChannel(), embed);
+            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -87,6 +87,6 @@ public final class ResponseDispatcher {
     public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. (Replied with help Embed).");
         if (embed != null)
-            Messages.sendMessage(command.getData().event.getChannel(), embed);
+            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
     }
 }

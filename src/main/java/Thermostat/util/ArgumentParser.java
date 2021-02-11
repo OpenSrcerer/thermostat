@@ -221,7 +221,7 @@ public class ArgumentParser {
      * An event is valid when its Member object is not null.
      * @return true is event is valid, false otherwise.
      */
-    public static boolean validateEvent(GuildMessageReceivedEvent event) {
+    public static boolean validateEvent(final GuildMessageReceivedEvent event) {
         if (event.getMember() == null)
             return false;
 
