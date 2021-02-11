@@ -40,15 +40,15 @@ public class ThermoEmbed extends EmbedBuilder {
         setColor(embedColor);
         setThumbnail(Constants.THERMOSTAT_AVATAR_URL);
 
-        String footerLine;
+        final String footerLine;
         if (data.event.getMember().getUser() == null) {
-            footerLine = "Command ID: " + data.commandId;
+            footerLine = "\uD83E\uDC1E Command ID: " + data.commandId;
         } else {
-            footerLine = "Requested by " + data.event.getMember().getUser().getAsTag() + "\nCommand ID: " + data.commandId;
+            footerLine = "\uD83E\uDC1E Requested by " + data.event.getMember().getUser().getAsTag() +
+                    "\n\uD83E\uDC1E Command ID: " + data.commandId;
         }
 
         setTimestamp(Instant.now());
-
         if (data.event.getMember().getUser().getAvatarUrl() == null) {
             setFooter(footerLine, Constants.THERMOSTAT_AVATAR_URL);
         } else {

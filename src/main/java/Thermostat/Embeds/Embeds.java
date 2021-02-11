@@ -22,13 +22,13 @@ public final class Embeds {
     }
 
     @EverythingIsNonNull
-    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data) {
-        return matchTypeToOptions(type, new ThermoEmbed(data), data, null);
+    public static ThermoEmbed getEmbed(final EmbedType type, final Object options) {
+        return matchTypeToOptions(type, new ThermoEmbed(), null, options);
     }
 
     @EverythingIsNonNull
-    public static ThermoEmbed getEmbed(final EmbedType type, Object options) {
-        return matchTypeToOptions(type, new ThermoEmbed(), null, options);
+    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data) {
+        return matchTypeToOptions(type, new ThermoEmbed(data), data, null);
     }
 
     @EverythingIsNonNull
@@ -36,6 +36,14 @@ public final class Embeds {
         return matchTypeToOptions(type, new ThermoEmbed(data), data, options);
     }
 
+    /**
+     * Given the EmbedType provided, return the ThermoEmbed that matches the type.
+     * @param type Type of embed.
+     * @param embed Prepared ThermoEmbed with default parameters.
+     * @param data Data of the Command to send an Embed back to.
+     * @param options Extra options for the embed.
+     * @return A ThermoEmbed that matches the given parameters.
+     */
     @SuppressWarnings("unchecked")
     private static ThermoEmbed matchTypeToOptions(@Nonnull final EmbedType type, @Nonnull final ThermoEmbed embed,
                                                  final CommandData data, @Nullable final Object options) {
@@ -44,7 +52,7 @@ public final class Embeds {
             return switch (type) {
                 case SAME_PREFIX ->             samePrefix(embed, data.prefix);
                 case RESET_PREFIX ->            resetPrefix(embed);
-                case GET_PREFIX ->              getPrefix(embed, data.prefix, data.event.getGuild().getName());
+                case GET_PREFIX ->              getGuide(embed, data.prefix, data.event.getGuild().getName());
                 case GET_VOTE ->                getVote(embed);
                 case INVITE_SERVER ->           inviteServer(embed);
                 case MISSED_PROMPT ->           missedPrompt(embed);
@@ -108,8 +116,8 @@ public final class Embeds {
         return embed;
     }
 
-    private static ThermoEmbed getPrefix(final ThermoEmbed embed, final String prefix, final String guildName) {
-        embed.setTitle("❓ Are you confused? Need help? Read our handy dandy wiki.",
+    private static ThermoEmbed getGuide(final ThermoEmbed embed, final String prefix, final String guildName) {
+        embed.setTitle("❓ Need help? Read our handy dandy wiki.",
                 "https://github.com/OpenSrcerer/thermostat/wiki"
         );
         embed.addField("🎯 My prefix in " + guildName + " is: " + "`" + prefix + "`",
@@ -123,30 +131,10 @@ public final class Embeds {
 
     private static ThermoEmbed channelSettings(final ThermoEmbed embed, final SettingsData data) {
         embed.setTitle("Settings for #" + data.channelName + ":");
-        if (data.min == 0) {
-            embed.addField("Min Slowmode:", "**-**", true);
-        } else {
-            embed.addField("Min Slowmode:", "**" + data.min + "**", true);
-        }
-
-        if (data.max == 0) {
-            embed.addField("Max Slowmode:", "**-**", true);
-        } else {
-            embed.addField("Max Slowmode:", "**" + data.max + "**", true);
-        }
-
-        if (data.monitor) {
-            embed.addField("Monitored:", "**Yes**", false);
-        } else {
-            embed.addField("Monitored:", "**No**", false);
-        }
-
-        if (data.filter) {
-            embed.addField("Filtered:", "**Yes**", true);
-        } else {
-            embed.addField("Filtered:", "**No**", true);
-        }
-
+        embed.addField("⌚ Min Slowmode:", data.min == 0 ? "**-**" : data.min + "**", true);
+        embed.addField("⌚ Max Slowmode:", data.max == 0 ? "**-**" : data.max + "**", true);
+        embed.addField("🎇 Monitored:", (data.monitor) ? "Yes" : "No", false);
+        embed.addField("🎆 Filtered:", (data.filter) ? "Yes" : "No", true);
         embed.addField("Sensitivity:", String.format("%.5f", data.sensitivity), false);
         return embed;
     }
@@ -187,33 +175,38 @@ public final class Embeds {
 
     private static ThermoEmbed helpInfo(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Command Usage:\n `" + prefix + "info [command]`");
-        embed.setDescription("**Aliases: " + prefix + "help/hp/io** ⇨ Brings up an interactive help menu, or specific details about a command if you need to know more." +
+        embed.setDescription("**Aliases: " + prefix + "help/hp/io** ⇨ Brings up an interactive help menu, " +
+                "or specific details about a command if you need to know more." +
                 " Arguments surrounded by <> are mandatory, and ones surrounded by [] are optional.");
         return embed;
     }
 
     private static ThermoEmbed helpInvite(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
-        embed.setDescription("**Alias: " + prefix + "iv** ⇨ Provides an invite link to Thermostat's support server, and the top.gg website.");
+        embed.setDescription("**Alias: " + prefix + "iv** ⇨ Provides an invite link to Thermostat's" +
+                " support server, and the top.gg website.");
         return embed;
     }
 
     private static ThermoEmbed helpVote(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
-        embed.setDescription("**Alias: " + prefix + "vo** ⇨ Provides links to voting websites where you can vote for Thermostat. Thank you for your support!");
+        embed.setDescription("**Alias: " + prefix + "vo** ⇨ Provides links to voting websites where you" +
+                " can vote for Thermostat. Thank you for your support!");
         return embed;
     }
 
     private static ThermoEmbed helpChart(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
-        embed.setDescription("**Alias: " + prefix + "ch** ⇨ Command that gives informational data about Thermostat's operation in chart form.");
+        embed.setDescription("**Alias: " + prefix + "ch** ⇨ Command that gives informational data about Thermostat's" +
+                " operation in chart form.");
         embed.addField("Chart Types (Name - CmdName): ", "★ Slowmode Frequency - (slowfreq)", false);
         return embed;
     }
 
     private static ThermoEmbed helpGetMonitor(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Command Usage:\n `" + prefix + "getmonitor`");
-        embed.setDescription("**Alias: " + prefix + "gm** ⇨ Shows which channels are currently being monitored or filtered in your server.");
+        embed.setDescription("**Alias: " + prefix + "gm** ⇨ Shows which channels are currently being monitored" +
+                " or filtered in your server.");
         return embed;
     }
 
@@ -250,8 +243,7 @@ public final class Embeds {
 
     private static ThermoEmbed helpPrefix(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Command Usage:\n ```" + prefix + "prefix <newprefix/reset>```");
-        embed.setDescription("**Alias: " + prefix + "px** ⇨ Manages Thermostat's prefix. You can change it to pretty much anything. " +
-                "Note: You can call this command by using @Thermostat instead of the prefix.");
+        embed.setDescription("**Alias: " + prefix + "px** ⇨ Manages Thermostat's prefix. Allows up to 5 characters.");
         return embed;
     }
 
@@ -263,41 +255,39 @@ public final class Embeds {
 
     private static ThermoEmbed getMonitorInfo(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("🌡┇Monitoring Commands");
-        embed.addField("⬆ Menu", "Go back to the Main Menu", false);
         embed.addField(prefix + "monitor", "Syntax: `" + prefix + "monitor <on/off> [channel(s)/category(ies)].`", false);
         embed.addField(prefix + "getmonitor", "Syntax: `" + prefix + "getmonitor.`", false);
         embed.addField(prefix + "setbounds", "Syntax: `" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)].`", false);
         embed.addField(prefix + "settings", "Syntax: `" + prefix + "settings[channel].`", false);
         embed.addField(prefix + "sensitivity", "Syntax: `" + prefix + "sensitivity <sensitivity> [channel(s)].`", false);
         embed.addField("❌ Exit", "Exit the info menu.", false);
+        embed.setFooter("🔼 to go up, ❌ to exit.");
         return embed;
     }
 
     private static ThermoEmbed getUtilityInfo(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("🔧┇Utility Commands");
-        embed.addField("⬆ Menu", "Go back to the Main Menu", false);
+        embed.setTitle("Utility Commands");
         embed.addField(prefix + "filter", "Syntax: `" + prefix + "filter <charttype>.`", false);
-        embed.addField("❌ Exit", "Exit the info menu.", false);
+        embed.setFooter("🔼 to go up, ❌ to exit");
         return embed;
     }
 
     private static ThermoEmbed getOtherInfo(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("ℹ┇Other Commands");
-        embed.addField("⬆ Menu", "Go back to the Main Menu", false);
-        embed.addField(prefix + "info", "`Syntax:`" + prefix + "info.`", false);
-        embed.addField("@Thermostat prefix", "Syntax: <@!" + Constants.THERMOSTAT_USER_ID + "> `prefix.`", false);
+        embed.setTitle("Other Commands");
+        embed.addField(prefix + "info", "Syntax:`" + prefix + "info.`", false);
+        embed.addField(prefix + "prefix", "Syntax:`" + prefix + "prefix", false);
         embed.addField(prefix + "chart", "Syntax: `" + prefix + "chart <charttype>.`", false);
         embed.addField(prefix + "vote", "Syntax: `" + prefix + "vote.`", false);
         embed.addField(prefix + "invite", "Syntax: `" + prefix + "invite.`", false);
-        embed.addField("❌ Exit", "Exit the info menu.", false);
+        embed.setFooter("🔼 to go up, ❌ to exit.");
         return embed;
     }
 
     private static ThermoEmbed getInfoSelection(final ThermoEmbed embed) {
-        embed.setTitle("Menu");
+        embed.setTitle("\uD83E\uDC1E Main Menu");
         embed.addField("🌡 Monitoring", "Commands to help you manage slowmode in channels.", false);
         embed.addField("🔧 Utility", "Useful features to help you moderate your server.", false);
-        embed.addField("ℹ Other", "Informational commands that provide other functionalities.", false);
+        embed.addField("ℹ Other", "Informational commands that provide other functions.", false);
         embed.addField("❌ Exit", "Exit the info menu.", false);
         return embed;
     }
@@ -307,8 +297,7 @@ public final class Embeds {
     // ***************************************************************
 
     private static ThermoEmbed errPermission(final ThermoEmbed embed, final List<Set<Permission>> permissions) {
-        embed.setTitle("❌ Error encountered! Details:");
-
+        embed.setTitle("❌ Missing Permissions! Details:");
         if (!permissions.get(0).isEmpty()) {
             StringBuilder missingPerms = new StringBuilder();
             permissions.get(0).forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
@@ -323,9 +312,8 @@ public final class Embeds {
     }
 
     private static ThermoEmbed errPermission(final ThermoEmbed embed, final Set<Permission> thermoPermissions) {
-        embed.setTitle("❌ Error encountered! Details:");
-
-        StringBuilder missingPerms = new StringBuilder();
+        embed.setTitle("❌ Missing Permissions! Details:");
+        final StringBuilder missingPerms = new StringBuilder();
         thermoPermissions.forEach(permission -> missingPerms.append(permission.getName()).append("\n"));
         embed.addField("Thermostat lacks these permissions:", missingPerms.toString(), false);
         return embed;
@@ -338,7 +326,7 @@ public final class Embeds {
     }
 
     private static ThermoEmbed error(final ThermoEmbed embed, final List<String> error) {
-        embed.setTitle("❌ An error has occurred. ❌");
+        embed.setTitle("❌ An error has occurred.");
         embed.addField("Error details:", error.get(0), false);
         embed.addField("Suggested fix: ", error.get(1), false);
         embed.addField("Support server: https://discord.gg/FnPb4nM", "", false);
@@ -346,7 +334,7 @@ public final class Embeds {
     }
 
     private static ThermoEmbed error(final ThermoEmbed embed, final String error) {
-        embed.setTitle("❌ An error has occurred. ❌");
+        embed.setTitle("❌ An error has occurred.");
         embed.addField("Error details:", error, false);
         embed.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         return embed;
@@ -358,7 +346,6 @@ public final class Embeds {
 
     private static ThermoEmbed dynamicEmbed(final ThermoEmbed embed, final List<String> options) {
         embed.setColor(0x00aeff);
-
         // Elements are grouped two by two:
         // index = Description; index + 1 = dynamic slowmode value
         for (int index = 0; index < options.size(); index += 2) {
@@ -366,7 +353,6 @@ public final class Embeds {
                 embed.addField(options.get(index), options.get(index + 1), false);
             }
         }
-
         return embed;
     }
 }
