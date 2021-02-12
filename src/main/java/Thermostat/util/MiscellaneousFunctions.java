@@ -6,9 +6,6 @@ import net.dv8tion.jda.api.entities.Message;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.MenuDispatcher;
-import thermostat.dispatchers.ResponseDispatcher;
-import thermostat.embeds.Embeds;
-import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
@@ -107,14 +104,8 @@ public abstract class MiscellaneousFunctions {
      */
     public static Consumer<Message> addNewMenu(final MenuType type, final Command command) {
         return message -> {
-            try {
-                MessageHandler.addReaction(message, "☑");
-                MenuDispatcher.addMenu(type, message.getId(), command);
-            } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(command,
-                        Embeds.getEmbed(EmbedType.ERR, command.getData(), ex.getMessage()),
-                        ex);
-            }
+            RestActions.perform(message.addReaction("☑"));
+            MenuDispatcher.addMenu(type, message.getId(), command);
         };
     }
 

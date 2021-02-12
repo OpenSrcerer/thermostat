@@ -4,11 +4,11 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.MessageHandler;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.embeds.Embeds;
 import thermostat.util.Constants;
+import thermostat.util.RestActions;
 import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
@@ -37,16 +37,28 @@ public final class CommandDispatcher {
     static {
         Runnable drainCommands = () -> {
             while (true) {
-                try {
-                    if (Thread.interrupted()) {
-                        return;
-                    }
+                if (Thread.interrupted()) {
+                    return;
+                }
 
-                    commands.take().run();
+                Command commandToProcess = null;
+                try {
+                    commandToProcess = commands.take(); // Take a command from the request queue
+                    commandToProcess.run(); // Run the command
+                } catch (RuntimeException ex) {
+                    if (commandToProcess != null) {
+                        // Usually permission errors.
+                        ResponseDispatcher.commandFailed(commandToProcess,
+                                Embeds.getEmbed(EmbedType.ERR, commandToProcess.getData(), ex.getMessage())
+                        );
+                    }
+                    lgr.error(Thread.currentThread().getName() + " encountered a runtime exception:", ex);
                 } catch (Exception ex) {
+                    // Other exceptions
                     lgr.error(Thread.currentThread().getName() + " encountered an exception:", ex);
                 } catch (Error err) {
-                    lgr.error("An Error was thrown. Shutting down Thermostat. Details:", err);
+                    // Fatal Error, terminate program
+                    lgr.error("A fatal error was thrown. Shutting down Thermostat. Details:", err);
                     Thermostat.shutdownThermostat();
                 }
             }
@@ -78,58 +90,60 @@ public final class CommandDispatcher {
     }
 
     /**
-     * Adds a Command only related to Thermostat to the
-     * Command Manager queue.
+     * Adds a Command to the Command queue if Thermostat has the right permissions.
      * @param command Command to add to queue.
      */
     public static void checkThermoPermissionsAndQueue(@Nonnull final Command command) {
-        GuildMessageReceivedEvent commandEvent = command.getData().event;
+        final GuildMessageReceivedEvent commandEvent = command.getData().event;
 
-        commandEvent.getGuild()
-                .retrieveMember(Thermostat.thermo.getSelfUser())
-                .queue(
-                        thermostat -> {
-                            // Get Thermostat's missing permissions, if applicable
-                            EnumSet<Permission> missingThermostatPerms = getMissingPermissions(thermostat, commandEvent.getChannel(), command.getType().getThermoPerms());
+        RestActions.perform(commandEvent.getGuild().retrieveMember(Thermostat.thermo.getSelfUser())
+                .map(thermostat -> {
+                    EnumSet<Permission> missingThermostatPerms = getMissingPermissions(thermostat,
+                            commandEvent.getChannel(), command.getType().getThermoPerms());
 
-                            if (missingThermostatPerms.isEmpty()) {
-                                queueCommand(command);
-                            } else {
-                                command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
-                                        " " + missingThermostatPerms.toString() + "");
-                                MessageHandler.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, command.getData(), missingThermostatPerms));
-                            }
-                        }
-                );
+                    if (missingThermostatPerms.isEmpty()) {
+                        queueCommand(command);
+                    } else {
+                        command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() +
+                                "/" + commandEvent.getGuild().getId() + "):" +
+                                " " + missingThermostatPerms.toString() + "");
+                        RestActions.perform(RestActions.sendMessage(commandEvent.getChannel(),
+                                Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, command.getData(), missingThermostatPerms)));
+                    }
+                    return thermostat;
+                })
+        );
     }
 
     /**
-     * Adds a given Command to the Request Manager queue if
-     * permission conditions are met.
+     * Adds a given Command to the Request Manager queue if the member who initiated the command and Thermostat
+     * have the right permissions.
      * @param command Command to add to queue.
      */
     @SuppressWarnings("ConstantConditions")
     public static void checkPermissionsAndQueue(@Nonnull final Command command) {
         GuildMessageReceivedEvent commandEvent = command.getData().event;
 
-        // check main permissions
-        commandEvent.getGuild()
-                .retrieveMember(Thermostat.thermo.getSelfUser())
-                .queue(
-                        thermostat -> {
-                            // Get member and thermostat's missing permissions, if applicable
-                            EnumSet<Permission>
-                                    missingMemberPerms = getMissingPermissions(commandEvent.getMember(), commandEvent.getChannel(), command.getType().getMemberPerms()),
-                                    missingThermostatPerms = getMissingPermissions(thermostat, commandEvent.getChannel(), command.getType().getThermoPerms());
+        RestActions.perform(commandEvent.getGuild().retrieveMember(Thermostat.thermo.getSelfUser())
+                .map(thermostat -> {
+                    // Get member and thermostat's missing permissions, if applicable
+                    EnumSet<Permission>
+                            missingMemberPerms = getMissingPermissions(commandEvent.getMember(),
+                            commandEvent.getChannel(), command.getType().getMemberPerms()),
+                            missingThermostatPerms = getMissingPermissions(thermostat, commandEvent.getChannel(),
+                                    command.getType().getThermoPerms());
 
-                            if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
-                                queueCommand(command);
-                            } else {
-                                command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() + "/" + commandEvent.getGuild().getId() + "):" +
-                                        " " + missingThermostatPerms.toString() + " " + missingMemberPerms.toString() + "");
-                                MessageHandler.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION, command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms)));
-                            }
-                        }
-                );
+                    if (missingMemberPerms.isEmpty() && missingThermostatPerms.isEmpty()) {
+                        queueCommand(command);
+                    } else {
+                        command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() +
+                                "/" + commandEvent.getGuild().getId() + "):" +
+                                " " + missingThermostatPerms.toString() + " " + missingMemberPerms.toString() + "");
+                        RestActions.perform(RestActions.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION,
+                                command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms))));
+                    }
+                    return thermostat;
+                })
+        );
     }
 }

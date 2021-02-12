@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
 
-import static thermostat.util.MessageHandler.*;
+import static thermostat.util.RestActions.*;
 
 /**
  * Organizes a cache of ReactionMenu and dispatches

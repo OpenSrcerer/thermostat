@@ -3,13 +3,13 @@ package thermostat.commands.informational;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.MessageHandler;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.util.ArgumentParser;
+import thermostat.util.RestActions;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
@@ -61,16 +61,12 @@ public class InfoCommand implements Command {
     }
 
     private void sendGenericInfoMenu() {
-        MessageHandler.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION),
-        message -> {
-            try {
-                MessageHandler.addReactions(data.event.getChannel(), message.getId(), Arrays.asList("🌡", "🔧", "ℹ", "❌"));
-                MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
-                ResponseDispatcher.commandSucceeded(this, null);
-            } catch (Exception ex) {
-                ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex);
-            }
-        });
+        RestActions.perform(RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION))
+                .flatMap(message -> {
+                    MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
+                    return RestActions.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
+                })
+        );
     }
 
     @Nullable

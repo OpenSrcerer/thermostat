@@ -1,13 +1,15 @@
 package thermostat.dispatchers;
 
 import net.dv8tion.jda.api.entities.Message;
-import thermostat.util.MessageHandler;
+import org.jetbrains.annotations.Contract;
+import thermostat.util.RestActions;
 import thermostat.commands.Command;
 import thermostat.embeds.ThermoEmbed;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -22,10 +24,11 @@ public final class ResponseDispatcher {
      * @param command Command that was completed.
      * @param embed Embed to send.
      */
-    public static void commandSucceeded(@Nonnull Command command, @Nullable ThermoEmbed embed) {
+    @Contract("null, _ -> fail")
+    public static void commandSucceeded(final Command command, @Nullable ThermoEmbed embed) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
         if (embed != null)
-            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
+            RestActions.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -36,9 +39,10 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param inputStream Stream to attach as a file to the embed.
      */
-    public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull InputStream inputStream) {
+    @Contract("null, _, _ -> fail")
+    public static void commandSucceeded(final Command command, @Nonnull ThermoEmbed embed, @Nonnull InputStream inputStream) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
-        MessageHandler.sendMessage(command.getData().event.getChannel(), inputStream, embed);
+        RestActions.sendMessage(command.getData().event.getChannel(), inputStream, embed);
     }
 
     /**
@@ -49,9 +53,10 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param consumer Consumer to run after message is sent.
      */
-    public static void commandSucceeded(@Nonnull Command command, @Nonnull ThermoEmbed embed, @Nonnull Consumer<Message> consumer) {
+    @Contract("null, _, _ -> fail")
+    public static void commandSucceeded(final Command command, @Nonnull ThermoEmbed embed, @Nonnull Consumer<Message> consumer) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
-        MessageHandler.sendMessage(command.getData().event.getChannel(), embed, consumer);
+        RestActions.sendMessage(command.getData().event.getChannel(), embed, consumer);
     }
 
     /**
@@ -61,10 +66,11 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param reason Reason for failure.
      */
-    public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull String reason) {
+    @Contract("null, _, _ -> fail")
+    public static void commandFailed(final Command command, @Nullable ThermoEmbed embed, @Nonnull String reason) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. Reason: " + reason);
         if (embed != null)
-            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
+            RestActions.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -73,10 +79,11 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      * @param throwable Details of the error.
      */
-    public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed, @Nonnull Throwable throwable) {
+    @Contract("null, _, _ -> fail")
+    public static void commandFailed(final Command command, @Nullable ThermoEmbed embed, @Nonnull Throwable throwable) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. Details: ", throwable);
         if (embed != null)
-            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
+            RestActions.sendMessage(command.getData().event.getChannel(), embed);
     }
 
     /**
@@ -84,9 +91,11 @@ public final class ResponseDispatcher {
      * @param command Command that failed.
      * @param embed Embed to send.
      */
-    public static void commandFailed(@Nonnull Command command, @Nullable ThermoEmbed embed) {
+    @Contract("null, _ -> fail")
+    public static void commandFailed(final Command command, @Nullable ThermoEmbed embed) {
+        Objects.requireNonNull(command);
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] has failed. (Replied with help Embed).");
         if (embed != null)
-            MessageHandler.sendMessage(command.getData().event.getChannel(), embed);
+            RestActions.sendMessage(command.getData().event.getChannel(), embed);
     }
 }

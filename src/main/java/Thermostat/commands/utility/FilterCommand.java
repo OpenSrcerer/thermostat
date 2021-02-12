@@ -3,7 +3,7 @@ package thermostat.commands.utility;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.MessageHandler;
+import thermostat.util.RestActions;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
@@ -112,7 +112,7 @@ public class FilterCommand implements Command {
         MenuType type = (filter) ? MenuType.FILTERALL : MenuType.UNFILTERALL;
 
         // Add a new Prompt menu,
-        MessageHandler.sendMessage(
+        RestActions.sendMessage(
                 data.event.getChannel(),
                 Embeds.getEmbed(EmbedType.PROMPT, data),
                 MiscellaneousFunctions.addNewMenu(type, this)

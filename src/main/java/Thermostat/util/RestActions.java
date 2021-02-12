@@ -14,13 +14,12 @@ import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
  * A handy Message sender with static functions.
  */
-public final class MessageHandler {
+public final class RestActions {
     @Contract("null -> fail")
     public static <X> void perform(@Nullable RestAction<X> action) throws RuntimeException {
         Objects.requireNonNull(action);
@@ -52,7 +51,6 @@ public final class MessageHandler {
     /**
      * Sends an embed to a designated channel, runs
      * a success Consumer afterwards.
-     *
      * @param channel Channel to send the embed in.
      * @param eb      The embed to send.
      * @param success The consumer to run after the .queue() call.
@@ -70,13 +68,13 @@ public final class MessageHandler {
         }
     }
 
+
     /**
      * Sends an embed to a designated channel.
-     *
      * @param channel Channel to send the embed in.
      * @param eb      The embed to send.
      */
-    public static void sendMessage(TextChannel channel, EmbedBuilder eb) throws InsufficientPermissionsException {
+    /*public static void sendMessage(TextChannel channel, EmbedBuilder eb) throws InsufficientPermissionsException {
         EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
                 channel.getGuild().getSelfMember(), channel,
                 CommandType.SEND_MESSAGE_EMBED.getThermoPerms()
@@ -87,23 +85,16 @@ public final class MessageHandler {
         } else {
             throw new InsufficientPermissionsException(missingPermissions);
         }
-    }
+    }*/
 
     /**
-     * Sends a text message to a designated channel.
+     * Sends an embed to a designated channel.
      *
-     * @param channel Channel to send the message in.
-     * @param msg     The message to send.
+     * @param channel Channel to send the embed in.
+     * @param eb      The embed to send.
      */
-    public static void sendMessage(TextChannel channel, String msg) {
-        EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
-                channel.getGuild().getSelfMember(), channel,
-                CommandType.SEND_MESSAGE_TEXT.getThermoPerms()
-        );
-
-        if (missingPermissions.isEmpty()) {
-            channel.sendMessage(msg).queue();
-        }
+    public static RestAction<Message> sendMessage(TextChannel channel, EmbedBuilder eb) {
+        return channel.sendMessage(eb.build());
     }
 
     /**
@@ -154,31 +145,6 @@ public final class MessageHandler {
 
     /**
      * Adds a list of reactions to a given message.
-     * @param channel Channel where the target message resides in.
-     * @param msgId   The id of the target message.
-     * @param unicode The unicode emoji to add as a reaction.
-     */
-    public static void addReactions(TextChannel channel, String msgId, List<String> unicode) throws InsufficientPermissionsException {
-        EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
-                channel.getGuild().getSelfMember(), channel,
-                CommandType.ADD_REACTIONS.getThermoPerms()
-        );
-
-        if (missingPermissions.isEmpty()) {
-            channel.retrieveMessageById(msgId).queue(message -> {
-                long reactionsDuration = 0;
-                for (String it : unicode) {
-                    message.addReaction(it).queueAfter(reactionsDuration, TimeUnit.MILLISECONDS);
-                    reactionsDuration += 150;
-                }
-            });
-        } else {
-            throw new InsufficientPermissionsException(missingPermissions);
-        }
-    }
-
-    /**
-     * Adds a list of reactions to a given message.
      * @param unicode The unicode emoji to add as a reaction.
      */
     public static RestAction<Void> addReactions(final Message message, List<String> unicode) throws InsufficientPermissionsException {
@@ -190,23 +156,5 @@ public final class MessageHandler {
             action = action.and(message.addReaction(it));
         }
         return action;
-    }
-
-    /**
-     * Adds a reaction to a given message.
-     * @param message  The target message.
-     * @param unicode The unicode emoji to add as a reaction.
-     */
-    public static void addReaction(Message message, String unicode) throws InsufficientPermissionsException {
-        EnumSet<Permission> missingPermissions = PermissionComputer.getMissingPermissions(
-                message.getGuild().getSelfMember(), message.getTextChannel(),
-                CommandType.ADD_REACTIONS.getThermoPerms()
-        );
-
-        if (missingPermissions.isEmpty()) {
-            message.addReaction(unicode).queue();
-        } else {
-            throw new InsufficientPermissionsException(missingPermissions);
-        }
     }
 }
