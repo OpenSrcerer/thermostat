@@ -61,12 +61,11 @@ public class InfoCommand implements Command {
     }
 
     private void sendGenericInfoMenu() {
-        RestActions.perform(RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION))
+        RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION))
                 .flatMap(message -> {
                     MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
                     return RestActions.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
-                })
-        );
+                }).queue();
     }
 
     @Nullable

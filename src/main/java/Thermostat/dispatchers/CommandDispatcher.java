@@ -96,7 +96,7 @@ public final class CommandDispatcher {
     public static void checkThermoPermissionsAndQueue(@Nonnull final Command command) {
         final GuildMessageReceivedEvent commandEvent = command.getData().event;
 
-        RestActions.perform(commandEvent.getGuild().retrieveMember(Thermostat.thermo.getSelfUser())
+        commandEvent.getGuild().retrieveMember(Thermostat.thermo.getSelfUser())
                 .map(thermostat -> {
                     EnumSet<Permission> missingThermostatPerms = getMissingPermissions(thermostat,
                             commandEvent.getChannel(), command.getType().getThermoPerms());
@@ -107,12 +107,12 @@ public final class CommandDispatcher {
                         command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() +
                                 "/" + commandEvent.getGuild().getId() + "):" +
                                 " " + missingThermostatPerms.toString() + "");
-                        RestActions.perform(RestActions.sendMessage(commandEvent.getChannel(),
-                                Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, command.getData(), missingThermostatPerms)));
+                        RestActions.sendMessage(commandEvent.getChannel(),
+                                Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO,
+                                        command.getData(), missingThermostatPerms)).queue();
                     }
                     return thermostat;
-                })
-        );
+                }).queue();
     }
 
     /**
@@ -124,7 +124,7 @@ public final class CommandDispatcher {
     public static void checkPermissionsAndQueue(@Nonnull final Command command) {
         GuildMessageReceivedEvent commandEvent = command.getData().event;
 
-        RestActions.perform(commandEvent.getGuild().retrieveMember(Thermostat.thermo.getSelfUser())
+        commandEvent.getGuild().retrieveMember(Thermostat.thermo.getSelfUser())
                 .map(thermostat -> {
                     // Get member and thermostat's missing permissions, if applicable
                     EnumSet<Permission>
@@ -139,11 +139,10 @@ public final class CommandDispatcher {
                         command.getLogger().info("Missing permissions on (" + commandEvent.getGuild().getName() +
                                 "/" + commandEvent.getGuild().getId() + "):" +
                                 " " + missingThermostatPerms.toString() + " " + missingMemberPerms.toString() + "");
-                        RestActions.perform(RestActions.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION,
-                                command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms))));
+                        RestActions.sendMessage(commandEvent.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION,
+                                command.getData(), Arrays.asList(missingThermostatPerms, missingMemberPerms))).queue();
                     }
                     return thermostat;
-                })
-        );
+                }).queue();
     }
 }

@@ -95,10 +95,12 @@ public class MenuDispatcher extends ListenerAdapter {
                 }
             }
         } catch (InsufficientPermissionsException ex) {
-            sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet()));
+            sendMessage(event.getChannel(),
+                    Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet())).queue();
             expungeMenu(event.getMessageId());
         } catch (Exception ex) {
-            sendMessage(event.getChannel(), Embeds.getEmbed(EmbedType.ERR, "Something went wrong. Please try again."));
+            sendMessage(event.getChannel(),
+                    Embeds.getEmbed(EmbedType.ERR, "Something went wrong. Please try again.")).queue();
             ex.printStackTrace();
         }
     }
@@ -140,10 +142,10 @@ public class MenuDispatcher extends ListenerAdapter {
             // Close Menu
             case "❌" -> {
                 removeMenu(reactionMenu.getMessageId());
-                perform(event.getChannel().retrieveMessageById(reactionMenu.getMessageId()).flatMap(Message::delete));
+                event.getChannel().retrieveMessageById(reactionMenu.getMessageId()).flatMap(Message::delete).queue();
             }
             // Remove invalid reaction
-            default -> perform(event.getReaction().removeReaction());
+            default -> event.getReaction().removeReaction().queue();
         }
     }
 
@@ -157,22 +159,20 @@ public class MenuDispatcher extends ListenerAdapter {
             final String prefix = GuildCache.getPrefix(event.getGuild().getId());
 
             // Action to update the menu to a submenu
-            perform(event.getChannel().retrieveMessageById(reactionMenu.getMessageId())
+            event.getChannel().retrieveMessageById(reactionMenu.getMessageId())
                     .flatMap(message ->
                             message.clearReactions()
                             .and(editMessage(message, Embeds.getEmbed(type, prefix)))
                             .and(addReactions(message, Arrays.asList("🔼", "❌")))
-                    )
-            );
+                    ).queue();
         } else {
             // Go back to the main menu
-            perform(event.getChannel().retrieveMessageById(reactionMenu.getMessageId())
+            event.getChannel().retrieveMessageById(reactionMenu.getMessageId())
                     .flatMap(message ->
                             message.clearReactions()
                             .and(editMessage(message, Embeds.getEmbed(type)))
                             .and(addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌")))
-                    )
-            );
+                    ).queue();
         }
     }
 
@@ -204,11 +204,10 @@ public class MenuDispatcher extends ListenerAdapter {
             }
 
             expungeMenu(reactionMenu.getMessageId());
-            editMessage(
-                    event.getChannel(),
-                    event.getMessageId(),
-                    Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL, reactionMenu.getCommand().getData())
-            );
+
+            event.getChannel().retrieveMessageById(event.getMessageId())
+                    .flatMap(message -> editMessage(message, Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL,
+                            reactionMenu.getCommand().getData()))).queue();
         }
     }
 

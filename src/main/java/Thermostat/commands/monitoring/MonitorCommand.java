@@ -121,10 +121,9 @@ public class MonitorCommand implements Command {
     private void monitorAll(final boolean monitor) {
         MenuType type = (monitor) ? MenuType.MONITORALL : MenuType.UNMONITORALL;
 
-        RestActions.sendMessage(data.event.getChannel(),
-                Embeds.getEmbed(EmbedType.PROMPT, data),
-                MiscellaneousFunctions.addNewMenu(type, this)
-        );
+        RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
+                .map(message -> MiscellaneousFunctions.addNewMenu(type, this))
+                .queue();
     }
 
     @Override

@@ -104,7 +104,7 @@ public abstract class MiscellaneousFunctions {
      */
     public static Consumer<Message> addNewMenu(final MenuType type, final Command command) {
         return message -> {
-            RestActions.perform(message.addReaction("☑"));
+            message.addReaction("☑").queue();
             MenuDispatcher.addMenu(type, message.getId(), command);
         };
     }

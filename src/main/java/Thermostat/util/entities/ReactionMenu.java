@@ -1,11 +1,12 @@
 package thermostat.util.entities;
 
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import thermostat.util.RestActions;
 import thermostat.Thermostat;
 import thermostat.commands.Command;
 import thermostat.dispatchers.MenuDispatcher;
 import thermostat.embeds.Embeds;
+import thermostat.util.RestActions;
 import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
 
@@ -67,11 +68,11 @@ public class ReactionMenu {
      */
     public void rescheduleTimer(final TextChannel channel) {
         this.decachingTimer = Thermostat.SCHEDULED_EXECUTOR.schedule(() -> {
-            RestActions.deleteMessage(channel, messageId);
+            channel.retrieveMessageById(messageId).flatMap(Message::delete).queue();
             MenuDispatcher.removeMenu(messageId);
 
             switch (this.getMenuType()) {
-                case MONITORALL, FILTERALL -> RestActions.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT));
+                case MONITORALL, FILTERALL -> RestActions.sendMessage(channel, Embeds.getEmbed(EmbedType.MISSED_PROMPT)).queue();
                 default -> throw new RuntimeException("Unknown menu type");
             }
             return null;

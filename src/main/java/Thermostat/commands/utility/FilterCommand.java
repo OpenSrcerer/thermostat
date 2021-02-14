@@ -111,12 +111,9 @@ public class FilterCommand implements Command {
     private void filterAll(final boolean filter) {
         MenuType type = (filter) ? MenuType.FILTERALL : MenuType.UNFILTERALL;
 
-        // Add a new Prompt menu,
-        RestActions.sendMessage(
-                data.event.getChannel(),
-                Embeds.getEmbed(EmbedType.PROMPT, data),
-                MiscellaneousFunctions.addNewMenu(type, this)
-        );
+        RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
+                .map(message -> MiscellaneousFunctions.addNewMenu(type, this))
+                .queue();
     }
 
     @Override
