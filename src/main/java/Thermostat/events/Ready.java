@@ -38,6 +38,7 @@ public class Ready extends ListenerAdapter {
      * Initialize Thermostat's modules when the JDA instance
      * has been constructed successfully.
      */
+    @Override
     public void onReady(@Nonnull ReadyEvent event) {
         try {
             initializeWordFiles("niceWords.txt", "badWords.txt");

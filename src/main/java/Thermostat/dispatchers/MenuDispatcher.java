@@ -11,7 +11,6 @@ import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.GuildCache;
-import thermostat.util.entities.InsufficientPermissionsException;
 import thermostat.util.entities.ReactionMenu;
 import thermostat.util.enumeration.DBActionType;
 import thermostat.util.enumeration.EmbedType;
@@ -94,10 +93,6 @@ public class MenuDispatcher extends ListenerAdapter {
                     default -> expungeMenu(event.getMessageId());
                 }
             }
-        } catch (InsufficientPermissionsException ex) {
-            sendMessage(event.getChannel(),
-                    Embeds.getEmbed(EmbedType.ERR_PERMISSION_THERMO, ex.getPermissionSet())).queue();
-            expungeMenu(event.getMessageId());
         } catch (Exception ex) {
             sendMessage(event.getChannel(),
                     Embeds.getEmbed(EmbedType.ERR, "Something went wrong. Please try again.")).queue();
@@ -125,7 +120,7 @@ public class MenuDispatcher extends ListenerAdapter {
      * @param event The event of the reaction being added.
      */
     public void matchInfoReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event)
-            throws InsufficientPermissionsException, IllegalStateException {
+            throws IllegalStateException {
         if (!reactionMenu.getOwnerId().equals(event.getUserId())) {
             return;
         }
@@ -183,11 +178,10 @@ public class MenuDispatcher extends ListenerAdapter {
      * @param event Reaction event data.
      * @param type Type of action to perform (Filter/Monitor).
      * @throws SQLException If action could not be performed.
-     * @throws InsufficientPermissionsException Thermostat lacks permissions to add reactions.
      */
     public void matchFMReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event,
                                 final DBActionType type, final int actionValue)
-            throws SQLException, InsufficientPermissionsException
+            throws SQLException
     {
         if (!reactionMenu.getOwnerId().equals(event.getUserId()) || !event.getReactionEmote().getEmoji().equals("☑")) {
             return;
