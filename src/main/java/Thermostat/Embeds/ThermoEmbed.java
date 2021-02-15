@@ -40,10 +40,10 @@ public class ThermoEmbed extends EmbedBuilder {
 
         final String footerLine;
         if (data.event.getMember().getUser() == null) {
-            footerLine = "\uD83E\uDC1E Command ID: " + data.commandId;
+            footerLine = "🡆 Command ID: " + data.commandId;
         } else {
-            footerLine = "\uD83E\uDC1E Requested by " + data.event.getMember().getUser().getAsTag() +
-                    "\n\uD83E\uDC1E Command ID: " + data.commandId;
+            footerLine = "🡆 Requested by " + data.event.getMember().getUser().getAsTag() +
+                    "\n🡆 Command ID: " + data.commandId;
         }
 
         setTimestamp(Instant.now());
