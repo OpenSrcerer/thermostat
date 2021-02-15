@@ -310,7 +310,7 @@ public final class Embeds {
         embed.setTitle("Guide Menu  🌡");
         embed.setDescription("""
                 Need more help or examples?
-                \uD83E\uDC46 Try `th!info --type [commandname]` or [visit our wiki](https://github.com/OpenSrcerer/thermostat/wiki)! \uD83E\uDC44
+                🡆 Try `th!info --type [commandname]` or [visit our wiki](https://github.com/OpenSrcerer/thermostat/wiki)! 🡄
                 ─────────────────────────────"""
         );
         embed.addField("⏱ Monitoring", "Commands to help you manage slowmode in channels.", false);
