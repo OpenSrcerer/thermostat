@@ -14,6 +14,7 @@ import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
+import thermostat.embeds.ThermoEmbed;
 import thermostat.mySQL.DataSource;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
@@ -84,7 +85,7 @@ public class WordFilter implements Command {
                                 .map(webhook -> {
                                     try {
                                         sendWebhookMessage(getWebhookValue(conn, "ID"), getWebhookValue(conn, "TOKEN"));
-                                        ResponseDispatcher.commandSucceeded(this, null);
+                                        ResponseDispatcher.commandSucceeded(this, (ThermoEmbed) null);
                                     } catch (SQLException ex) {
                                         ResponseDispatcher.commandFailed(this, null, ex);
                                     }
@@ -94,7 +95,7 @@ public class WordFilter implements Command {
                         updateWebhook(data.event.getAuthor(), webhookId)
                                 .map(webhook -> {
                                     sendWebhookMessage(webhookId, webhookToken);
-                                    ResponseDispatcher.commandSucceeded(this, null);
+                                    ResponseDispatcher.commandSucceeded(this, (ThermoEmbed) null);
                                     return webhook;
 
                                     // if something is wrong with the previous webhook, create a new one

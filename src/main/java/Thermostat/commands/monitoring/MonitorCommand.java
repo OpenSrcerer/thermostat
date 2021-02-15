@@ -1,9 +1,9 @@
 package thermostat.commands.monitoring;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.RestActions;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
@@ -12,6 +12,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.RestActions;
 import thermostat.util.entities.CommandArguments;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
@@ -19,6 +20,7 @@ import thermostat.util.enumeration.DBActionType;
 import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
@@ -67,7 +69,7 @@ public class MonitorCommand implements Command {
         }
 
         if (allSwitch != null) {
-            monitorAll(onSwitch != null);
+            ResponseDispatcher.commandSucceeded(this, monitorAll(onSwitch != null));
             return;
         }
 
@@ -118,12 +120,12 @@ public class MonitorCommand implements Command {
         );
     }
 
-    private void monitorAll(final boolean monitor) {
+    @CheckReturnValue
+    private RestAction<Object> monitorAll(final boolean monitor) {
         MenuType type = (monitor) ? MenuType.MONITORALL : MenuType.UNMONITORALL;
 
-        RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
-                .map(message -> MiscellaneousFunctions.addNewMenu(type, this))
-                .queue();
+        return RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
+                .map(message -> MiscellaneousFunctions.addNewMenu(type, this));
     }
 
     @Override

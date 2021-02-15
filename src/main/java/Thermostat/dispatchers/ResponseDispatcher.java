@@ -1,5 +1,6 @@
 package thermostat.dispatchers;
 
+import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.Contract;
 import thermostat.commands.Command;
 import thermostat.embeds.ThermoEmbed;
@@ -15,6 +16,17 @@ import java.util.Objects;
  * set of functions to output data to the end user.
  */
 public final class ResponseDispatcher {
+
+    /**
+     * Notify the command was completed successfully by executing a RestAction.
+     * @param command Command that was completed.
+     * @param action Embed to send.
+     */
+    @Contract("null, _ -> fail; _, null -> fail")
+    public static void commandSucceeded(final Command command, RestAction<?> action) {
+        command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
+        action.queue();
+    }
 
     /**
      * Notify the command was completed successfully by sending an embed

@@ -134,7 +134,6 @@ public final class PreparedActions {
             // Minimum not set
             if (minimumNew == -1) {
                 minimumNew = minimumCurr;
-
                 if (minimumNew > maximumNew) {
                     minimumNew = maximumNew;
                 }
@@ -143,7 +142,6 @@ public final class PreparedActions {
             // Maximum not set
             if (maximumNew == -1) {
                 maximumNew = maximumCurr;
-
                 if (maximumNew < minimumNew) {
                     maximumNew = minimumNew;
                 }

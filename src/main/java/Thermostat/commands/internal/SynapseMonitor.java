@@ -148,7 +148,7 @@ public class SynapseMonitor implements Command {
         if (slow + time > max && max > 0) { // if slowmode and the added time exceed the max slowmode
             slowmodeToSet = max; // Set slowmode to the maximum value taken from the database.
         } else if (slow + time > TextChannel.MAX_SLOWMODE) {
-            slowmodeToSet = TextChannel.MAX_SLOWMODE; // sets to max DISCORD slowmode value
+            slowmodeToSet = TextChannel.MAX_SLOWMODE; // sets to discord's maximum slowmode value
         } else {
             slowmodeToSet = Math.max(slow + time, min);
         }

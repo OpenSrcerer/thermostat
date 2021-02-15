@@ -57,15 +57,13 @@ public class InfoCommand implements Command {
             }
         }
 
-        sendGenericInfoMenu();
-    }
-
-    private void sendGenericInfoMenu() {
-        RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION))
-                .flatMap(message -> {
-                    MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
-                    return RestActions.addReactions(message, Arrays.asList("⏱", "🔧", "✨", "❌"));
-                }).queue();
+        ResponseDispatcher.commandSucceeded(this,
+                RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION))
+                        .flatMap(message -> {
+                            MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
+                            return RestActions.addReactions(message, Arrays.asList("⏱", "🔧", "✨", "❌"));
+                        })
+        );
     }
 
     @Nullable
