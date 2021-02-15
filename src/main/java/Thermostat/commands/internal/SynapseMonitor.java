@@ -1,4 +1,4 @@
-package thermostat.commands.monitoring;
+package thermostat.commands.internal;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;

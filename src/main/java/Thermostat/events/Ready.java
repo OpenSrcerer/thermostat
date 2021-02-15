@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
 import thermostat.commands.CommandTrigger;
-import thermostat.commands.utility.WordFilter;
+import thermostat.commands.internal.WordFilter;
 import thermostat.dispatchers.MenuDispatcher;
 
 import javax.annotation.Nonnull;

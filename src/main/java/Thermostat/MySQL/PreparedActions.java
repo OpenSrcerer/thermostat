@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import okhttp3.internal.annotations.EverythingIsNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.commands.utility.WordFilter;
+import thermostat.commands.internal.WordFilter;
 import thermostat.util.GuildCache;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.DBActionType;

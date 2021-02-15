@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.ISnowflake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.commands.monitoring.SynapseMonitor;
+import thermostat.commands.internal.SynapseMonitor;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.Constants;

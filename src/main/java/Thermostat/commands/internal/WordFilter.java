@@ -1,4 +1,4 @@
-package thermostat.commands.utility;
+package thermostat.commands.internal;
 
 import club.minnced.discord.webhook.WebhookClient;
 import net.dv8tion.jda.api.entities.Icon;
