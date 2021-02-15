@@ -2,6 +2,7 @@ package thermostat.embeds;
 
 import net.dv8tion.jda.api.Permission;
 import okhttp3.internal.annotations.EverythingIsNonNull;
+import thermostat.Thermostat;
 import thermostat.util.Constants;
 import thermostat.util.entities.CommandData;
 import thermostat.util.entities.SettingsData;
@@ -96,7 +97,7 @@ public final class Embeds {
     // ***************************************************************
 
     private static ThermoEmbed chartHolder(final ThermoEmbed embed, final String serverName) {
-        embed.setTitle("Slowmode Frequency Chart");
+        embed.setTitle("Monitor Frequency Chart");
         embed.setDescription(serverName);
         return embed;
     }
@@ -117,25 +118,26 @@ public final class Embeds {
     }
 
     private static ThermoEmbed getGuide(final ThermoEmbed embed, final String prefix, final String guildName) {
-        embed.setTitle("❓ Need help? Read our handy dandy wiki.",
-                "https://github.com/OpenSrcerer/thermostat/wiki"
-        );
-        embed.addField("🎯 My prefix in " + guildName + " is: " + "`" + prefix + "`",
-                "Reset it to the default using <@" + Constants.THERMOSTAT_USER_ID + "> `--reset` if you need to!", false
-        );
+        embed.setTitle("🎯 My prefix in " + guildName + " is: " + "`" + prefix + "`");
+        embed.addField("❓ Need help?", "Try `" + prefix + "info`", false);
         embed.addField("💖 Like the bot? Please give it an upvote!",
                 "Thank you for your support! Vote for Thermostat with `" + prefix + "vote`", false
         );
+        embed.addField("Gateway Ping: ", String.valueOf(Thermostat.thermo.getGatewayPing()), true);
+        embed.addField("Status:", String.valueOf(Thermostat.thermo.getStatus().toString()), true);
+        embed.addField("Total Guilds:", String.valueOf(Thermostat.thermo.getGuilds().size()), true);
         return embed;
     }
 
     private static ThermoEmbed channelSettings(final ThermoEmbed embed, final SettingsData data) {
         embed.setTitle("Settings for #" + data.channelName + ":");
-        embed.addField("⌚ Min Slowmode:", data.min == 0 ? "**-**" : data.min + "**", true);
-        embed.addField("⌚ Max Slowmode:", data.max == 0 ? "**-**" : data.max + "**", true);
-        embed.addField("🎇 Monitored:", (data.monitor) ? "Yes" : "No", false);
-        embed.addField("🎆 Filtered:", (data.filter) ? "Yes" : "No", true);
-        embed.addField("Sensitivity:", String.format("%.5f", data.sensitivity), false);
+        embed.setDescription("─────────────────────────────");
+        embed.addField("⌚ Min Slowmode:", data.min == 0 ? "**-**" : "**" + data.min + "**", true);
+        embed.addField("⌚ Max Slowmode:", data.max == 0 ? "**-**" : "**" + data.max + "**", true);
+        embed.addField(":regional_indicator_m: Monitored:", (data.monitor) ? "Yes" : "No", true);
+        embed.addField(":regional_indicator_f: Filtered:", (data.filter) ? "Yes" : "No", true);
+        embed.addField(":regional_indicator_s: Sensitivity:", String.format("%.5f", data.sensitivity), true);
+        embed.addField(":regional_indicator_c: Caching Size:", String.valueOf(data.cachingSize), true);
         return embed;
     }
 
@@ -254,41 +256,49 @@ public final class Embeds {
     }
 
     private static ThermoEmbed getMonitorInfo(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("🌡┇Monitoring Commands");
-        embed.addField(prefix + "monitor", "Syntax: `" + prefix + "monitor <on/off> [channel(s)/category(ies)].`", false);
-        embed.addField(prefix + "getmonitor", "Syntax: `" + prefix + "getmonitor.`", false);
-        embed.addField(prefix + "setbounds", "Syntax: `" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)].`", false);
-        embed.addField(prefix + "settings", "Syntax: `" + prefix + "settings[channel].`", false);
-        embed.addField(prefix + "sensitivity", "Syntax: `" + prefix + "sensitivity <sensitivity> [channel(s)].`", false);
-        embed.addField("❌ Exit", "Exit the info menu.", false);
-        embed.setFooter("🔼 to go up, ❌ to exit.");
+        embed.setTitle("Monitoring Commands");
+        embed.setDescription("─────────────────────────");
+        embed.addField("monitor", "`" + prefix + "monitor --on/--off -c [channels/categories]`", false);
+        embed.addField("getmonitor", "`" + prefix + "getmonitor`", false);
+        embed.addField("setbounds", "`" + prefix + "setbounds --m [value] --M [value] -c [channels/categories]`", false);
+        embed.addField("settings", "`" + prefix + "settings -c [channel].`", false);
+        embed.addField("sensitivity", "`" + prefix + "sensitivity -s [value] -c [channels].`", false);
+        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit.");
         return embed;
     }
 
     private static ThermoEmbed getUtilityInfo(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Utility Commands");
-        embed.addField(prefix + "filter", "Syntax: `" + prefix + "filter <charttype>.`", false);
-        embed.setFooter("🔼 to go up, ❌ to exit");
+        embed.setDescription("─────────────────────────");
+        embed.addField("filter", "`" + prefix + "filter --on/--off -c [channels/categories]`", false);
+        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit.");
         return embed;
     }
 
     private static ThermoEmbed getOtherInfo(final ThermoEmbed embed, final String prefix) {
         embed.setTitle("Other Commands");
-        embed.addField(prefix + "info", "Syntax:`" + prefix + "info.`", false);
-        embed.addField(prefix + "prefix", "Syntax:`" + prefix + "prefix", false);
-        embed.addField(prefix + "chart", "Syntax: `" + prefix + "chart <charttype>.`", false);
-        embed.addField(prefix + "vote", "Syntax: `" + prefix + "vote.`", false);
-        embed.addField(prefix + "invite", "Syntax: `" + prefix + "invite.`", false);
-        embed.setFooter("🔼 to go up, ❌ to exit.");
+        embed.setDescription("─────────────────────────");
+        embed.addField("info",  "`" + prefix + "info --type [commandname]`", false);
+        embed.addField("prefix","`" + prefix + "prefix -p [prefix]`", false);
+        embed.addField("chart", "`" + prefix + "chart --type [type]`", false);
+        embed.addField("vote",  "`" + prefix + "vote`", false);
+        embed.addField("invite", "`" + prefix + "invite`", false);
+        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit");
         return embed;
     }
 
     private static ThermoEmbed getInfoSelection(final ThermoEmbed embed) {
-        embed.setTitle("\uD83E\uDC1E Main Menu");
-        embed.addField("🌡 Monitoring", "Commands to help you manage slowmode in channels.", false);
+        embed.setTitle("Guide Menu  🌡");
+        embed.setDescription("""
+                Need more help or examples?
+                \uD83E\uDC46 Try `th!info --type [commandname]` or [visit our wiki](https://github.com/OpenSrcerer/thermostat/wiki)! \uD83E\uDC44
+                ─────────────────────────────"""
+        );
+        embed.addField("⏱ Monitoring", "Commands to help you manage slowmode in channels.", false);
         embed.addField("🔧 Utility", "Useful features to help you moderate your server.", false);
-        embed.addField("ℹ Other", "Informational commands that provide other functions.", false);
-        embed.addField("❌ Exit", "Exit the info menu.", false);
+        embed.addField("✨ Other", "Informational commands and other miscellaneous functions.", false);
+        embed.addField("❌ Exit", "Exit this menu.", false);
+        embed.setFooter("──────────────────────────────────\nReact below to learn more!");
         return embed;
     }
 

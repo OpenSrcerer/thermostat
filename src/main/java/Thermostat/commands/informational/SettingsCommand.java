@@ -9,6 +9,7 @@ import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
+import thermostat.util.Constants;
 import thermostat.util.entities.CommandData;
 import thermostat.util.entities.SettingsData;
 import thermostat.util.enumeration.CommandType;
@@ -80,7 +81,7 @@ public class SettingsCommand implements Command {
         // Retrieve the settings values from the database and send a response.
         try {
             DataSource.demand(conn -> {
-                int min = 0, max = 0;
+                int min = 0, max = 0, cachingSize = Constants.DEFAULT_CACHING_SIZE;
                 float sens = 0;
                 boolean monitored = false, filtered = false;
 
@@ -101,7 +102,15 @@ public class SettingsCommand implements Command {
                     filtered = rs.getBoolean(5);
                 }
 
-                SettingsData settingsData = new SettingsData(channel.getName(), min, max, sens, monitored, filtered);
+                statement = conn.prepareStatement("SELECT CACHING_SIZE FROM GUILDS WHERE GUILD_ID = ?");
+                statement.setString(1, channel.getGuild().getId());
+                rs = statement.executeQuery();
+
+                if (rs.next()) {
+                    cachingSize = rs.getInt(1);
+                }
+
+                SettingsData settingsData = new SettingsData(channel.getName(), min, max, cachingSize, sens, monitored, filtered);
                 ResponseDispatcher.commandSucceeded(this,
                         Embeds.getEmbed(EmbedType.CHANNEL_SETTINGS, data, settingsData)
                 );

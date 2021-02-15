@@ -16,7 +16,7 @@ public class ThermoEmbed extends EmbedBuilder {
     /**
      * Default color for all Embeds matching Thermo's theme.
      */
-    private static final int embedColor = 0x00aeff;
+    private static final int embedColor = 0x2f3136;
 
     /**
      * Create a new ThermoEmbed with basic parameters.
@@ -25,7 +25,6 @@ public class ThermoEmbed extends EmbedBuilder {
         super();
 
         setColor(embedColor);
-        setThumbnail(Constants.THERMOSTAT_AVATAR_URL);
         setTimestamp(Instant.now());
     }
 
@@ -38,7 +37,6 @@ public class ThermoEmbed extends EmbedBuilder {
         super();
 
         setColor(embedColor);
-        setThumbnail(Constants.THERMOSTAT_AVATAR_URL);
 
         final String footerLine;
         if (data.event.getMember().getUser() == null) {
