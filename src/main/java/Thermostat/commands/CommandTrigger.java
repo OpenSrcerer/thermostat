@@ -8,6 +8,7 @@ import thermostat.commands.informational.ChartCommand;
 import thermostat.commands.informational.GetMonitorCommand;
 import thermostat.commands.informational.InfoCommand;
 import thermostat.commands.informational.SettingsCommand;
+import thermostat.commands.internal.SendGuide;
 import thermostat.commands.monitoring.CSizeCommand;
 import thermostat.commands.monitoring.MonitorCommand;
 import thermostat.commands.monitoring.SensitivityCommand;
@@ -85,6 +86,7 @@ public final class CommandTrigger extends ListenerAdapter {
             case SETBOUNDS -> new SetBoundsCommand(event, arguments, prefix);
             case SETCACHING -> new CSizeCommand(event, arguments, prefix);
             // Other
+            case GUIDE -> new SendGuide(event, prefix);
             case INVITE -> new InviteCommand(event, prefix);
             case PREFIX -> new PrefixCommand(event, arguments, prefix);
             case VOTE -> new VoteCommand(event, prefix);

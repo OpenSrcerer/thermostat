@@ -159,8 +159,14 @@ public enum CommandType {
             EnumSet.of(
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_HISTORY,
                     Permission.MESSAGE_ADD_REACTION
             ), EmbedType.HELP_INFO),
+    GUIDE("", "",
+            EnumSet.of(
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS
+            ), EmbedType.GUIDE),
     INVITE("invite", "iv",
             EnumSet.of(
                     Permission.MESSAGE_WRITE,

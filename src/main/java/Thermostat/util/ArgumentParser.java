@@ -236,23 +236,32 @@ public class ArgumentParser {
      */
     @Nullable
     public static CommandType getCommandByInit(final List<String> arguments, final String prefix) {
+        final String initPrefix = arguments.get(0); // First init: Initialization with a prefix. (th!cmd)
+        String initMention = null;
+        if (arguments.size() > 1) {
+            initMention = arguments.get(0).concat(arguments.get(1)); // Second init: Initialization by mention. (@Thermostat cmd)
+        }
+
+        // Check if @Thermostat was called without a command
+        if (arguments.size() == 1 && arguments.get(0).equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">")) {
+            return CommandType.GUIDE;
+        }
+
         for (final CommandType t : CommandType.class.getEnumConstants()) {
-            String init = arguments.get(0); // First init: Initialization with a prefix. (th!cmd)
-            if (init.equalsIgnoreCase(prefix + t.alias1) ||
-                init.equalsIgnoreCase(prefix + t.alias2))
+            if (initPrefix.equalsIgnoreCase(prefix + t.alias1) ||
+                    initPrefix.equalsIgnoreCase(prefix + t.alias2))
             {
                 arguments.remove(0); // Remove the initialization to use in a command.
                 return t; // Return the command type if there is a match
             }
 
-            if (arguments.size() < 2) { continue; } // Do not proceed if there is less than two arguments.
-
-            init = arguments.get(0).concat(arguments.get(1)); // Second init: Initialization by mention. (@Thermostat cmd)
-            if (init.equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">" + t.alias1) ||
-                init.equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">" + t.alias2))
-            {
-                arguments.subList(0, 2).clear(); // Remove the initialization to use in a command.
-                return t; // Return command type if there is a match
+            if (initMention != null) {  // Do not proceed if there is less than two arguments.
+                if (initMention.equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">" + t.alias1) ||
+                        initMention.equalsIgnoreCase("<@!" + Constants.THERMOSTAT_USER_ID + ">" + t.alias2))
+                {
+                    arguments.subList(0, 2).clear(); // Remove the initialization to use in a command.
+                    return t; // Return command type if there is a match
+                }
             }
         }
         return null; // Could not match type.
