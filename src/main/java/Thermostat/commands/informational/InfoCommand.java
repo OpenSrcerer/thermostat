@@ -64,7 +64,7 @@ public class InfoCommand implements Command {
         RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.SELECTION))
                 .flatMap(message -> {
                     MenuDispatcher.addMenu(MenuType.SELECTION, message.getId(), this);
-                    return RestActions.addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌"));
+                    return RestActions.addReactions(message, Arrays.asList("⏱", "🔧", "✨", "❌"));
                 }).queue();
     }
 

@@ -127,11 +127,11 @@ public class MenuDispatcher extends ListenerAdapter {
 
         switch (event.getReactionEmote().getEmoji()) {
             // Monitoring Submenu
-            case "🌡" -> updateMenu(reactionMenu, event, EmbedType.MONITOR_INFO, reactionMenu.getMenuType(), MenuType.MONITOR);
+            case "⏱" -> updateMenu(reactionMenu, event, EmbedType.MONITOR_INFO, reactionMenu.getMenuType(), MenuType.MONITOR);
             // Utility Submenu
             case "🔧" -> updateMenu(reactionMenu, event, EmbedType.UTILITY_INFO, reactionMenu.getMenuType(), MenuType.UTILITY);
             // Informational Submenu
-            case "ℹ" -> updateMenu(reactionMenu, event, EmbedType.OTHER_INFO, reactionMenu.getMenuType(), MenuType.OTHER);
+            case "✨" -> updateMenu(reactionMenu, event, EmbedType.OTHER_INFO, reactionMenu.getMenuType(), MenuType.OTHER);
             // Go back to main menu
             case "🔼" -> updateMenu(reactionMenu, event, EmbedType.SELECTION, reactionMenu.getMenuType(), MenuType.SELECTION);
             // Close Menu
@@ -166,7 +166,7 @@ public class MenuDispatcher extends ListenerAdapter {
                     .flatMap(message ->
                             message.clearReactions()
                             .and(editMessage(message, Embeds.getEmbed(type)))
-                            .and(addReactions(message, Arrays.asList("🌡", "🔧", "ℹ", "❌")))
+                            .and(addReactions(message, Arrays.asList("⏱", "🔧", "✨", "❌")))
                     ).queue();
         }
     }
@@ -180,8 +180,7 @@ public class MenuDispatcher extends ListenerAdapter {
      * @throws SQLException If action could not be performed.
      */
     public void matchFMReaction(final ReactionMenu reactionMenu, final GuildMessageReactionAddEvent event,
-                                final DBActionType type, final int actionValue)
-            throws SQLException
+                                final DBActionType type, final int actionValue) throws SQLException
     {
         if (!reactionMenu.getOwnerId().equals(event.getUserId()) || !event.getReactionEmote().getEmoji().equals("☑")) {
             return;
@@ -197,7 +196,7 @@ public class MenuDispatcher extends ListenerAdapter {
                 throw new IllegalArgumentException("Action Value must be 0 or 1");
             }
 
-            expungeMenu(reactionMenu.getMessageId());
+            expungeMenu(reactionMenu.getMessageId()); // remove the menu from the list of menus
 
             event.getChannel().retrieveMessageById(event.getMessageId())
                     .flatMap(message -> editMessage(message, Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL,
