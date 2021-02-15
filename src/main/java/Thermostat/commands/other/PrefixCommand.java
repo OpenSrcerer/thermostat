@@ -32,7 +32,7 @@ public class PrefixCommand implements Command {
         if (this.data.parameters == null) {
             ResponseDispatcher.commandSucceeded(
                     this,
-                    Embeds.getEmbed(EmbedType.GET_PREFIX, this.data)
+                    Embeds.getEmbed(EmbedType.HELP_PREFIX, this.data)
             );
             return;
         }
@@ -105,7 +105,7 @@ public class PrefixCommand implements Command {
             }
         } else {
             ResponseDispatcher.commandSucceeded(this,
-                    Embeds.getEmbed(EmbedType.GET_PREFIX, data)
+                    Embeds.getEmbed(EmbedType.GUIDE, data)
             );
         }
     }

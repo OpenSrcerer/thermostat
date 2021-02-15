@@ -12,7 +12,7 @@ public enum EmbedType {
     SAME_PREFIX,
     RESET_PREFIX,
     NEW_PREFIX,
-    GET_PREFIX,
+    GUIDE,
     CHANNEL_SETTINGS,
     GET_VOTE,
     INVITE_SERVER,

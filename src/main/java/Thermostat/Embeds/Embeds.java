@@ -53,7 +53,7 @@ public final class Embeds {
             return switch (type) {
                 case SAME_PREFIX ->             samePrefix(embed, data.prefix);
                 case RESET_PREFIX ->            resetPrefix(embed);
-                case GET_PREFIX ->              getGuide(embed, data.prefix, data.event.getGuild().getName());
+                case GUIDE ->                   getGuide(embed, data.prefix, data.event.getGuild().getName());
                 case GET_VOTE ->                getVote(embed);
                 case INVITE_SERVER ->           inviteServer(embed);
                 case MISSED_PROMPT ->           missedPrompt(embed);
@@ -176,29 +176,47 @@ public final class Embeds {
     // ***************************************************************
 
     private static ThermoEmbed helpInfo(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "info [command]`");
-        embed.setDescription("**Aliases: " + prefix + "help/hp/io** ⇨ Brings up an interactive help menu, " +
-                "or specific details about a command if you need to know more." +
-                " Arguments surrounded by <> are mandatory, and ones surrounded by [] are optional.");
+        embed.setTitle(prefix + "info");
+        embed.setDescription("Brings up an interactive help menu, " +
+                "or specific details about a command if you need to know more.");
+        embed.addField("Aliases",
+                "**info, io, help, hp**",
+                false
+        );
+        embed.addField("Switches",
+                "• `--type <command name>` | Select a command to get information about.",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "info --type monitor`", false);
         return embed;
     }
 
     private static ThermoEmbed helpInvite(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
-        embed.setDescription("**Alias: " + prefix + "iv** ⇨ Provides an invite link to Thermostat's" +
-                " support server, and the top.gg website.");
+        embed.setTitle(prefix + "invite");
+        embed.setDescription("Provides an invite to Thermostat's" +
+                " support server, and a link to get Thermostat.");
+        embed.addField("Aliases",
+                "**invite, iv**",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "invite`", false);
         return embed;
     }
 
     private static ThermoEmbed helpVote(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
-        embed.setDescription("**Alias: " + prefix + "vo** ⇨ Provides links to voting websites where you" +
+        embed.setTitle(prefix + "vote");
+        embed.setDescription("Provides links to voting websites where you" +
                 " can vote for Thermostat. Thank you for your support!");
+        embed.addField("Aliases",
+                "**vote, vo**",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "vote`", false);
         return embed;
     }
 
     private static ThermoEmbed helpChart(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "chart <charttype> [channel(s)/category(ies)]`");
+        embed.setTitle(prefix + "chart");
         embed.setDescription("**Alias: " + prefix + "ch** ⇨ Command that gives informational data about Thermostat's" +
                 " operation in chart form.");
         embed.addField("Chart Types (Name - CmdName): ", "★ Slowmode Frequency - (slowfreq)", false);
@@ -206,21 +224,21 @@ public final class Embeds {
     }
 
     private static ThermoEmbed helpGetMonitor(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "getmonitor`");
+        embed.setTitle(prefix + "getmonitor");
         embed.setDescription("**Alias: " + prefix + "gm** ⇨ Shows which channels are currently being monitored" +
                 " or filtered in your server.");
         return embed;
     }
 
     private static ThermoEmbed helpSettings(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "settings [channel]`");
+        embed.setTitle(prefix + "settings");
         embed.setDescription("**Alias: " + prefix + "st** ⇨ Shows details about the configuration of the given channel, " +
                 "such as if it's currently being monitored or filtered, the bounds you have provided, etc.");
         return embed;
     }
 
     private static ThermoEmbed helpMonitor(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n `" + prefix + "monitor <on/off> [channel(s)/category(ies)]`");
+        embed.setTitle(prefix + "monitor");
         embed.setDescription("**Alias: " + prefix + "mn** ⇨ Adds/Removes text channels to the slowmode monitoring database. " +
                 "When a channel is being monitored, slowmode will be automatically adjusted by Thermostat depending " +
                 "on the amount of messages currently coming in.");
@@ -228,7 +246,7 @@ public final class Embeds {
     }
 
     private static ThermoEmbed helpSensitivity(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n ```" + prefix + "sensitivity <sensitivity> [channel(s)/category(ies)]```");
+        embed.setTitle(prefix + "sensitivity");
         embed.setDescription("**Alias: " + prefix + "ss** ⇨ Sets the sensitivity level for the channel. " +
                 "**Requires a value between -10 and 10, you may use decimal numbers.** " +
                 "The higher the sensitivity, the easier for Thermostat to initiate slowmode.");
@@ -236,7 +254,7 @@ public final class Embeds {
     }
 
     private static ThermoEmbed helpSetBounds(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n ```" + prefix + "setbounds <min/max> <slowmode> [channel(s)/category(ies)]```");
+        embed.setTitle(prefix + "setbounds");
         embed.setDescription("**Alias: " + prefix + "sb** ⇨ Sets the upper and lower bounds for the slowmode of the channel. " +
                 "This means that when Thermostat adjusts this channel's slowmode, the slowmode will be kept within the " +
                 "minimum/maximum limits you have provided.");
@@ -244,12 +262,13 @@ public final class Embeds {
     }
 
     private static ThermoEmbed helpPrefix(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle("Command Usage:\n ```" + prefix + "prefix <newprefix/reset>```");
+        embed.setTitle(prefix + "prefix");
         embed.setDescription("**Alias: " + prefix + "px** ⇨ Manages Thermostat's prefix. Allows up to 5 characters.");
         return embed;
     }
 
     private static ThermoEmbed helpFilter(final ThermoEmbed embed, final String prefix) {
+        embed.setTitle(prefix + "filter");
         embed.setTitle("Command Usage:\n ```" + prefix + "filter <on/off> [channel(s)/category(ies)]```");
         embed.setDescription("**Alias: " + prefix + "fi** ⇨ [WIP] Enables/Disables curse-word filtering for a channel.");
         return embed;
@@ -336,7 +355,7 @@ public final class Embeds {
     }
 
     private static ThermoEmbed error(final ThermoEmbed embed, final List<String> error) {
-        embed.setTitle("❌ An error has occurred.");
+        embed.setTitle("❌ An error has occurred");
         embed.addField("Error details:", error.get(0), false);
         embed.addField("Suggested fix: ", error.get(1), false);
         embed.addField("Support server: https://discord.gg/FnPb4nM", "", false);
@@ -344,7 +363,7 @@ public final class Embeds {
     }
 
     private static ThermoEmbed error(final ThermoEmbed embed, final String error) {
-        embed.setTitle("❌ An error has occurred.");
+        embed.setTitle("❌ An error has occurred");
         embed.addField("Error details:", error, false);
         embed.addField("Support server: https://discord.gg/FnPb4nM", "", false);
         return embed;
