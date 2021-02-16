@@ -70,7 +70,7 @@ public final class Embeds {
                 case HELP_SETBOUNDS ->          helpSetBounds(embed, data.prefix);
                 case HELP_PREFIX ->             helpPrefix(embed, data.prefix);
                 case HELP_FILTER ->             helpFilter(embed, data.prefix);
-                case HELP_SETCACHE ->           helpcaching(embed, data.prefix);
+                case HELP_SETCACHE ->           helpCaching(embed, data.prefix);
                 case SELECTION ->               getInfoSelection(embed);
                 default ->                      throw new IllegalArgumentException();
             };
@@ -185,10 +185,10 @@ public final class Embeds {
                 false
         );
         embed.addField("Switches",
-                "• `--type <command name>` | Select a command to get information about.",
+                "• `-c <command name>` | Select a command to get information about.",
                 false
         );
-        embed.addField("Example", "`" + prefix + "info --type monitor`", false);
+        embed.addField("Example", "`" + prefix + "info -c monitor`", false);
         return embed;
     }
 
@@ -233,7 +233,7 @@ public final class Embeds {
         return embed;
     }
 
-    private static ThermoEmbed helpcaching(final ThermoEmbed embed, final String prefix) {
+    private static ThermoEmbed helpCaching(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "setcaching");
         embed.setDescription("Sets the global caching size for your server");
         embed.addField("Aliases",
@@ -278,7 +278,7 @@ public final class Embeds {
 
     private static ThermoEmbed helpMonitor(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "monitor");
-        embed.setDescription("**Alias: " + prefix + "mn** ⇨ Adds/Removes text channels to the slowmode monitoring database. " +
+        embed.setDescription("Adds/Removes text channels to the slowmode monitoring database. " +
                 "When a channel is being monitored, slowmode will be automatically adjusted by Thermostat depending " +
                 "on the amount of messages currently coming in.");
         embed.addField("Aliases",

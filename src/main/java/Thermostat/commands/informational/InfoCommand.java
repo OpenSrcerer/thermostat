@@ -41,12 +41,12 @@ public class InfoCommand implements Command {
     }
 
     /**
-     * Command form: th!info/help [Command Name]
+     * Command form: th!info/help -c [cmd]
      */
     @Override
     public void run() {
         if (this.data.parameters != null) {
-            List<String> commandType = data.parameters.get("-type");
+            List<String> commandType = data.parameters.get("c");
 
             if (ArgumentParser.hasArguments(commandType)) {
                 EmbedType type = matchArgumentToEmbed(commandType.get(0));
