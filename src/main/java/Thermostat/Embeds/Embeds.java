@@ -70,6 +70,7 @@ public final class Embeds {
                 case HELP_SETBOUNDS ->          helpSetBounds(embed, data.prefix);
                 case HELP_PREFIX ->             helpPrefix(embed, data.prefix);
                 case HELP_FILTER ->             helpFilter(embed, data.prefix);
+                case HELP_SETCACHE ->           helpcaching(embed, data.prefix);
                 case SELECTION ->               getInfoSelection(embed);
                 default ->                      throw new IllegalArgumentException();
             };
@@ -178,7 +179,7 @@ public final class Embeds {
     private static ThermoEmbed helpInfo(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "info");
         embed.setDescription("Brings up an interactive help menu, " +
-                "or specific details about a command if you need to know more.");
+                "or specific details about a command if you need to know more");
         embed.addField("Aliases",
                 "**info, io, help, hp**",
                 false
@@ -193,8 +194,8 @@ public final class Embeds {
 
     private static ThermoEmbed helpInvite(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "invite");
-        embed.setDescription("Provides an invite to Thermostat's" +
-                " support server, and a link to get Thermostat.");
+        embed.setDescription("Provides an invite to our" +
+                " support server, and a link to get Thermostat");
         embed.addField("Aliases",
                 "**invite, iv**",
                 false
@@ -217,23 +218,61 @@ public final class Embeds {
 
     private static ThermoEmbed helpChart(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "chart");
-        embed.setDescription("**Alias: " + prefix + "ch** ⇨ Command that gives informational data about Thermostat's" +
-                " operation in chart form.");
-        embed.addField("Chart Types (Name - CmdName): ", "★ Slowmode Frequency - (slowfreq)", false);
+        embed.setDescription("Makes awesome charts from your server's stats");
+        embed.addField("Charts: ", "• slowfreq", false);
+        embed.addField("Aliases",
+                "**chart, ch**",
+                false
+        );
+        embed.addField("Switches",
+                "• `--type <command name>` | Select the chart type\n" +
+                "• `-c <channels/categories>` | Provide specific channels to be used in the chart",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "chart --type slowfreq`", false);
+        return embed;
+    }
+
+    private static ThermoEmbed helpcaching(final ThermoEmbed embed, final String prefix) {
+        embed.setTitle(prefix + "setcaching");
+        embed.setDescription("Sets the global caching size for your server");
+        embed.addField("Aliases",
+                "**setcaching, sc**",
+                false
+        );
+        embed.addField("Switches",
+                "• `-s <size>` | The caching size to change to" +
+                "• `-c <channels/categories>` | Provide specific channels to be used in the chart",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "setcaching -s 20`", false);
         return embed;
     }
 
     private static ThermoEmbed helpGetMonitor(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "getmonitor");
-        embed.setDescription("**Alias: " + prefix + "gm** ⇨ Shows which channels are currently being monitored" +
-                " or filtered in your server.");
+        embed.setDescription("Shows which channels are currently being monitored" +
+                " or filtered in this server");
+        embed.addField("Aliases",
+                "**getmonitor, gm**",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "getmonitor`", false);
         return embed;
     }
 
     private static ThermoEmbed helpSettings(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "settings");
-        embed.setDescription("**Alias: " + prefix + "st** ⇨ Shows details about the configuration of the given channel, " +
-                "such as if it's currently being monitored or filtered, the bounds you have provided, etc.");
+        embed.setDescription("Shows details about the configuration of a channel");
+        embed.addField("Aliases",
+                "**settings, st**",
+                false
+        );
+        embed.addField("Switches",
+                "• `-c <channel>` | Select the channel to retrieve settings for",
+                false
+        );
+        embed.addField("Example", "`" + prefix + "getmonitor`", false);
         return embed;
     }
 
@@ -242,35 +281,98 @@ public final class Embeds {
         embed.setDescription("**Alias: " + prefix + "mn** ⇨ Adds/Removes text channels to the slowmode monitoring database. " +
                 "When a channel is being monitored, slowmode will be automatically adjusted by Thermostat depending " +
                 "on the amount of messages currently coming in.");
+        embed.addField("Aliases",
+                "**settings, st**",
+                false
+        );
+        embed.addField("Switches",
+                """
+                        • `--on` | Monitor channels
+                        • `--off` | Unmonitor channels
+                        • `-c <channels/categories>` | Select the channel to perform action for
+                        • `--all` | Perform this action for all the channels in your server
+                        """,
+                false
+        );
+        embed.addField("Example", "`" + prefix + "monitor --on`", false);
         return embed;
     }
 
     private static ThermoEmbed helpSensitivity(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "sensitivity");
-        embed.setDescription("**Alias: " + prefix + "ss** ⇨ Sets the sensitivity level for the channel. " +
-                "**Requires a value between -10 and 10, you may use decimal numbers.** " +
+        embed.setDescription("Sets the sensitivity level for the channel. " +
                 "The higher the sensitivity, the easier for Thermostat to initiate slowmode.");
+        embed.addField("Aliases",
+                "**sensitivity, ss**",
+                false
+        );
+        embed.addField("Switches",
+                """
+                        • `-s <value>` | Monitor channels
+                        • `-c <channels/categories>` | Select the channel to perform action for
+                        """,
+                false
+        );
+        embed.addField("Example", "`" + prefix + "sensitivity -s 3`", false);
         return embed;
     }
 
     private static ThermoEmbed helpSetBounds(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "setbounds");
-        embed.setDescription("**Alias: " + prefix + "sb** ⇨ Sets the upper and lower bounds for the slowmode of the channel. " +
+        embed.setDescription("Sets the upper and lower bounds for the slowmode of the channel. " +
                 "This means that when Thermostat adjusts this channel's slowmode, the slowmode will be kept within the " +
                 "minimum/maximum limits you have provided.");
-        return embed;
-    }
-
-    private static ThermoEmbed helpPrefix(final ThermoEmbed embed, final String prefix) {
-        embed.setTitle(prefix + "prefix");
-        embed.setDescription("**Alias: " + prefix + "px** ⇨ Manages Thermostat's prefix. Allows up to 5 characters.");
+        embed.addField("Aliases",
+                "**setbounds, sb**",
+                false
+        );
+        embed.addField("Switches",
+                """
+                        • `-m <minimum>` | Minimum slowmode bound
+                        • `-M <maximum>` | Minimum slowmode bound
+                        • `-c <channels/categories>` | Select the channel to perform action for
+                        """,
+                false
+        );
+        embed.addField("Example", "`" + prefix + "setbounds -m 5 -M 25`", false);
         return embed;
     }
 
     private static ThermoEmbed helpFilter(final ThermoEmbed embed, final String prefix) {
         embed.setTitle(prefix + "filter");
-        embed.setTitle("Command Usage:\n ```" + prefix + "filter <on/off> [channel(s)/category(ies)]```");
-        embed.setDescription("**Alias: " + prefix + "fi** ⇨ [WIP] Enables/Disables curse-word filtering for a channel.");
+        embed.setDescription("[WIP] Enables/Disables curse-word filtering for a channel.");
+        embed.addField("Aliases",
+                "**filter, ft**",
+                false
+        );
+        embed.addField("Switches",
+                """
+                        • `--on` | Filter channels
+                        • `--off` | Unfilter channels
+                        • `-c <channels/categories>` | Select the channel to perform action for
+                        • `--all` | Perform this action for all the channels in your server
+                        """,
+                false
+        );
+        embed.addField("Example", "`" + prefix + "filter --on`", false);
+        return embed;
+    }
+
+    private static ThermoEmbed helpPrefix(final ThermoEmbed embed, final String prefix) {
+        embed.setTitle(prefix + "prefix");
+        embed.setDescription("Manages Thermostat's prefix. Allows up to 5 characters.");
+        embed.addField("Aliases",
+                "**prefix, px**",
+                false
+        );
+        embed.addField("Switches",
+                """
+                        • `-p <prefix>` | Prefix to assign
+                        • `--reset` | Reset the prefix to the default (th!)
+                        """,
+                false
+        );
+        embed.addField("Example", "`" + prefix + "filter --on`", false);
         return embed;
     }
 
