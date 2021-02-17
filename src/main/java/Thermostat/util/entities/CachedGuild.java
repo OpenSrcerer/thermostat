@@ -1,6 +1,10 @@
 package thermostat.util.entities;
 
+import club.minnced.discord.webhook.WebhookClient;
+
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Cache object. Struct-like, merely for storage.
@@ -15,6 +19,11 @@ public class CachedGuild {
      * The global prefix of a Guild.
      */
     private String prefix;
+
+    /**
+     * Stores Webhook clients for every channel.
+     */
+    private Map<String, WebhookClient> webhookClients = new HashMap<>();
 
     /**
      * Create a new GuildData object for use in the cache.
@@ -42,8 +51,8 @@ public class CachedGuild {
     }
 
     /**
-     * Get this Guild's cached synapse. If the synapse has not been initialized, it gets so and then returned.
-     * @return This Guild's synapse.
+     * Get this Guild's cached synapse. If the Synapse has not been initialized, it gets so and then returned.
+     * @return This Guild's Synapse.
      */
     @Nonnull
     public Synapse getSynapse(final String guildId) {
@@ -51,5 +60,28 @@ public class CachedGuild {
             this.synapse = new Synapse(guildId);
         }
         return this.synapse;
+    }
+
+    /**
+     * @param channelId ID of channel to find the WebhookClient for.
+     * @param webhookId ID of the Webhook (in case the client hasn't been created).
+     * @param webhookToken Token of the Webhook (in case the client hasn't been created).
+     * @return Return the WebhookClient for a channel. Makes one if it is not created.
+     */
+    @Nonnull
+    public WebhookClient getClient(final String channelId, final String webhookId, final String webhookToken) {
+        WebhookClient client = webhookClients.get(channelId);
+        long webhookIdLong = Long.parseLong(webhookId);
+
+        if (client == null) { // NPE dupe code :( :(
+            WebhookClient newClient = WebhookClient.withId(webhookIdLong, webhookToken);
+            webhookClients.put(channelId, newClient);
+            client = newClient;
+        } else if (client.getId() != webhookIdLong) {
+            WebhookClient newClient = WebhookClient.withId(webhookIdLong, webhookToken);
+            webhookClients.put(channelId, newClient);
+            client = newClient;
+        }
+        return client;
     }
 }

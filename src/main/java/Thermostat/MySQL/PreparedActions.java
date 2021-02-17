@@ -11,6 +11,7 @@ import thermostat.util.GuildCache;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.enumeration.DBActionType;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -81,7 +82,7 @@ public final class PreparedActions {
                 ("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
                 "(CHANNEL_SETTINGS.CHANNEL_ID = CHANNELS.CHANNEL_ID) JOIN GUILDS ON " +
                 "(CHANNELS.GUILD_ID = GUILDS.GUILD_ID) " +
-                "SET " + action.sqlAction1 + " WHERE CAST(CHANNEL_SETTINGS.CHANNEL_ID AS VARCHAR(60)) IN (@) " +
+                "SET " + action.sqlAction1 + " WHERE CHANNEL_SETTINGS.CHANNEL_ID IN (@) " +
                 "AND GUILDS.GUILD_ID = ?")
                 .replaceFirst("@", MiscellaneousFunctions.toQueryString(channels))
         );
@@ -111,6 +112,7 @@ public final class PreparedActions {
      * @param channels  The ID of every channel.
      */
     @EverythingIsNonNull
+    @CheckReturnValue
     public static StringBuilder modifyBounds(final Connection conn, final String guildId,
                                              final int minBound, final int maxBound,
                                              final List<String> channels) throws SQLException
@@ -119,9 +121,7 @@ public final class PreparedActions {
 
         int minimumCurr, maximumCurr, minimumNew = minBound, maximumNew = maxBound;
         PreparedStatement statement = conn.prepareStatement(
-                ("SELECT CHANNEL_ID, MIN_SLOW, MAX_SLOW " +
-                        "FROM CHANNEL_SETTINGS WHERE " +
-                        "CAST(CHANNEL_ID AS VARCHAR(60)) IN (@)")
+                ("SELECT CHANNEL_ID, MIN_SLOW, MAX_SLOW FROM CHANNEL_SETTINGS WHERE CHANNEL_ID IN (@)")
                         .replaceFirst("@", MiscellaneousFunctions.toQueryString(channels))
         );
         ResultSet rs = statement.executeQuery();
@@ -178,6 +178,7 @@ public final class PreparedActions {
      * @throws SQLException Something went wrong while communicating with the database.
      */
     @EverythingIsNonNull
+    @CheckReturnValue
     public static boolean isFiltered(final Connection conn, final String guildId, final String channelId) throws SQLException {
         PreparedStatement statement = conn.prepareStatement("SELECT FILTERED FROM CHANNEL_SETTINGS JOIN CHANNELS ON " +
                 "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) WHERE CHANNELS.GUILD_ID = ? " +
@@ -185,8 +186,10 @@ public final class PreparedActions {
         statement.setString(1, guildId);
         statement.setString(2, channelId);
         ResultSet rs = statement.executeQuery();
-        rs.next();
-        return rs.getBoolean(1);
+        if (rs.next()) {
+            return rs.getBoolean(1);
+        }
+        return false;
     }
 
     /**
@@ -196,6 +199,7 @@ public final class PreparedActions {
      * @return A DatabaseAction to Unmonitor/Unfilter channels from the database.
      */
     @EverythingIsNonNull
+    @CheckReturnValue
     public static DataSource.DatabaseAction<Void> discardChannels(final GuildMessageReactionAddEvent event,
                                                                   final DBActionType type)
     {
@@ -228,6 +232,7 @@ public final class PreparedActions {
      * @return A DatabaseAction to Monitor/Filter channels from the database.
      */
     @EverythingIsNonNull
+    @CheckReturnValue
     public static DataSource.DatabaseAction<Void> acquireChannels(final GuildMessageReactionAddEvent event,
                                                                   final DBActionType type)
     {
@@ -339,5 +344,61 @@ public final class PreparedActions {
         statement.setString(1, channelId);
         statement.setString(2, guildId);
         statement.executeUpdate();
+    }
+
+    /**
+     * Creates a database entry for a Webhook with the given parameters.
+     * @param webId ID of Webhook.
+     * @param webToken Token of Webhook.
+     * @param channelId ID of TextChannel.
+     * @throws SQLException Something went wrong with the transaction.
+     */
+    @EverythingIsNonNull
+    public static void createWebhook(final String webId, final String webToken, final String channelId) throws SQLException {
+        DataSource.demand(conn -> {
+            PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS SET WEBHOOK_ID = ?, " +
+                    "WEBHOOK_TOKEN = ? WHERE CHANNEL_ID = ?");
+            statement.setString(1, webId);
+            statement.setString(2, webToken);
+            statement.setString(3, channelId);
+            statement.executeUpdate();
+            return null;
+        });
+    }
+
+    /**
+     * Retrieves Webhook information from the database.
+     * @return A webhook ID and Token array.
+     */
+    @EverythingIsNonNull
+    @CheckReturnValue
+    public static String[] getWebhookValue(final String channelId) throws SQLException {
+        return DataSource.demand(conn -> {
+            String[] identity = new String[2];
+            PreparedStatement statement = conn.prepareStatement("SELECT WEBHOOK_ID, WEBHOOK_TOKEN FROM " +
+                    "CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
+            statement.setString(1, channelId);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                identity[0] = rs.getString(1);
+                identity[1] = rs.getString(2);
+            }
+            return identity;
+        });
+    }
+
+    /**
+     * @param channelId ID of channel.
+     * @throws SQLException Something went wrong with the transaction.
+     */
+    public static void deleteWebhook(final String channelId) throws SQLException {
+        DataSource.demand(conn -> {
+            PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS " +
+                    "SET CHANNEL_SETTINGS.WEBHOOK_ID = 0, CHANNEL_SETTINGS.WEBHOOK_TOKEN = 0 " +
+                    "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?");
+            statement.setString(1, channelId);
+            statement.executeUpdate();
+            return null;
+        });
     }
 }
