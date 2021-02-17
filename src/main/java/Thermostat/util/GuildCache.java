@@ -1,5 +1,6 @@
 package thermostat.util;
 
+import club.minnced.discord.webhook.WebhookClient;
 import thermostat.mySQL.DataSource;
 import thermostat.util.entities.CachedGuild;
 import thermostat.util.entities.Synapse;
@@ -73,11 +74,20 @@ public class GuildCache {
      */
     @Nonnull
     public static Synapse getSynapse(final String guildId) {
-        CachedGuild guild = cache.get(guildId);
-        if (guild == null) {
-            guild = add(guildId, null);
-        }
-        return guild.getSynapse(guildId);
+        return get(guildId).getSynapse(guildId);
+    }
+
+    /**
+     * @param channelId ID of channel to find the WebhookClient for.
+     * @param webhookId ID of the Webhook (in case the client hasn't been created).
+     * @param webhookToken Token of the Webhook (in case the client hasn't been created).
+     * @return Return the WebhookClient for a channel. Makes one if it is not created.
+     */
+    @Nonnull
+    public static WebhookClient getClient(final String guildId, final String channelId,
+                                          final String webhookId, final String webhookToken)
+    {
+        return get(guildId).getClient(channelId, webhookId, webhookToken);
     }
 
     /**
@@ -86,10 +96,23 @@ public class GuildCache {
      * @return Newly created CachedGuild object.
      */
     @Nonnull
-    public static CachedGuild add(final String guildId, final String guildPrefix) {
+    private static CachedGuild add(final String guildId, final String guildPrefix) {
         CachedGuild guildData = new CachedGuild(guildPrefix);
         cache.put(guildId, guildData);
         return guildData;
+    }
+
+    /**
+     * @param guildId Guild's Snowflake ID.
+     * @return A Cached Guild, caches one if it isn't cached already.
+     */
+    @Nonnull
+    private static CachedGuild get(final String guildId) {
+        CachedGuild guild = cache.get(guildId);
+        if (guild == null) {
+            guild = add(guildId, null);
+        }
+        return guild;
     }
 
     /**

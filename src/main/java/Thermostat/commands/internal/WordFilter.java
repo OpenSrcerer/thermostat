@@ -1,6 +1,5 @@
 package thermostat.commands.internal;
 
-import club.minnced.discord.webhook.WebhookClient;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
@@ -15,7 +14,8 @@ import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.embeds.ThermoEmbed;
-import thermostat.mySQL.DataSource;
+import thermostat.mySQL.PreparedActions;
+import thermostat.util.GuildCache;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
@@ -26,9 +26,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -58,6 +55,52 @@ public class WordFilter implements Command {
      */
     @Override
     public void run() {
+        if (checkMessageForProfanity()) {
+            data.event.getMessage().delete()
+                    .reason("Inappropriate Language Filter")
+                    .queue();
+            try {
+                webhookAction(); // Proceeding carefully with handling this raw connection.
+            } catch (SQLException ex) {
+                ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, "Could not filter message. Cause:\n" + ex.getMessage()));
+            }
+        }
+    }
+
+    private void webhookAction() throws SQLException {
+        // webhookId, webhookToken
+        final String[] webhookIdentity = PreparedActions.getWebhookValue(data.event.getChannel().getId());
+
+        if (webhookIdentity[0].equals("0")) {
+            createWebhook()
+                    .map(webhook -> {
+                        sendWebhookMessage(webhook.getId(), webhook.getToken());
+                        ResponseDispatcher.commandSucceeded(this, (ThermoEmbed) null);
+                        return webhook;
+                    })
+                    .onErrorMap(t -> {
+                        ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, data, t.getMessage()), t);
+                        return null;
+                    }).queue();
+        } else {
+            updateWebhook(data.event.getAuthor(), webhookIdentity[0])
+                    .map(webhook -> {
+                        sendWebhookMessage(webhookIdentity[0], webhookIdentity[1]);
+                        ResponseDispatcher.commandSucceeded(this, (ThermoEmbed) null);
+                        return webhook;
+                    })
+                    // if something is wrong with the previous webhook, create a new one
+                    .onErrorMap(t -> {
+                        try {
+                            PreparedActions.deleteWebhook(data.event.getChannel().getId());
+                        } catch (SQLException ignored) {
+                        }
+                        return null;
+                    }).queue();
+        }
+    }
+
+    private boolean checkMessageForProfanity() {
         boolean messageWasChanged = false;
         for (int index = 0; index < message.size(); ++index) {
             String string = message.get(index);
@@ -67,75 +110,16 @@ public class WordFilter implements Command {
                 message.set(index, niceWords.get(random.nextInt(niceWords.size())));
             }
         }
-
-        if (messageWasChanged) {
-            try {
-                DataSource.demand(conn -> {
-                    data.event.getMessage().delete()
-                            .reason("Inappropriate Language Filter")
-                            .queue();
-
-                    String webhookId, webhookToken;
-
-                    webhookId = getWebhookValue(conn, "ID");
-                    webhookToken = getWebhookValue(conn, "TOKEN");
-
-                    if (webhookId.equals("0")) {
-                        createWebhook(conn)
-                                .map(webhook -> {
-                                    try {
-                                        sendWebhookMessage(getWebhookValue(conn, "ID"), getWebhookValue(conn, "TOKEN"));
-                                        ResponseDispatcher.commandSucceeded(this, (ThermoEmbed) null);
-                                    } catch (SQLException ex) {
-                                        ResponseDispatcher.commandFailed(this, null, ex);
-                                    }
-                                    return webhook;
-                                }).queue();
-                    } else {
-                        updateWebhook(data.event.getAuthor(), webhookId)
-                                .map(webhook -> {
-                                    sendWebhookMessage(webhookId, webhookToken);
-                                    ResponseDispatcher.commandSucceeded(this, (ThermoEmbed) null);
-                                    return webhook;
-
-                                    // if something is wrong with the previous webhook, create a new one
-                                }).queue(null, throwable -> createWebhook(conn));
-                    }
-                    return null;
-                });
-            } catch (SQLException ex) {
-                ResponseDispatcher.commandFailed(this, null, ex);
-            }
-        }
-    }
-
-    /**
-     * Retrieves a Webhook value from the database.
-     * @param conn The connection to use to perform this action.
-     * @param value The value of the Webhook to look for.
-     * @return A webhook value depending on the argument.
-     */
-    @EverythingIsNonNull
-    public String getWebhookValue(final Connection conn, final String value) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement("SELECT WEBHOOK_" + value + " FROM " +
-                "CHANNEL_SETTINGS JOIN CHANNELS ON (CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?");
-        statement.setString(1, data.event.getChannel().getId());
-        ResultSet rs = statement.executeQuery();
-        rs.next();
-        return rs.getString(1);
+        return messageWasChanged;
     }
 
     /**
      * Sends compiled message through the webhook provided.
-     * @param webhookID Webhook Id
-     * @param webhookToken Webhook Token
      */
     @EverythingIsNonNull
-    public void sendWebhookMessage(final String webhookID, final String webhookToken) {
-        try (WebhookClient client = WebhookClient.withId(Long.parseLong(webhookID), webhookToken)) {
-            client.send(String.join(" ", message));
-        }
+    public void sendWebhookMessage(final String webhookId, final String webhookToken) {
+        GuildCache.getClient(data.event.getGuild().getId(), data.event.getChannel().getId(),
+                webhookId, webhookToken).send(String.join(" ", message));
     }
 
     /**
@@ -151,12 +135,10 @@ public class WordFilter implements Command {
 
         if (eventAuthor.getAvatarUrl() != null)
             userAvatarURL = eventAuthor.getAvatarUrl();
-        else
-            userAvatarURL = eventAuthor.getDefaultAvatarUrl();
+        else userAvatarURL = eventAuthor.getDefaultAvatarUrl();
         Icon userAvatar = getUserIcon(userAvatarURL);
 
-        return Thermostat.thermo
-                .retrieveWebhookById(webhookId)
+        return Thermostat.thermo.retrieveWebhookById(webhookId)
                 .flatMap(
                         Objects::nonNull,
                         webhook -> webhook.getManager().setName(username).setAvatar(userAvatar)
@@ -167,7 +149,7 @@ public class WordFilter implements Command {
      * RestAction creator for a webhook.
      * @return RestAction with the created webhook as a parameter
      */
-    public RestAction<Webhook> createWebhook(final Connection conn) {
+    public RestAction<Webhook> createWebhook() {
         User user = data.event.getMember().getUser();
         String username = user.getName();
         String userAvatarURL;
@@ -184,20 +166,9 @@ public class WordFilter implements Command {
                         webhook -> {
                             webhook.getManager().setAvatar(userAvatar).setName(username).queue();
                             try {
-                                PreparedStatement statement = conn.prepareStatement("UPDATE CHANNEL_SETTINGS JOIN CHANNELS ON " +
-                                                "(CHANNELS.CHANNEL_ID = CHANNEL_SETTINGS.CHANNEL_ID) " +
-                                                "SET CHANNEL_SETTINGS.WEBHOOK_ID = ?, " +
-                                                "CHANNEL_SETTINGS.WEBHOOK_TOKEN = ? " +
-                                                "WHERE CHANNEL_SETTINGS.CHANNEL_ID = ?");
-
-                                statement.setString(1, webhook.getId());
-                                statement.setString(2, webhook.getToken());
-                                statement.setString(3, data.event.getChannel().getId());
-                                statement.executeUpdate();
+                                PreparedActions.createWebhook(webhook.getId(), webhook.getToken(), data.event.getChannel().getId());
                             } catch (SQLException ex) {
-                                ResponseDispatcher.commandFailed(this,
-                                        Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
-                                        ex);
+                                ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex);
                             }
                             return webhook;
                         }
