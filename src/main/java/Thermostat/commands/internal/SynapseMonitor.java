@@ -99,35 +99,36 @@ public class SynapseMonitor implements Command {
                     "FROM CHANNEL_SETTINGS WHERE CHANNEL_ID = ?");
             statement.setString(1, channel.getId());
             ResultSet rs = statement.executeQuery();
-            rs.next();
 
-            int min = rs.getInt(1);
-            int max = rs.getInt(2);
-            float offset = rs.getFloat(3);
+            if (rs.next()) {
+                int min = rs.getInt(1);
+                int max = rs.getInt(2);
+                float offset = rs.getFloat(3);
 
-            // accounting for each delay of the messages
-            // this function picks an appropriate slowmode
-            // adjustment number for each case.
-            if (averageDelay <= 100 * offset) {
-                putSlowmode(conn, channel, 20, min, max);
-            } else if (averageDelay <= 250 * offset) {
-                putSlowmode(conn, channel, 10, min, max);
-            } else if (averageDelay <= 500 * offset) {
-                putSlowmode(conn, channel, 6, min, max);
-            } else if (averageDelay <= 750 * offset) {
-                putSlowmode(conn, channel, 4, min, max);
-            } else if (averageDelay <= 1000 * offset) {
-                putSlowmode(conn, channel, 2, min, max);
-            } else if (averageDelay <= 1250 * offset) {
-                putSlowmode(conn, channel, 1, min, max);
-            } else if (averageDelay <= 1500 * offset) {
-                putSlowmode(conn, channel, 0, min, max);
-            } else if (averageDelay <= 2000 * offset) {
-                putSlowmode(conn, channel, -1, min, max);
-            } else if (averageDelay <= 2500 * offset) {
-                putSlowmode(conn, channel, -2, min, max);
-            } else {
-                putSlowmode(conn, channel, -4, min, max);
+                // accounting for each delay of the messages
+                // this function picks an appropriate slowmode
+                // adjustment number for each case.
+                if (averageDelay <= 100 * offset) {
+                    putSlowmode(conn, channel, 20, min, max);
+                } else if (averageDelay <= 250 * offset) {
+                    putSlowmode(conn, channel, 10, min, max);
+                } else if (averageDelay <= 500 * offset) {
+                    putSlowmode(conn, channel, 6, min, max);
+                } else if (averageDelay <= 750 * offset) {
+                    putSlowmode(conn, channel, 4, min, max);
+                } else if (averageDelay <= 1000 * offset) {
+                    putSlowmode(conn, channel, 2, min, max);
+                } else if (averageDelay <= 1250 * offset) {
+                    putSlowmode(conn, channel, 1, min, max);
+                } else if (averageDelay <= 1500 * offset) {
+                    putSlowmode(conn, channel, 0, min, max);
+                } else if (averageDelay <= 2000 * offset) {
+                    putSlowmode(conn, channel, -1, min, max);
+                } else if (averageDelay <= 2500 * offset) {
+                    putSlowmode(conn, channel, -2, min, max);
+                } else {
+                    putSlowmode(conn, channel, -4, min, max);
+                }
             }
             return null;
         });
