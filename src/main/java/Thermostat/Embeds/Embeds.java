@@ -47,7 +47,8 @@ public final class Embeds {
      */
     @SuppressWarnings("unchecked")
     private static ThermoEmbed matchTypeToOptions(@Nonnull final EmbedType type, @Nonnull final ThermoEmbed embed,
-                                                 final CommandData data, @Nullable final Object options) {
+                                                 final CommandData data, @Nullable final Object options) throws RuntimeException
+    {
         if (options == null) {
             return switch (type) {
                 case SAME_PREFIX ->             samePrefix(embed, data.prefix);
@@ -71,7 +72,7 @@ public final class Embeds {
                 case HELP_FILTER ->             helpFilter(embed, data.prefix);
                 case HELP_SETCACHE ->           helpCaching(embed, data.prefix);
                 case SELECTION ->               getInfoSelection(embed);
-                default ->                      throw new IllegalArgumentException();
+                default ->                      throw new IllegalArgumentException("Invalid embed type.");
             };
         } else {
             return switch (type) {
@@ -81,13 +82,14 @@ public final class Embeds {
                 case CHART_HOLDER ->            chartHolder(embed, (String) options);
                 case NEW_PREFIX ->              setPrefix(embed, (String) options);
                 case CHANNEL_SETTINGS ->        channelSettings(embed, (SettingsData) options);
+                case SET_CACHE ->               setCache(embed, (int) options);
                 case ERR_PERMISSION ->          errPermission(embed, (List<Set<Permission>>) options);
                 case ERR_PERMISSION_THERMO ->   errPermission(embed, (Set<Permission>) options);
                 case ERR_INPUT ->               inputError(embed, (String) options);
                 case ERR_FIX ->                 error(embed, (List<String>) options);
                 case ERR ->                     error(embed, (String) options);
                 case DYNAMIC ->                 dynamicEmbed(embed, (List<String>) options);
-                default ->                      throw new IllegalArgumentException();
+                default ->                      throw new IllegalArgumentException("Invalid embed type.");
             };
         }
     }
@@ -168,6 +170,12 @@ public final class Embeds {
 
     private static ThermoEmbed promptEmbed(final ThermoEmbed embed) {
         embed.setTitle("Are you sure you want to perform this action? Click the reaction below if you're sure you want to continue.");
+        return embed;
+    }
+
+    private static ThermoEmbed setCache(final ThermoEmbed embed, final int newCachingSize) {
+        embed.setTitle("The *Caching Size* for your server has been updated to **"
+                + newCachingSize + "**");
         return embed;
     }
 
@@ -383,7 +391,7 @@ public final class Embeds {
         embed.addField("setbounds", "`" + prefix + "setbounds --m [value] --M [value] -c [channels/categories]`", false);
         embed.addField("settings", "`" + prefix + "settings -c [channel]`", false);
         embed.addField("sensitivity", "`" + prefix + "sensitivity -s [value] -c [channels]`", false);
-        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit.");
+        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit");
         return embed;
     }
 
@@ -391,7 +399,7 @@ public final class Embeds {
         embed.setTitle("Utility Commands");
         embed.setDescription("─────────────────────────");
         embed.addField("filter", "`" + prefix + "filter --on/--off -c [channels/categories]`", false);
-        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit.");
+        embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit");
         return embed;
     }
 

@@ -15,6 +15,7 @@ import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 import static thermostat.util.ArgumentParser.hasArguments;
@@ -38,7 +39,7 @@ public class CSizeCommand implements Command {
     }
 
     /**
-     * Command form: th!setcachingsize
+     * Command form: th!setcaching
      * -s <size>
      * -c <channels/categories>
      */
@@ -50,7 +51,7 @@ public class CSizeCommand implements Command {
         // Check that size has arguments
         if (!hasArguments(cachingSize)) {
             ResponseDispatcher.commandFailed(this,
-                    Embeds.getEmbed(EmbedType.HELP_SENSITIVITY, data),
+                    Embeds.getEmbed(EmbedType.HELP_SETCACHE, data),
                     "User did not provide arguments.");
             return;
         }
@@ -70,29 +71,25 @@ public class CSizeCommand implements Command {
             return;
         }
 
-        GuildCache.setCacheSize(data.event.getGuild().getId(), newCachingSize);
-        cacheSizeAction(newCachingSize);
-    }
-
-    private void cacheSizeAction(final int newCachingSize) {
-        // Update guild's caching size DB value
         try {
-            DataSource.demand(conn -> {
-                PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET CACHING_SIZE = ? WHERE GUILD_ID = ?");
-                statement.setInt(1, newCachingSize);
-                statement.setString(2, data.event.getGuild().getId());
-                statement.executeUpdate();
-                return null;
-            });
+            cacheSizeAction(newCachingSize);
         } catch (Exception ex) {
-            ResponseDispatcher.commandFailed(this,
-                    Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()),
-                    ex);
+            ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.ERR, data, ex.getMessage()), ex);
             return;
         }
 
-        // Send embed to user
-        ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(EmbedType.SET_CACHE, data));
+        GuildCache.setCacheSize(data.event.getGuild().getId(), newCachingSize); // Set CSize Cache
+        ResponseDispatcher.commandSucceeded(this, Embeds.getEmbed(EmbedType.SET_CACHE, data, newCachingSize)); // Send embed to user
+    }
+
+    private void cacheSizeAction(final int newCachingSize) throws SQLException {
+        DataSource.demand(conn -> {
+            PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET CACHING_SIZE = ? WHERE GUILD_ID = ?");
+            statement.setInt(1, newCachingSize);
+            statement.setString(2, data.event.getGuild().getId());
+            statement.executeUpdate();
+            return null;
+        });
     }
 
     @Override
