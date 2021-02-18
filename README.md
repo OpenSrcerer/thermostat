@@ -16,8 +16,11 @@
 </p>
 
 <p align=center>
-  <img src=https://raw.githubusercontent.com/OpenSrcerer/thermostat/master/img/Thermostat-V2.png width=400>
+  <a href="https://discord.com/api/oauth2/authorize?client_id=700341788136833065&permissions=566619222&scope=bot">
+    <img src=https://raw.githubusercontent.com/OpenSrcerer/thermostat/master/img/Thermostat-V2.png width=400>
+  </a>   
 </p>
+<h3 align=center>Click the image to get Thermostat in your server!</h1>
 
 <br><br>
 
