@@ -21,8 +21,7 @@
 
 <br><br>
 
-# Online Status & Bot Listing
-
+<h1 align=center>Online Status & Bot Listing</h1>
 <p align=center>
   <a href="https://discord.boats/bot/700341788136833065">
     <img src="https://discord.boats/api/widget/700341788136833065"/>
