@@ -121,11 +121,11 @@ public class MonitorCommand implements Command {
     }
 
     @CheckReturnValue
-    private RestAction<Object> monitorAll(final boolean monitor) {
+    private RestAction<Void> monitorAll(final boolean monitor) {
         MenuType type = (monitor) ? MenuType.MONITORALL : MenuType.UNMONITORALL;
 
         return RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
-                .map(message -> MiscellaneousFunctions.addNewMenu(type, this));
+                .flatMap(message -> MiscellaneousFunctions.addNewMenu(message, type, this));
     }
 
     @Override

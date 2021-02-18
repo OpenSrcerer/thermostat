@@ -1,6 +1,7 @@
 package thermostat.commands.utility;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.util.RestActions;
@@ -59,7 +60,7 @@ public class FilterCommand implements Command {
         }
 
         if (allSwitch != null) {
-            filterAll(onSwitch != null);
+            ResponseDispatcher.commandSucceeded(this, filterAll(onSwitch != null));
             return;
         }
 
@@ -108,12 +109,11 @@ public class FilterCommand implements Command {
         );
     }
 
-    private void filterAll(final boolean filter) {
+    private RestAction<Void> filterAll(final boolean filter) {
         MenuType type = (filter) ? MenuType.FILTERALL : MenuType.UNFILTERALL;
 
-        RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
-                .map(message -> MiscellaneousFunctions.addNewMenu(type, this))
-                .queue();
+        return RestActions.sendMessage(data.event.getChannel(), Embeds.getEmbed(EmbedType.PROMPT, data))
+                .flatMap(message -> MiscellaneousFunctions.addNewMenu(message, type, this));
     }
 
     @Override

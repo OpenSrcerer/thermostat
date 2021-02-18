@@ -200,7 +200,8 @@ public class MenuDispatcher extends ListenerAdapter {
 
             event.getChannel().retrieveMessageById(event.getMessageId())
                     .flatMap(message -> editMessage(message, Embeds.getEmbed(EmbedType.ACTION_SUCCESSFUL,
-                            reactionMenu.getCommand().getData()))).queue();
+                            reactionMenu.getCommand().getData())))
+                    .flatMap(Message::clearReactions).queue();
         }
     }
 
