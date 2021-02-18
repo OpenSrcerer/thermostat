@@ -61,6 +61,18 @@ The Charting feature of Thermostat is one of the most unique among Discord bots.
 
 <br>
 
+<h1 align=center>Sponsors</h1>
+Thank you to these generous communities for sponsoring Thermostat: <br><br>
+<p align=center>
+  <a href="https://discord.gg/tnu7GmTtFq">
+    <img src="https://cdn.discordapp.com/icons/614895425639546881/a_e236bf97f12c3c91cba23af684c89ade.webp?size=64" width=64/>
+  </a>
+  <br>
+  <a href="https://discord.gg/tnu7GmTtFq">BytesToBits</a>
+</p>
+
+<br>
+
 <h1 align=center>Dependencies</h1>
 Thermostat is built on the most powerful and performant Java libraries. Visit them below: <br><br>
 <p align=center>
