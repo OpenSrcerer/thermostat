@@ -35,7 +35,7 @@ public final class ResponseDispatcher {
      * @param embed Embed to send.
      */
     @Contract("null, _ -> fail")
-    public static void commandSucceeded(final Command command, @Nullable ThermoEmbed embed) {
+    public static void commandSucceeded(final Command command, @Nullable final ThermoEmbed embed) {
         command.getLogger().info("Command with ID [" + command.getData().commandId + "] was successful.");
         if (embed != null)
             RestActions.sendMessage(command.getData().event.getChannel(), embed).queue();

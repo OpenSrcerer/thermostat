@@ -2,11 +2,14 @@ package thermostat.mySQL;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.dv8tion.jda.api.entities.Guild;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A single Hikari data source for Thermostat.
@@ -32,21 +35,20 @@ public abstract class DataSource {
 
     /**
      * Creates database entries for guilds/channels if they do not exist.
-     * @param guildId ID of the guild to check.
-     * @param channelId Channel of the guild to check.
+     * @param conn Connection to perform this operation on.
+     * @param guild Guild to check.
      */
-    public static void syncDatabase(final Connection conn, final String guildId, final String channelId) throws SQLException {
+    public static void syncDatabase(final Connection conn, final Guild guild) throws SQLException {
         PreparedStatement statement = conn.prepareStatement("SELECT * FROM GUILDS WHERE GUILD_ID = ?");
-        statement.setString(1, guildId);
+        statement.setString(1, guild.getId());
         if (!statement.executeQuery().next()) {
-            PreparedActions.createGuild(conn, guildId);
+            PreparedActions.createGuild(conn, guild.getId());
         }
 
-        statement = conn.prepareStatement("SELECT * FROM CHANNELS WHERE CHANNEL_ID = ?");
-        statement.setString(1, channelId);
-        if (!statement.executeQuery().next()) {
-            PreparedActions.createChannel(conn, guildId, channelId, 0);
-        }
+        Set<String> channelIds = new HashSet<>();
+        guild.getChannels().forEach(e -> channelIds.add(e.getId()));
+
+        PreparedActions.createChannels(conn, guild.getId(), channelIds, 0);
     }
 
     /**

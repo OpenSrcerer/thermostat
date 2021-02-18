@@ -18,7 +18,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,24 +45,36 @@ public final class PreparedActions {
     }
 
     /**
-     * Initializes a new entry for a channel with a matching
-     * guild in the database.
-     *
+     * Initializes new entries for channel with matching
+     * guilds that do NOT already have an entry.
      * @param guildId   Guild that the channel resides in.
-     * @param channelId The channel about to be added to the DB.
+     * @param channels  The channels to be added to the DB.
      * @param monitor   Whether the channel should be initialized as
      *                  monitored (inits with 1 or 0).
      */
     @EverythingIsNonNull
-    public static void createChannel(final Connection conn, final String guildId, final String channelId, final int monitor) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement("INSERT INTO CHANNELS (CHANNEL_ID, GUILD_ID) VALUES (?, ?);");
-        statement.setString(1, channelId);
-        statement.setString(2, guildId);
+    public static void createChannels(final Connection conn, final String guildId, final Set<String> channels, final int monitor) throws SQLException {
+        Set<String> databaseChannels = new HashSet<>();
+
+        PreparedStatement statement = conn.prepareStatement("SELECT CHANNEL_ID FROM CHANNELS WHERE CHANNEL_ID IN (@);"
+                .replaceFirst("@", MiscellaneousFunctions.toQueryString(channels)));
+        ResultSet rs = statement.executeQuery();
+        while (rs.next()) {
+            databaseChannels.add(rs.getString(1));
+        }
+
+        if (databaseChannels.size() == channels.size()) {
+            return;
+        }
+
+        channels.removeAll(databaseChannels); // Channels is now a list of channels that do not have an entry
+
+        statement = conn.prepareStatement("INSERT INTO CHANNELS (GUILD_ID, CHANNEL_ID) VALUES @;"
+                .replaceFirst("@", MiscellaneousFunctions.toQueryString(guildId, channels)));
         statement.executeUpdate();
 
-        statement = conn.prepareStatement("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES (?, 0, 0, ?);");
-        statement.setString(1, channelId);
-        statement.setString(2, Integer.toString(monitor));
+        statement = conn.prepareStatement("INSERT INTO CHANNEL_SETTINGS (CHANNEL_ID, MIN_SLOW, MAX_SLOW, MONITORED) VALUES @;"
+                .replaceFirst("@", MiscellaneousFunctions.toQueryString(monitor, channels)));
         statement.executeUpdate();
     }
 
@@ -94,11 +108,10 @@ public final class PreparedActions {
         for (String channel : channels) {
             builder.append("<#").append(channel).append("> ");
 
-            // Add channel to synapse cache.
             if (action.equals(DBActionType.MONITOR) && value == 1) {
-                GuildCache.getSynapse(guildId).addChannel(channel);
+                GuildCache.getSynapse(guildId).addChannel(channel); // Add channel to synapse cache.
             } else {
-                GuildCache.getSynapse(guildId).removeChannel(channel);
+                GuildCache.getSynapse(guildId).removeChannel(channel); // Remove from synapse cache.
             }
         }
 
@@ -237,16 +250,13 @@ public final class PreparedActions {
                                                                   final DBActionType type)
     {
         return conn -> {
-            // Retrieve all channels in the Guild.
-            List<String> channels = event.getGuild().getChannels()
+            // Retrieve all TEXT channels in the Guild.
+            List<String> channels = event.getGuild().getTextChannels()
                     .stream().map(ISnowflake::getId).collect(Collectors.toList());
 
-            // Do nothing if the list is empty, but still send a response as if something was done.
-            // THE ILLUSION OF USER INTERACTION
             if (!channels.isEmpty()) {
                 PreparedActions.modifyChannel(conn, type, 1, event.getGuild().getId(), channels);
             }
-
             return null;
         };
     }
@@ -321,7 +331,7 @@ public final class PreparedActions {
     public static void performGMREActions(final GuildMessageReceivedEvent event) {
         try {
             DataSource.demand(conn -> {
-                DataSource.syncDatabase(conn, event.getGuild().getId(), event.getChannel().getId());
+                DataSource.syncDatabase(conn, event.getGuild());
                 // Make sure to implement cache checks before communicating with the database.
                 // TBD - Bookmark
                 if (PreparedActions.isFiltered(conn, event.getGuild().getId(), event.getChannel().getId())) {
