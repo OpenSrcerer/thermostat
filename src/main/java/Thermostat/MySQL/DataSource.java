@@ -20,10 +20,7 @@ public abstract class DataSource {
         ds = new HikariDataSource(config);
     }
 
-    public static Connection getConnection() throws SQLException {
-        // Preparing for transactions
-        /*Connection conn = ds.getConnection();
-        conn.setAutoCommit(false);*/
+    private static Connection getConnection() throws SQLException {
         return ds.getConnection();
     }
 

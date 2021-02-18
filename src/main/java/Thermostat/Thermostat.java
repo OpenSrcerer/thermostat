@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
+import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.events.Ready;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
@@ -101,7 +102,7 @@ public abstract class Thermostat {
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("loading..."));
         DataSource.initializeDataSource();
         Constants.setConstants(config[0], thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
-        //MiscellaneousDispatcher.initApis(config[2], config[3]);
+        MiscellaneousDispatcher.initApis(config[2], config[3]);
     }
 
     /**

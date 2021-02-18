@@ -24,15 +24,6 @@ public class VoteCommand implements Command {
 
     public VoteCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull String prefix) {
         this.data = new CommandData(data, prefix);
-
-        if (this.data.parameters == null) {
-            ResponseDispatcher.commandFailed(
-                    this,
-                    Embeds.getEmbed(EmbedType.ERR, this.data),
-                    "Bad arguments.");
-            return;
-        }
-
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
 

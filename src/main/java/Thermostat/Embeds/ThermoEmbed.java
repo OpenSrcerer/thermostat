@@ -23,7 +23,6 @@ public class ThermoEmbed extends EmbedBuilder {
      */
     public ThermoEmbed() {
         super();
-
         setColor(embedColor);
         setTimestamp(Instant.now());
     }

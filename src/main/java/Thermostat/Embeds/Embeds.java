@@ -48,7 +48,6 @@ public final class Embeds {
     @SuppressWarnings("unchecked")
     private static ThermoEmbed matchTypeToOptions(@Nonnull final EmbedType type, @Nonnull final ThermoEmbed embed,
                                                  final CommandData data, @Nullable final Object options) {
-        // Wtf do i use to show that an embed is an error embed
         if (options == null) {
             return switch (type) {
                 case SAME_PREFIX ->             samePrefix(embed, data.prefix);
@@ -125,7 +124,7 @@ public final class Embeds {
                 "Thank you for your support! Vote for Thermostat with `" + prefix + "vote`", false
         );
         embed.addField("Gateway Ping: ", String.valueOf(Thermostat.thermo.getGatewayPing()), true);
-        embed.addField("Status:", String.valueOf(Thermostat.thermo.getStatus().toString()), true);
+        embed.addField("Status:", Thermostat.thermo.getStatus().toString().trim(), true);
         embed.addField("Total Guilds:", String.valueOf(Thermostat.thermo.getGuilds().size()), true);
         return embed;
     }
@@ -382,8 +381,8 @@ public final class Embeds {
         embed.addField("monitor", "`" + prefix + "monitor --on/--off -c [channels/categories]`", false);
         embed.addField("getmonitor", "`" + prefix + "getmonitor`", false);
         embed.addField("setbounds", "`" + prefix + "setbounds --m [value] --M [value] -c [channels/categories]`", false);
-        embed.addField("settings", "`" + prefix + "settings -c [channel].`", false);
-        embed.addField("sensitivity", "`" + prefix + "sensitivity -s [value] -c [channels].`", false);
+        embed.addField("settings", "`" + prefix + "settings -c [channel]`", false);
+        embed.addField("sensitivity", "`" + prefix + "sensitivity -s [value] -c [channels]`", false);
         embed.setFooter("─────────────────────────────\n🔼 to go back, ❌ to exit.");
         return embed;
     }
