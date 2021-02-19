@@ -41,7 +41,7 @@ public class Ready extends ListenerAdapter {
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
         try {
-            initializeWordFiles("niceWords.txt", "badWords.txt");
+            initializeDefaultFiles("niceWords.txt", "badWords.txt");
 
             thermo.addEventListener(
                     new CommandTrigger(),
@@ -57,7 +57,7 @@ public class Ready extends ListenerAdapter {
         }
     }
 
-    public void initializeWordFiles(@Nonnull String file1, @Nonnull String file2) throws Exception {
+    public void initializeDefaultFiles(@Nonnull String file1, @Nonnull String file2) throws Exception {
         ArrayList<String> niceWords, badWords;
 
         niceWords = retrieveWordFile(file1);
