@@ -6,6 +6,7 @@ import thermostat.util.entities.CachedGuild;
 import thermostat.util.entities.Synapse;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -31,13 +32,13 @@ public class GuildCache {
      */
     @Nonnull
     public static String getPrefix(final String guildId) {
-        CachedGuild guild = cache.get(guildId); // Try to retrieve the guild from the cache
-        if (guild == null) { // Guild hasn't been cached.
+        CachedGuild guild = get(guildId, null); // Try to retrieve the guild from the cache
+        if (guild.getPrefix() == null) { // Guild hasn't been cached.
             String prefix = retrievePrefix(guildId); // Retrieve the prefix of the Guild.
-            if (prefix == null) { // If the prefix is not set, use the default prefix.
-                prefix = Constants.DEFAULT_PREFIX;
+            if (prefix == null) {
+                prefix = Constants.DEFAULT_PREFIX; // If the prefix is not set, use the default prefix.
             }
-            add(guildId, prefix); // Add the Guild to the cache.
+            guild.setPrefix(prefix); // Set the CachedGuild's prefix to the either retrieved or default
             return prefix; // Return the new/default prefix.
         }
         return guild.getPrefix(); // Return the Guild's prefix.
@@ -50,11 +51,7 @@ public class GuildCache {
      * @param prefix The new prefix to assign.
      */
     public static void assignPrefix(final String guildId, final String prefix) {
-        CachedGuild guild = cache.get(guildId);
-        if (guild == null) {
-            add(guildId, prefix);
-            return;
-        }
+        CachedGuild guild = get(guildId, prefix);
         guild.setPrefix(prefix);
     }
 
@@ -64,7 +61,7 @@ public class GuildCache {
      * @param newCachingSize Caching size to change to.
      */
     public static void setCacheSize(final String guildId, final int newCachingSize) {
-        cache.get(guildId).getSynapse(guildId).setMessageCachingSize(newCachingSize);
+        get(guildId, null).getSynapse(guildId).setMessageCachingSize(newCachingSize);
     }
 
     /**
@@ -74,7 +71,7 @@ public class GuildCache {
      */
     @Nonnull
     public static Synapse getSynapse(final String guildId) {
-        return get(guildId).getSynapse(guildId);
+        return get(guildId, null).getSynapse(guildId);
     }
 
     /**
@@ -87,7 +84,7 @@ public class GuildCache {
     public static WebhookClient getClient(final String guildId, final String channelId,
                                           final String webhookId, final String webhookToken)
     {
-        return get(guildId).getClient(channelId, webhookId, webhookToken);
+        return get(guildId, null).getClient(channelId, webhookId, webhookToken);
     }
 
     /**
@@ -107,10 +104,10 @@ public class GuildCache {
      * @return A Cached Guild, caches one if it isn't cached already.
      */
     @Nonnull
-    private static CachedGuild get(final String guildId) {
+    private static CachedGuild get(final String guildId, @Nullable final String prefix) {
         CachedGuild guild = cache.get(guildId);
         if (guild == null) {
-            guild = add(guildId, null);
+            guild = add(guildId, prefix);
         }
         return guild;
     }
@@ -137,9 +134,8 @@ public class GuildCache {
 
                 if (rs.next()) {
                     return rs.getString(1);
-                } else {
-                    return null;
                 }
+                return null;
             });
         } catch (Exception ex) {
             return null; // Something went wrong with getting the prefix, so just return null!

@@ -5,14 +5,15 @@ package thermostat.util;
  * used throughout the program.
  */
 public final class Constants {
-    /**
-     * Thermostat's default prefix.
-     */
+
+    // --- Dynamic --
     public static String DEFAULT_PREFIX;
     public static String THERMOSTAT_USER_ID;
     public static String THERMOSTAT_AVATAR_URL;
-    public static final int DEFAULT_CACHING_SIZE = 10;
     public static final int AVAILABLE_CORES = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+
+    // --- Static ---
+    public static final int DEFAULT_CACHING_SIZE = 10;
 
     /**
      * Initialize Thermostat's constants.

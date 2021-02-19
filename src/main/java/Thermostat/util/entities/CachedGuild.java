@@ -3,6 +3,7 @@ package thermostat.util.entities;
 import club.minnced.discord.webhook.WebhookClient;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class CachedGuild {
     /**
      * Stores Webhook clients for every channel.
      */
-    private Map<String, WebhookClient> webhookClients = new HashMap<>();
+    private final Map<String, WebhookClient> webhookClients = new HashMap<>();
 
     /**
      * Create a new GuildData object for use in the cache.
@@ -46,6 +47,7 @@ public class CachedGuild {
      * Get this Guild's cached prefix.
      * @return This Guild's prefix.
      */
+    @Nullable
     public String getPrefix() {
         return prefix;
     }
