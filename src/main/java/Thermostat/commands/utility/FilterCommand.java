@@ -1,10 +1,10 @@
 package thermostat.commands.utility;
 
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thermostat.util.RestActions;
 import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
@@ -13,6 +13,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
+import thermostat.util.RestActions;
 import thermostat.util.entities.CommandArguments;
 import thermostat.util.entities.CommandData;
 import thermostat.util.enumeration.CommandType;
@@ -21,9 +22,12 @@ import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
 
 import javax.annotation.Nonnull;
+import java.io.InputStream;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class FilterCommand implements Command {
     private static final Logger lgr = LoggerFactory.getLogger(FilterCommand.class);
@@ -52,6 +56,33 @@ public class FilterCommand implements Command {
         final List<String> onSwitch = data.parameters.get("-on");
         final List<String> offSwitch = data.parameters.get("-off");
         final List<String> allSwitch = data.parameters.get("-all");
+        final List<String> badSwitch = data.parameters.get("-bad");
+        final List<String> goodSwitch = data.parameters.get("-good");
+
+        if (badSwitch != null || goodSwitch != null) {
+            List<Message.Attachment> attachments = data.event.getMessage().getAttachments();
+
+            // Get the Attachment object from the Message
+            Message.Attachment textAttachment = (attachments.isEmpty()) ? null : attachments.stream()
+                    .filter(attachment -> Objects.equals(attachment.getFileExtension(), ".txt"))
+                    .findFirst().orElse(null);
+
+            if (textAttachment == null) {
+                // ResponseDispatcher...
+                return;
+            }
+
+            // Queue a request to retrieve the contents of the file and then
+            // Store it in the database
+            textAttachment.retrieveInputStream().thenAccept(
+                    inputStream -> {
+                        try {
+                            updateFilterFiles(badSwitch != null, inputStream);
+                        } catch (SQLException ex) {
+                            // ResponseDispatcher...
+                        }
+                    });
+        }
 
         if (offSwitch == null && onSwitch == null) {
             ResponseDispatcher.commandFailed(this, Embeds.getEmbed(EmbedType.HELP_FILTER, data),
@@ -70,7 +101,7 @@ public class FilterCommand implements Command {
         );
     }
 
-    private void filterAction(final CommandArguments arguments, final int filter) {
+    private void filterAction(CommandArguments arguments, int filter) {
         DBActionType type = filter == 1 ? DBActionType.FILTER : DBActionType.UNFILTER;
         final StringBuilder complete;
 
@@ -107,6 +138,18 @@ public class FilterCommand implements Command {
                         )
                 )
         );
+    }
+
+    /**
+     * @param action False = badWords; True = goodWords
+     */
+    private void updateFilterFiles(boolean action, InputStream stream) throws SQLException {
+        String fileToSet = (action) ? "CENSORED_FILE" : "REPLACEMENT_FILE";
+        DataSource.demand(conn -> {
+            PreparedStatement statement = conn.prepareStatement("UPDATE GUILDS SET CENSORED_FILE = ?");
+            statement.setBlob(1, InputStream.nullInputStream());
+            return null;
+        });
     }
 
     private RestAction<Void> filterAll(final boolean filter) {
