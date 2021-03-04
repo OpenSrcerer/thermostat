@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.mySQL.PreparedActions;
+import thermostat.util.ArgumentParser;
 import thermostat.util.GuildCache;
 import thermostat.util.entities.Synapse;
 import thermostat.util.enumeration.SynapseState;
@@ -30,6 +31,10 @@ public class SynapseEvents extends ListenerAdapter {
      */
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        if (!ArgumentParser.validateEvent(event)) {
+            return;
+        }
+
         Synapse synapse = GuildCache.getSynapse(event.getGuild().getId());
 
         // Re-activate Synapse if it was disabled due to inactivity.
