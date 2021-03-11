@@ -8,5 +8,5 @@ public enum MenuType {
     MONITORALL,
     FILTERALL,
     UNMONITORALL,
-    UNFILTERALL;
+    UNFILTERALL
 }
