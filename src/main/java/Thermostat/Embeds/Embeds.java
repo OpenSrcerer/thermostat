@@ -10,6 +10,7 @@ import thermostat.util.enumeration.EmbedType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +48,7 @@ public final class Embeds {
      */
     @SuppressWarnings("unchecked")
     private static ThermoEmbed matchTypeToOptions(@Nonnull final EmbedType type, @Nonnull final ThermoEmbed embed,
-                                                 final CommandData data, @Nullable final Object options) throws RuntimeException
+                                                  final CommandData data, @Nullable final Object options) throws RuntimeException
     {
         if (options == null) {
             return switch (type) {
@@ -80,7 +81,7 @@ public final class Embeds {
                 case UTILITY_INFO ->            getUtilityInfo(embed, (String) options);
                 case OTHER_INFO ->              getOtherInfo(embed, (String) options);
                 case CHART_HOLDER ->            chartHolder(embed, (String) options);
-                case NEW_PREFIX ->              setPrefix(embed, (String) options);
+                case NEW_PREFIX ->              newPrefix(embed, (String) options);
                 case CHANNEL_SETTINGS ->        channelSettings(embed, (SettingsData) options);
                 case SET_CACHE ->               setCache(embed, (int) options);
                 case ERR_PERMISSION ->          errPermission(embed, (List<Set<Permission>>) options);
@@ -91,6 +92,12 @@ public final class Embeds {
                 case DYNAMIC ->                 dynamicEmbed(embed, (List<String>) options);
                 default ->                      throw new IllegalArgumentException("Invalid embed type.");
             };
+        }
+    }
+
+    private static void match() {
+        for (Method m : Embeds.class.getDeclaredMethods()) {
+
         }
     }
 
@@ -114,7 +121,7 @@ public final class Embeds {
         return embed;
     }
 
-    private static ThermoEmbed setPrefix(final ThermoEmbed embed, final String newPrefix) {
+    private static ThermoEmbed newPrefix(final ThermoEmbed embed, final String newPrefix) {
         embed.setTitle("Thermostat will now reply to: " + "`" + newPrefix + "` .");
         return embed;
     }

@@ -8,57 +8,67 @@ public enum EmbedType {
     // **                           GENERAL                         **
     // ***************************************************************
 
-    CHART_HOLDER,
-    SAME_PREFIX,
-    RESET_PREFIX,
-    NEW_PREFIX,
-    GUIDE,
-    CHANNEL_SETTINGS,
-    GET_VOTE,
-    INVITE_SERVER,
-    ACTION_SUCCESSFUL,
-    PROMPT,
-    MISSED_PROMPT,
-    SET_CACHE,
+    CHART_HOLDER ("chartHolder"),
+    SAME_PREFIX ("samePrefix"),
+    RESET_PREFIX ("resetPrefix"),
+    NEW_PREFIX ("newPrefix"),
+    GUIDE ("getGuide"),
+    CHANNEL_SETTINGS ("channelSettings"),
+    GET_VOTE ("getVote"),
+    INVITE_SERVER ("inviteServer"),
+    ACTION_SUCCESSFUL ("actionSuccessful"),
+    PROMPT ("promptEmbed"),
+    MISSED_PROMPT ("missedPrompt"),
+    SET_CACHE ("setCache"),
 
     // ***************************************************************
     // **                            HELP                           **
     // ***************************************************************
 
-    HELP_INFO,
-    HELP_INVITE,
-    HELP_VOTE,
-    HELP_CHART,
-    HELP_GETMONITOR,
-    HELP_SETTINGS,
-    HELP_MONITOR,
-    HELP_SENSITIVITY,
-    HELP_SETBOUNDS,
-    HELP_SETCACHE,
-    HELP_PREFIX,
-    HELP_FILTER,
-    HELP_BAN,
-    HELP_KICK,
-    HELP_MUTE,
-    HELP_PURGE,
-    MONITOR_INFO,
-    UTILITY_INFO,
-    OTHER_INFO,
-    SELECTION,
+    HELP_INFO ("helpInfo"),
+    HELP_INVITE ("helpInvite"),
+    HELP_VOTE ("helpVote"),
+    HELP_CHART ("helpChart"),
+    HELP_GETMONITOR ("helpGetMonitor"),
+    HELP_SETTINGS ("helpSettings"),
+    HELP_MONITOR ("helpMonitor"),
+    HELP_SENSITIVITY ("helpSensitivity"),
+    HELP_SETBOUNDS ("helpSetBounds"),
+    HELP_SETCACHE ("helpCaching"),
+    HELP_PREFIX ("helpPrefix"),
+    HELP_FILTER ("helpFilter"),
+    HELP_BAN ("helpBan"),
+    HELP_KICK ("helpKick"),
+    HELP_MUTE ("helpMute"),
+    HELP_PURGE ("helpPurge"),
+    MONITOR_INFO ("getMonitorInfo"),
+    UTILITY_INFO ("getUtilityInfo"),
+    OTHER_INFO ("getOtherInfo"),
+    SELECTION ("getInfoSelection"),
 
     // ***************************************************************
     // **                            ERROR                          **
     // ***************************************************************
 
-    ERR_PERMISSION,
-    ERR_PERMISSION_THERMO,
-    ERR_INPUT,
-    ERR,
-    ERR_FIX,
+    ERR_PERMISSION ("errPermission"),
+    ERR_PERMISSION_THERMO ("errPermission"),
+    ERR_INPUT ("inputError"),
+    ERR ("error"),
+    ERR_FIX ("error"),
 
     // ***************************************************************
     // **                           SPECIAL                         **
     // ***************************************************************
 
-    DYNAMIC
+    DYNAMIC ("dynamicEmbed");
+
+    private final String functionName;
+
+    EmbedType(String functionName) {
+        this.functionName = functionName;
+    }
+
+    public String getFunctionName() {
+        return functionName;
+    }
 }
