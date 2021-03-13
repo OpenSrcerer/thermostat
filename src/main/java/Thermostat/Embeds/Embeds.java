@@ -343,7 +343,7 @@ public final class Embeds {
         embed.addField("Switches",
                 """
                         • `-m <minimum>` | Minimum slowmode bound
-                        • `-M <maximum>` | Minimum slowmode bound
+                        • `-M <maximum>` | Maximum slowmode bound
                         • `-c <channels/categories>` | Select the channel to perform action for
                         """,
                 false
