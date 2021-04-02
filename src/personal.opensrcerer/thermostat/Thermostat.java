@@ -118,21 +118,14 @@ public abstract class Thermostat {
 
     /**
      * Start Thermostat and initialize all needed variables. (For Tests)
+     * @param token The securely stored token as an environment variable.
      * @throws Exception Any Exception that may occur.
      * @throws Error Any Error that may occur while loading.
      */
-    public static boolean testThermostat() throws Exception, Error {
-        String[] config;
-        try {
-            config = initializeTokens();
-        } catch (IOException ex) {
-            System.out.println("JSON config file not found. Interrupting startup.");
-            return false;
-        }
-
+    public static boolean testThermostat(String token) throws Exception, Error {
         thermo = JDABuilder
                 .create(
-                        config[4],
+                        token,
                         EnumSet.of(
                                 GatewayIntent.GUILD_MESSAGES,
                                 GatewayIntent.GUILD_MESSAGE_REACTIONS
@@ -151,7 +144,7 @@ public abstract class Thermostat {
                 .build();
 
         thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("loading..."));
-        Constants.setConstants(config[0], thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
+        Constants.setConstants("ttt!", thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
         thermo.awaitReady();
 
         thermo.addEventListener(
@@ -173,8 +166,6 @@ public abstract class Thermostat {
         String[] tokens = new String[5];
 
         InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
-        ClassLoader loader = Thermostat.class.getClassLoader();
-        System.out.println(loader.getResource("config.json"));
 
         if (configFile == null) {
             throw new IOException("JSON config file not found.");
