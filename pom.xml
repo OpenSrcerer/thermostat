@@ -4,10 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>opensrcerer.com.github</groupId>
+    <groupId>personal.opensrcerer.github</groupId>
     <artifactId>Thermostat</artifactId>
     <version>1.0.0</version>
+
     <build>
+        <sourceDirectory>${project.basedir}/src/personal.opensrcerer</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/personal.opensrcerer</testSourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -23,6 +27,14 @@
                 <configuration>
                     <executable>maven</executable>
                     <mainClass>thermostat.Run</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <argLine>@{argLine}</argLine>
                 </configuration>
             </plugin>
 
@@ -51,7 +63,7 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>test</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
@@ -101,6 +113,12 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+
+        <repository>
+            <id>dv8tion</id>
+            <name>m2-dv8tion</name>
+            <url>https://m2.dv8tion.net/releases</url>
+        </repository>
     </repositories>
 
 
@@ -149,6 +167,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M5</version>
+            <type>maven-plugin</type>
+        </dependency>
+
+        <dependency>
             <groupId>xyz.discordboats</groupId>
             <artifactId>Boats4J</artifactId>
             <version>1.0.2</version>
@@ -157,13 +182,20 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.0_228</version>
+            <version>4.2.1_253</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>
                     <artifactId>opus-java</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.7.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

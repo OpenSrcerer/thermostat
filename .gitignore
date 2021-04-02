@@ -1,7 +1,6 @@
 Thermostat.iml
 .idea/
-/src/test/
-/src/main/resources/
-/src/main/java/META-INF/
+/src/personal.opensrcerer/resources/
+/src/personal.opensrcerer/META-INF/
 /target/
 /thermobasecurrent.sql

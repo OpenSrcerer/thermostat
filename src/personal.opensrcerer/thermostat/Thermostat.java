@@ -10,13 +10,18 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
+import thermostat.commands.CommandTrigger;
+import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.events.Ready;
+import thermostat.events.SynapseEvents;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLClassLoader;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,7 +81,13 @@ public abstract class Thermostat {
      * @throws Error Any Error that may occur while loading.
      */
     protected static void initializeThermostat() throws Exception, Error {
-        String[] config = initializeTokens();
+        String[] config;
+        try {
+            config = initializeTokens();
+        } catch (IOException ex) {
+            System.out.println("JSON config file not found. Interrupting startup.");
+            return;
+        }
 
         thermo = JDABuilder
                 .create(
@@ -106,19 +117,67 @@ public abstract class Thermostat {
     }
 
     /**
+     * Start Thermostat and initialize all needed variables. (For Tests)
+     * @throws Exception Any Exception that may occur.
+     * @throws Error Any Error that may occur while loading.
+     */
+    public static boolean testThermostat() throws Exception, Error {
+        String[] config;
+        try {
+            config = initializeTokens();
+        } catch (IOException ex) {
+            System.out.println("JSON config file not found. Interrupting startup.");
+            return false;
+        }
+
+        thermo = JDABuilder
+                .create(
+                        config[4],
+                        EnumSet.of(
+                                GatewayIntent.GUILD_MESSAGES,
+                                GatewayIntent.GUILD_MESSAGE_REACTIONS
+                        )
+                )
+                .disableCache(
+                        CacheFlag.ACTIVITY,
+                        CacheFlag.EMOTE,
+                        CacheFlag.CLIENT_STATUS,
+                        CacheFlag.MEMBER_OVERRIDES,
+                        CacheFlag.VOICE_STATE
+                )
+                .setMemberCachePolicy(MemberCachePolicy.NONE)
+                .setChunkingFilter(ChunkingFilter.NONE)
+                .setEnableShutdownHook(true)
+                .build();
+
+        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("loading..."));
+        Constants.setConstants(config[0], thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
+        thermo.awaitReady();
+
+        thermo.addEventListener(
+                new CommandTrigger(),
+                new MenuDispatcher(),
+                new SynapseEvents()
+        );
+
+        return true;
+    }
+
+    /**
      * Reads the config.json file and parses the data into a usable
      * array of strings.
      * @return Array of configuration tokens.
      * @throws ParsingException If I/O operations had an issue.
      */
-    private static String[] initializeTokens() throws ParsingException {
-        String[] tokens = new String[4];
+    private static String[] initializeTokens() throws ParsingException, IOException {
+        String[] tokens = new String[5];
 
         InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
+        ClassLoader loader = Thermostat.class.getClassLoader();
+        System.out.println(loader.getResource("config.json"));
 
         if (configFile == null) {
-            Run.lgr.error("JSON config file not found.");
-            return tokens;
+            throw new IOException("JSON config file not found.");
         }
 
         DataObject config = DataObject.fromJson(configFile);
@@ -126,6 +185,7 @@ public abstract class Thermostat {
         tokens[1] = config.getString("Token");
         tokens[2] = config.getString("DBLToken");
         tokens[3] = config.getString("BoatsToken");
+        tokens[4] = config.getString("TestToken");
 
         return tokens;
     }
