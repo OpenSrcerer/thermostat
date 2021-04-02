@@ -1,9 +1,7 @@
 Thermostat.iml
 .idea/
-/src/personal.opensrcerer/resources/db.properties
-/src/test/personal.opensrcerer/resources/db.properties
-/src/personal.opensrcerer/resources/config.json
-/src/test/personal.opensrcerer/resources/config.json
+/src/resources/db.properties
+/src/resources/config.json
 /src/personal.opensrcerer/META-INF/
 /target/
 /thermobasecurrent.sql
