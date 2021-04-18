@@ -2,7 +2,7 @@ package thermostat.embeds;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import thermostat.util.Constants;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -32,7 +32,7 @@ public class ThermoEmbed extends EmbedBuilder {
      * @param data The parameters from a command.
      */
     @SuppressWarnings("ConstantConditions")
-    public ThermoEmbed(@Nonnull final CommandData data) {
+    public ThermoEmbed(@Nonnull final CommandContext data) {
         super();
 
         setColor(embedColor);

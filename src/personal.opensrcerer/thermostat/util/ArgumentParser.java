@@ -42,17 +42,17 @@ public class ArgumentParser {
         // create a temporary list for the options
         List<String> options = null;
 
-        for (final String arg : arguments) {
-            if (arg.charAt(0) == '-') {
-                if (arg.length() < 2) {
-                    throw new ParseException("Error at argument " + arg + ".", 1);
+        for (final String arg : arguments) { // loop through every argument
+            if (arg.charAt(0) == '-') { // if the first character of the argument is a dash
+                if (arg.length() < 2) { // and if the argument's length is less than two
+                    throw new ParseException("Error at argument " + arg + ".", 1); // There's been some error
                 }
 
-                options = new ArrayList<>();
-                params.put(arg.substring(1)/*.toLowerCase()*/, options);
-            } else if (options != null) {
-                options.add(arg);
-            } else {
+                options = new ArrayList<>(); // Create a new ArrayList to store the argument's options
+                params.put(arg.substring(1)/*.toLowerCase()*/, options); // Store the params in the List
+            } else if (options != null) { // If list isn't null
+                options.add(arg); // Add parameter to the options list
+            } else { // Something wrong with the argument usage
                 throw new IllegalArgumentException("Illegal argument usage: " + arg + ".");
             }
         }
@@ -61,8 +61,8 @@ public class ArgumentParser {
     }
 
     /**
-     * @param eventChannel Target guild
-     * @param rawChannels List of arguments
+     * @param eventChannel Target guild.
+     * @param rawChannels List of arguments.
      * @return a list of target channel IDs, along with
      * two StringBuilders with arguments that were invalid.
      */

@@ -10,7 +10,7 @@ import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 import thermostat.util.GuildCache;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -22,12 +22,22 @@ import java.util.regex.Pattern;
 
 import static thermostat.util.ArgumentParser.hasArguments;
 
+/**
+ * Manages Thermostat's prefix in a Guild.
+ */
 public class PrefixCommand implements Command {
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(PrefixCommand.class);
-    private final CommandData data;
+
+    /**
+     * Data for this command.
+     */
+    private final CommandContext data;
 
     public PrefixCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
 
         if (this.data.parameters == null) {
             ResponseDispatcher.commandSucceeded(
@@ -121,7 +131,7 @@ public class PrefixCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

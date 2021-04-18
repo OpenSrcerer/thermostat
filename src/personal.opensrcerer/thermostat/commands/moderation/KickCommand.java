@@ -7,7 +7,7 @@ import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -17,11 +17,19 @@ import java.util.List;
 import static thermostat.util.ArgumentParser.hasArguments;
 
 public class KickCommand implements Command {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(KickCommand.class);
-    private final CommandData data;
+
+    /**
+     * Context for this command.
+     */
+    private final CommandContext data;
 
     public KickCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
 
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
@@ -60,7 +68,7 @@ public class KickCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

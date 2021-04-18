@@ -7,7 +7,7 @@ import thermostat.commands.Command;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -17,11 +17,19 @@ import javax.annotation.Nonnull;
  * Sends an Invite embed when command is called.
  */
 public class InviteCommand implements Command {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(InviteCommand.class);
-    private final CommandData data;
+
+    /**
+     * Data for this command.
+     */
+    private final CommandContext data;
 
     public InviteCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull String prefix) {
-        this.data = new CommandData(data, prefix);
+        this.data = new CommandContext(data, prefix);
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
@@ -44,7 +52,7 @@ public class InviteCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

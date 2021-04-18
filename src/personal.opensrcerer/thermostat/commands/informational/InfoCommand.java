@@ -10,7 +10,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.util.ArgumentParser;
 import thermostat.util.RestActions;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 import thermostat.util.enumeration.MenuType;
@@ -33,10 +33,10 @@ public class InfoCommand implements Command {
     /**
      * Command's Data.
      */
-    private final CommandData data;
+    private final CommandContext data;
 
     public InfoCommand(final GuildMessageReceivedEvent data, final List<String> arguments, final String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
@@ -87,7 +87,7 @@ public class InfoCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

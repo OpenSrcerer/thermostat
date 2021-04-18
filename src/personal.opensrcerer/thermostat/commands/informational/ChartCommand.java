@@ -12,7 +12,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.ThermosCharts;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -28,12 +28,23 @@ import java.util.*;
 
 import static thermostat.util.ArgumentParser.hasArguments;
 
+/**
+ * Thermostat collects non-sensitive data about your channel which can be displayed at your convenience in a stylish way.
+ * This is the way to access that data.
+ */
 public class ChartCommand implements Command {
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(ChartCommand.class);
-    private final CommandData data;
+
+    /**
+     * Information for this Command.
+     */
+    private final CommandContext data;
 
     public ChartCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
 
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
@@ -160,7 +171,7 @@ public class ChartCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 

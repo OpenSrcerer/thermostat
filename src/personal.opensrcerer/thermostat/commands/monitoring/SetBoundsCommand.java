@@ -11,7 +11,7 @@ import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.ArgumentParser;
 import thermostat.util.entities.CommandArguments;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -23,12 +23,22 @@ import java.util.List;
 import static thermostat.util.ArgumentParser.hasArguments;
 import static thermostat.util.ArgumentParser.parseSlowmode;
 
+/**
+ * Sets the upper and lower bounds for the slowmode of the channel.
+ */
 public class SetBoundsCommand implements Command {
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(SetBoundsCommand.class);
-    private final CommandData data;
+
+    /**
+     * Data for this command.
+     */
+    private final CommandContext data;
 
     public SetBoundsCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
 
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
@@ -131,7 +141,7 @@ public class SetBoundsCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

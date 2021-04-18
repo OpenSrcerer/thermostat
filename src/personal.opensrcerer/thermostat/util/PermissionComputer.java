@@ -9,12 +9,15 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import javax.annotation.Nonnull;
 import java.util.EnumSet;
 
+/**
+ * Computes permissions based on Discord's documentation.
+ */
 public final class PermissionComputer {
     /**
-            * @param member Member to check permissions for
-            * @param eventChannel Channel to retrieve overrides from
+     * @param member Member to check permissions for
+     * @param eventChannel Channel to retrieve overrides from
      * @param requiredPermissions List of permissions that will be checked if member has
-     * @return EnumSet of missing permissions
+     * @return EnumSet of missing permissions.
      */
     @Nonnull
     public static EnumSet<Permission> getMissingPermissions(@Nonnull Member member, @Nonnull TextChannel eventChannel, @Nonnull EnumSet<Permission> requiredPermissions) {

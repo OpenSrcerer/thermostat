@@ -8,7 +8,7 @@ import thermostat.commands.informational.InfoCommand;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -19,11 +19,19 @@ import javax.annotation.Nonnull;
  * a Vote embed when th!vote is called.
  */
 public class VoteCommand implements Command {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(InfoCommand.class);
-    private final CommandData data;
+
+    /**
+     * Data for this command.
+     */
+    private final CommandContext data;
 
     public VoteCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull String prefix) {
-        this.data = new CommandData(data, prefix);
+        this.data = new CommandContext(data, prefix);
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
@@ -46,7 +54,7 @@ public class VoteCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

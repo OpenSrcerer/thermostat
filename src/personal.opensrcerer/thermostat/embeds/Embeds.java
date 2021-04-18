@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 import thermostat.Thermostat;
 import thermostat.util.Constants;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.entities.SettingsData;
 import thermostat.util.enumeration.EmbedType;
 
@@ -29,12 +29,12 @@ public final class Embeds {
     }
 
     @EverythingIsNonNull
-    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data) {
+    public static ThermoEmbed getEmbed(final EmbedType type, final CommandContext data) {
         return matchTypeToOptions(type, new ThermoEmbed(data), data, null);
     }
 
     @EverythingIsNonNull
-    public static ThermoEmbed getEmbed(final EmbedType type, final CommandData data, final Object options) {
+    public static ThermoEmbed getEmbed(final EmbedType type, final CommandContext data, final Object options) {
         return matchTypeToOptions(type, new ThermoEmbed(data), data, options);
     }
 
@@ -48,7 +48,7 @@ public final class Embeds {
      */
     @SuppressWarnings("unchecked")
     private static ThermoEmbed matchTypeToOptions(@Nonnull final EmbedType type, @Nonnull final ThermoEmbed embed,
-                                                  final CommandData data, @Nullable final Object options) throws RuntimeException
+                                                  final CommandContext data, @Nullable final Object options) throws RuntimeException
     {
         if (options == null) {
             return switch (type) {

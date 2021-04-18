@@ -9,14 +9,14 @@ import okhttp3.internal.annotations.EverythingIsNonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.commands.Command;
+import thermostat.commands.InternalCommand;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.embeds.ThermoEmbed;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.GuildCache;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -28,23 +28,37 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This class manages Word Filtering Events if enabled by the user.
  * Principle: All "prohibited" words in a message get changed to the "nice" words.
  * Used to filter out slurs.
  */
-@SuppressWarnings("ConstantConditions")
-public class WordFilter implements Command {
+public class WordFilter implements InternalCommand {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(WordFilter.class);
-    private final CommandData data;
+
+    /**
+     * Data for this command.
+     */
+    private final CommandContext data;
+
+    /**
+     * Message to filter.
+     */
     private final List<String> message;
 
+    /**
+     * List of bad and replacement words.
+     */
     private static List<String> badWords, niceWords;
-    private static final Random random = new Random();
 
     public WordFilter(@Nonnull final GuildMessageReceivedEvent data) {
-        this.data = new CommandData(data);
+        this.data = new CommandContext(data);
         this.message = new ArrayList<>(Arrays.asList(data.getMessage().getContentRaw().split("\\s+")));
 
         CommandDispatcher.checkThermoPermissionsAndQueue(this);
@@ -107,7 +121,7 @@ public class WordFilter implements Command {
 
             if (badWords.stream().anyMatch(string.toLowerCase()::contains)) {
                 messageWasChanged = true;
-                message.set(index, niceWords.get(random.nextInt(niceWords.size())));
+                message.set(index, niceWords.get(ThreadLocalRandom.current().nextInt(niceWords.size())));
             }
         }
         return messageWasChanged;
@@ -213,7 +227,7 @@ public class WordFilter implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

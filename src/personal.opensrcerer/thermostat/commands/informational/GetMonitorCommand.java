@@ -9,7 +9,7 @@ import thermostat.dispatchers.CommandDispatcher;
 import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -28,11 +28,19 @@ import java.util.List;
  */
 @SuppressWarnings("ConstantConditions")
 public class GetMonitorCommand implements Command {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(GetMonitorCommand.class);
-    private final CommandData data;
+
+    /**
+     * Information for this command.
+     */
+    private final CommandContext data;
 
     public GetMonitorCommand(@Nonnull GuildMessageReceivedEvent data) {
-        this.data = new CommandData(data);
+        this.data = new CommandContext(data);
         CommandDispatcher.checkPermissionsAndQueue(this);
     }
 
@@ -135,7 +143,7 @@ public class GetMonitorCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

@@ -5,12 +5,12 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thermostat.Thermostat;
-import thermostat.commands.Command;
+import thermostat.commands.InternalCommand;
 import thermostat.dispatchers.CommandDispatcher;
 import thermostat.mySQL.DataSource;
 import thermostat.mySQL.PreparedActions;
 import thermostat.util.MiscellaneousFunctions;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.entities.Synapse;
 import thermostat.util.enumeration.CommandType;
 
@@ -22,7 +22,13 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.LinkedList;
 
-public class SynapseMonitor implements Command {
+/**
+ * Internal command that gets triggered whenever a Channel needs to get monitored.
+ */
+public class SynapseMonitor implements InternalCommand {
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(SynapseMonitor.class);
 
     /**
@@ -33,7 +39,7 @@ public class SynapseMonitor implements Command {
     /**
      * Data package for this command.
      */
-    private final CommandData data;
+    private final CommandContext data;
 
     /**
      * ID of Channel to monitor.
@@ -50,7 +56,7 @@ public class SynapseMonitor implements Command {
      * @param synapse Synapse to take as an argument.
      */
     public SynapseMonitor(final Synapse synapse, final LinkedList<OffsetDateTime> channelMessages, final String channelId) {
-        this.data = new CommandData(null);
+        this.data = new CommandContext(null);
         this.synapse = synapse;
         this.channelId = channelId;
         this.channelMessages = channelMessages;
@@ -173,7 +179,7 @@ public class SynapseMonitor implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

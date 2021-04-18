@@ -15,7 +15,7 @@ import thermostat.util.ArgumentParser;
 import thermostat.util.MiscellaneousFunctions;
 import thermostat.util.RestActions;
 import thermostat.util.entities.CommandArguments;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.DBActionType;
 import thermostat.util.enumeration.EmbedType;
@@ -29,12 +29,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Enables/Disables the word filter for a channel.
+ */
 public class FilterCommand implements Command {
+
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(FilterCommand.class);
-    private final CommandData data;
+
+    /**
+     * Data for this command.
+     */
+    private final CommandContext data;
 
     public FilterCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
 
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
@@ -170,7 +181,7 @@ public class FilterCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 }

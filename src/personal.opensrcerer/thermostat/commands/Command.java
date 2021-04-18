@@ -1,7 +1,7 @@
 package thermostat.commands;
 
 import org.slf4j.Logger;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 
 public interface Command extends Runnable {
@@ -20,7 +20,7 @@ public interface Command extends Runnable {
      * Get the Command's data package.
      * @return The Command's information. (Event, Prefix, etc.)
      */
-    CommandData getData();
+    CommandContext getData();
 
     /**
      * @return The type of the Command.

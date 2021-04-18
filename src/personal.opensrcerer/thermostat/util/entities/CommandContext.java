@@ -10,13 +10,13 @@ import java.util.Map;
 /**
  * Contains parameters and data for a Command call.
  */
-public class CommandData {
+public class CommandContext {
     public GuildMessageReceivedEvent event;
     public Map<String, List<String>> parameters;
     public final String prefix;
     public final long commandId;
 
-    public CommandData(final GuildMessageReceivedEvent event)
+    public CommandContext(final GuildMessageReceivedEvent event)
     {
         this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = null;
@@ -24,7 +24,7 @@ public class CommandData {
         this.event = event;
     }
 
-    public CommandData(final GuildMessageReceivedEvent event, final String prefix)
+    public CommandContext(final GuildMessageReceivedEvent event, final String prefix)
     {
         this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;
@@ -32,9 +32,9 @@ public class CommandData {
         this.event = event;
     }
 
-    public CommandData(final GuildMessageReceivedEvent event,
-                       final List<String> arguments,
-                       final String prefix)
+    public CommandContext(final GuildMessageReceivedEvent event,
+                          final List<String> arguments,
+                          final String prefix)
     {
         this.commandId = MiscellaneousFunctions.getCommandId();
         this.prefix = prefix;

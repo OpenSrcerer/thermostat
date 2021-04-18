@@ -9,7 +9,7 @@ import thermostat.dispatchers.ResponseDispatcher;
 import thermostat.embeds.Embeds;
 import thermostat.mySQL.DataSource;
 import thermostat.util.GuildCache;
-import thermostat.util.entities.CommandData;
+import thermostat.util.entities.CommandContext;
 import thermostat.util.enumeration.CommandType;
 import thermostat.util.enumeration.EmbedType;
 
@@ -20,12 +20,24 @@ import java.util.List;
 
 import static thermostat.util.ArgumentParser.hasArguments;
 
+/**
+ * Caching Size represents the number of messages that need to be sent before Thermostat adjusts the slowmode of a channel.
+ * The default caching size is 10, meaning that Thermostat will change the slowmode every 10 messages.
+ * Using this command, you can change the caching size to a number sitting inclusively between 5 and 100.
+ */
 public class CSizeCommand implements Command {
+    /**
+     * Logger for this class.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(CSizeCommand.class);
-    private final CommandData data;
+
+    /**
+     * Context for this command.
+     */
+    private final CommandContext data;
 
     public CSizeCommand(@Nonnull GuildMessageReceivedEvent data, @Nonnull List<String> arguments, @Nonnull String prefix) {
-        this.data = new CommandData(data, arguments, prefix);
+        this.data = new CommandContext(data, arguments, prefix);
 
         if (this.data.parameters == null) {
             ResponseDispatcher.commandFailed(
@@ -98,7 +110,7 @@ public class CSizeCommand implements Command {
     }
 
     @Override
-    public CommandData getData() {
+    public CommandContext getData() {
         return data;
     }
 
