@@ -113,46 +113,6 @@ public abstract class Thermostat {
     }
 
     /**
-     * Start Thermostat and initialize all needed variables. (For Tests)
-     * @param token The securely stored token as an environment variable.
-     * @throws Exception Any Exception that may occur.
-     * @throws Error Any Error that may occur while loading.
-     */
-    public static boolean testThermostat(String token) throws Exception, Error {
-        thermo = JDABuilder
-                .create(
-                        token,
-                        EnumSet.of(
-                                GatewayIntent.GUILD_MESSAGES,
-                                GatewayIntent.GUILD_MESSAGE_REACTIONS
-                        )
-                )
-                .disableCache(
-                        CacheFlag.ACTIVITY,
-                        CacheFlag.EMOTE,
-                        CacheFlag.CLIENT_STATUS,
-                        CacheFlag.MEMBER_OVERRIDES,
-                        CacheFlag.VOICE_STATE
-                )
-                .setMemberCachePolicy(MemberCachePolicy.NONE)
-                .setChunkingFilter(ChunkingFilter.NONE)
-                .setEnableShutdownHook(true)
-                .build();
-
-        thermo.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.competing("loading..."));
-        Constants.setConstants("ttt!", thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
-        thermo.awaitReady();
-
-        /*thermo.addEventListener(
-                new CommandTrigger(),
-                new MenuDispatcher(),
-                new SynapseEvents()
-        );*/
-
-        return true;
-    }
-
-    /**
      * Reads the config.json file and parses the data into a usable
      * array of strings.
      * @return Array of configuration tokens.
