@@ -3,5 +3,5 @@ Thermostat.iml
 /src/personal.opensrcerer/META-INF/
 /target/
 /thermobasecurrent.sql
-/resources/config.json
-/resources/db.properties
+/src/resources/db.properties
+/src/resources/config.json
