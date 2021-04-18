@@ -119,7 +119,7 @@ public abstract class Thermostat {
      * @throws ParsingException If I/O operations had an issue.
      */
     private static String[] initializeTokens() throws ParsingException, IOException {
-        String[] tokens = new String[5];
+        String[] tokens = new String[4];
 
         InputStream configFile = Thermostat.class.getClassLoader().getResourceAsStream("config.json");
 
@@ -132,7 +132,6 @@ public abstract class Thermostat {
         tokens[1] = config.getString("Token");
         tokens[2] = config.getString("DBLToken");
         tokens[3] = config.getString("BoatsToken");
-        tokens[4] = config.getString("TestToken");
 
         return tokens;
     }
