@@ -10,18 +10,14 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import thermostat.commands.CommandTrigger;
-import thermostat.dispatchers.MenuDispatcher;
 import thermostat.dispatchers.MiscellaneousDispatcher;
 import thermostat.events.Ready;
-import thermostat.events.SynapseEvents;
 import thermostat.mySQL.DataSource;
 import thermostat.util.Constants;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLClassLoader;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -147,11 +143,11 @@ public abstract class Thermostat {
         Constants.setConstants("ttt!", thermo.getSelfUser().getId(), thermo.getSelfUser().getAvatarUrl());
         thermo.awaitReady();
 
-        thermo.addEventListener(
+        /*thermo.addEventListener(
                 new CommandTrigger(),
                 new MenuDispatcher(),
                 new SynapseEvents()
-        );
+        );*/
 
         return true;
     }

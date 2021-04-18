@@ -10,9 +10,6 @@
   <a href="https://github.com/OpenSrcerer/thermostat/issues">
     <img src="https://img.shields.io/github/issues/OpenSrcerer/thermostat?style=flat-square" width=140/>
   </a>
-  <a href="https://travis-ci.com/github/OpenSrcerer/thermostat">
-    <img src="https://travis-ci.com/OpenSrcerer/thermostat.svg" width=140/>
-  </a>
 </p>
 
 <p align=center>
