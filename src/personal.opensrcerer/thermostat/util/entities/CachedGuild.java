@@ -4,6 +4,7 @@ import club.minnced.discord.webhook.WebhookClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,11 @@ public class CachedGuild {
     private String prefix;
 
     /**
+     * Filtering Rules for this Guild.
+     */
+    private WordReplacer rule;
+
+    /**
      * Stores Webhook clients for every channel.
      */
     private final Map<String, WebhookClient> webhookClients = new HashMap<>();
@@ -33,6 +39,12 @@ public class CachedGuild {
     public CachedGuild(final String prefix) {
         this.synapse = null;
         this.prefix = prefix;
+
+        try {
+            this.rule = new WordReplacer();
+        } catch (SQLException ex) {
+
+        }
     }
 
     /**
